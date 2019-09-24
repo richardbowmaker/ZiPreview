@@ -269,6 +269,24 @@ namespace ZiPreview
             }
         }
 
+        public string Link
+        {
+            get
+            {
+                if (HasLink)
+                {
+                    StreamReader sr = new StreamReader(LinkFilename);
+                    string link = sr.ReadLine();
+                    sr.Close();
+                    return link;
+                }
+                else
+                {
+                    return "";
+                }
+            }
+        }
+
         public string TypeS
         {
             get

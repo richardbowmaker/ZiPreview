@@ -77,22 +77,15 @@ namespace ZiPreview
             }
         }
 
-        static public void LaunchBrowser(FileT file)
+        static public Process LaunchBrowser(FileT file)
         {
             if (file.HasLink)
             {
-                StreamReader sr = new StreamReader(file.LinkFilename);
-                string link = sr.ReadLine();
-                sr.Close();
-
-                if (Constants.TestMode)
-                {
-                    Process.Start(Constants.Chrome, link);
-                }
-                else
-                {
-                    Process.Start(Constants.Tor, link);
-                }
+                return Process.Start(Constants.Browser, file.Link);
+            }
+            else
+            {
+                return null;
             }
         }
     }

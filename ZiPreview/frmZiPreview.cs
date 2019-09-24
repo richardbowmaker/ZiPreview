@@ -26,6 +26,8 @@ namespace ZiPreview
 
         private int _noOfImages;
 
+        private VideoCapture _videoCapture;
+
         //-----------------------------------------------------
         // ImagesViewerData
         //-----------------------------------------------------
@@ -134,7 +136,7 @@ namespace ZiPreview
                 }
             }
 
-            Text = "ZiPreview 1.0";
+            Text = Constants.Title;
             _noOfImages = 2;
 
             // create two panels and add to vertical split RHS
@@ -159,6 +161,11 @@ namespace ZiPreview
             _imagePanel.Hide();
 
             _properties = new PropertyCache();
+
+            // prep the video capture
+            _videoCapture = new VideoCapture();
+            _videoCapture.GuiUpdateIf = this;
+            _videoCapture.Initialise(this);
 
             // set thread safe callback
             Files.GuiUpdateIf = this;
@@ -267,31 +274,6 @@ namespace ZiPreview
             _images.SetSelected(row.Index);
         }
 
-        private void FrmZiPreview_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            _images.StopPreview();
-
-            if (!Constants.TestMode)
-            {
-                DialogResult res = MessageBox.Show("Do you want to dismount the virtual drives ?",
-                "ZiPreview",
-                MessageBoxButtons.YesNoCancel,
-                MessageBoxIcon.Question,
-                MessageBoxDefaultButton.Button3);
-
-                switch (res)
-                {
-                    case DialogResult.Cancel: e.Cancel = true; return;
-                    case DialogResult.Yes: Dismount(); break;
-                    case DialogResult.No: _properties.WriteProperties(); break;
-                }
-            }
-            else
-            {
-                _properties.WriteProperties();
-            }
-        }
-
         private void Dismount()
         {
             _properties.WriteProperties();
@@ -341,7 +323,7 @@ namespace ZiPreview
 
                         case Keys.F5: IncNoOfImages(file); e.SuppressKeyPress = true; break;
                         case Keys.F6: DecNoOfImages(file); e.SuppressKeyPress = true; break;
-
+                        case Keys.F7: CaptureVideo(file); e.SuppressKeyPress = true; break;
                     }
                 }
             }
@@ -445,6 +427,27 @@ namespace ZiPreview
             file.Row.Cells["colSelected"].Value = file.SelectedS;
         }
 
+        private void CaptureVideo(FileT file)
+        {
+            // file must have a link
+            if (!file.HasLink)
+            {
+                MessageBox.Show("File does not have a link", Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+
+            // warning if file already has video
+            if (file.HasVideo)
+            {
+                DialogResult dr = MessageBox.Show("File already has video, do you want to overwrite it", 
+                    Constants.Title, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation);
+
+                if (dr != DialogResult.OK) return;
+            }
+
+            _videoCapture.StartCapture(file);
+        }
+
         private void GridFiles_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             string col = gridFiles.Columns[e.ColumnIndex].Name;
@@ -500,6 +503,78 @@ namespace ZiPreview
         private void Timer__Tick(object sender, EventArgs e)
         {
             CaptureClipboard.TimerEvent();
+        }
+
+        private void FileExitMenu_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void FrmZiPreview_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            e.Cancel = !CanClose();
+        }
+
+        private bool CanClose()
+        { 
+            _images.StopPreview();
+            if (!Constants.TestMode)
+            {
+                DialogResult res = MessageBox.Show("Do you want to dismount the virtual drives ?",
+                Constants.Title,
+                MessageBoxButtons.YesNoCancel,
+                MessageBoxIcon.Question,
+                MessageBoxDefaultButton.Button3);
+
+                switch (res)
+                {
+                    case DialogResult.Cancel: return false;
+                    case DialogResult.Yes: Dismount(); break;
+                    case DialogResult.No: _properties.WriteProperties(); break;
+                }
+            }
+            else
+            {
+                _properties.WriteProperties();
+            }
+            _videoCapture.Uninitialise();
+            return true;
+        }
+
+        private void ToolsCaptureSelectedMenu_Click(object sender, EventArgs e)
+        {
+            List<FileT> files = Files.GetFiles().FindAll(delegate (FileT file)
+                { return file.Selected && file.HasLink; });
+
+            if (files.Count == 0)
+            {
+                MessageBox.Show("No files with links have been selected", 
+                    Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+
+            foreach (FileT file in files)
+            {
+                CaptureVideo(file);
+            }
+        }
+
+        private void ToolsCaptureWithoutMenu_Click(object sender, EventArgs e)
+        {
+            List<FileT> files = Files.GetFiles().FindAll(delegate (FileT file)
+            { return !file.HasVideo && file.HasLink; });
+
+            if (files.Count == 0)
+            {
+                MessageBox.Show("No files with links are missing videos",
+                    Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+
+            foreach (FileT file in files)
+            {
+                CaptureVideo(file);
+            }
         }
     }
 }

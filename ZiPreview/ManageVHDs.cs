@@ -24,6 +24,7 @@ namespace ZiPreview
 		static private string _diskPart = "_ManageVhdDiskPart.txt";
 		static private string _powershell = "_ManageVhdPowerShell.ps1";
         public static IGuiUpdate GuiUpdateIf { set; private get; }
+        public static string ObsCaptureDir { get; set; }
 
         static public bool AttachAllVHDs(string password)
 		{
@@ -186,7 +187,7 @@ namespace ZiPreview
 
 			if (!result)
 			{
-				MessageBox.Show("Not all drives detached", "FileSaver", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("Not all drives detached", Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 
 			return true;
@@ -218,15 +219,20 @@ namespace ZiPreview
 									+ fileList.Count.ToString();
 					fileList.Add(s, fn);
 				}
-			}
 
-			List<string> result = new List<string>();
+                // create obs capture directory
+                // the last drive iterated will be the one used
+                ObsCaptureDir = vhd.Drive.Substring(0, 2) + Constants.ObsCapturePath;
+                Directory.CreateDirectory(ObsCaptureDir);
+            }
+
+            List<string> result = new List<string>();
 			foreach (KeyValuePair<string, string> kvp in fileList)
 			{
 				result.Add(kvp.Value);
 			}
 
-			return result;
+            return result;
 		}
 
         public static List<string> GetDrives()
