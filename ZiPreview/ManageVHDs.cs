@@ -25,6 +25,7 @@ namespace ZiPreview
 		static private string _powershell = "_ManageVhdPowerShell.ps1";
         public static IGuiUpdate GuiUpdateIf { set; private get; }
         public static string ObsCaptureDir { get; set; }
+        public static string FilesTargetDir { get; set; }
 
         static public bool AttachAllVHDs(string password)
 		{
@@ -224,6 +225,13 @@ namespace ZiPreview
                 // the last drive iterated will be the one used
                 ObsCaptureDir = vhd.Drive.Substring(0, 2) + Constants.ObsCapturePath;
                 Directory.CreateDirectory(ObsCaptureDir);
+                GuiUpdateIf.TraceTS("OBS capture folder: " + ObsCaptureDir);
+
+                // create target directory for new files
+                // the last drive iterated will be the one used
+                FilesTargetDir = vhd.Drive.Substring(0, 2) + Constants.FilesTargetPath;
+                Directory.CreateDirectory(FilesTargetDir);
+                GuiUpdateIf.TraceTS("Files target folder: " + FilesTargetDir);
             }
 
             List<string> result = new List<string>();

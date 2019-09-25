@@ -33,6 +33,8 @@ namespace ZiPreview
             _picBox.Left = 0;
             _picBox.Width = _panel.Width;
             _picBox.Height = _panel.Height;
+            _picBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | 
+                AnchorStyles.Left | AnchorStyles.Right;
 
             _picBox.MouseClick +=
                 new System.Windows.Forms.MouseEventHandler(this.picBox_MouseClick);
@@ -50,7 +52,7 @@ namespace ZiPreview
             _nScale = 0;
         }
 
-        public void LoadImage(string file)
+        public void LoadFile(string file)
         {
             _picBox.SizeMode = PictureBoxSizeMode.Zoom;
             _picBox.Top = 0;
@@ -61,6 +63,18 @@ namespace ZiPreview
             _picBox.ImageLocation = file;
 
             _nScale = 0; 
+        }
+        public void LoadBitmap(Bitmap bitmap)
+        {
+            _picBox.SizeMode = PictureBoxSizeMode.Zoom;
+            _picBox.Top = 0;
+            _picBox.Left = 0;
+            _picBox.Width = _panel.Width;
+            _picBox.Height = _panel.Height;
+
+            _picBox.Image = bitmap;
+   
+            _nScale = 0;
         }
 
         public void ZeroZoomSettings()

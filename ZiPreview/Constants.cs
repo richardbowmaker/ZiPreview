@@ -9,20 +9,21 @@ namespace ZiPreview
     class Constants
     {
         public const string Title = "ZiPreview";
-        public const bool TestMode = true;
-        public const string TestDir = @"D:\_Rick's\c#\ZiPreview\TestData";
+        public const bool TestMode = false;
+        public const string TestDir = @"D:\_Ricks\c#\ZiPreview\TestData";
 
         public const string ObsConnect = "ws://127.0.0.1:4444";
         public const string ObsPassword = "XespePerfo0";
 
         public const string ObsCapturePath = @"\ObsCapture";
+        public const string FilesTargetPath = @"\Files\All";
 
         public static string Browser
         {
             get
             {
                 if (TestMode) return @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe";
-                else return @"tor";
+                else return @"D:\tor\Tor Browser\Browser\firefox.exe";
             }
         }
 
@@ -30,8 +31,17 @@ namespace ZiPreview
         {
             get
             {
-                if (TestMode) return TestDir + ObsCapturePath;
+                if (TestMode) return @"D:\_Ricks\c#\ZiPreview\ObsCapture";
                 else return ManageVHDs.ObsCaptureDir;
+            }
+        }
+
+        public static string FilesTargetDir
+        {
+            get
+            {
+                if (TestMode) return TestDir;
+                else return ManageVHDs.FilesTargetDir;
             }
         }
     }

@@ -60,6 +60,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CaptureClipboard.cs" />
+    <Compile Include="CheckImageLink.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CheckImageLink.Designer.cs">
+      <DependentUpon>CheckImageLink.cs</DependentUpon>
+    </Compile>
     <Compile Include="Constants.cs" />
     <Compile Include="CPicture.cs" />
     <Compile Include="FileT.cs" />
@@ -90,6 +96,9 @@
       <DependentUpon>VideoCapturePrompt.cs</DependentUpon>
     </Compile>
     <Compile Include="VideoPreview.cs" />
+    <EmbeddedResource Include="CheckImageLink.resx">
+      <DependentUpon>CheckImageLink.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmZiPreview.resx">
       <DependentUpon>frmZiPreview.cs</DependentUpon>
     </EmbeddedResource>

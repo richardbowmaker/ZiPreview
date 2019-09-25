@@ -31,7 +31,7 @@ namespace ZiPreview
             {
                 string ctext = Clipboard.GetText();
 
-                if (ctext_.CompareTo(ctext) != 0)
+                if (ctext.StartsWith("https://") && ctext_.CompareTo(ctext) != 0)
                 {
                     ctext_ = ctext;
                 }

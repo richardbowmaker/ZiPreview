@@ -442,7 +442,7 @@ namespace ZiPreview
                 DialogResult dr = MessageBox.Show("File already has video, do you want to overwrite it", 
                     Constants.Title, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation);
 
-                if (dr != DialogResult.OK) return;
+                if (dr != DialogResult.Yes) return;
             }
 
             _videoCapture.StartCapture(file);
@@ -494,7 +494,7 @@ namespace ZiPreview
                 _imagePanel.Show();
 
                 // hide the images preview and show the image full size
-                _image.LoadImage(file.ImageFilename);
+                _image.LoadFile(file.ImageFilename);
 
                 RefreshGridRowTS(file);
             }

@@ -216,7 +216,15 @@ namespace ZiPreview
                             if (secs - _captureLastChanged > 5.0f)
                             {
                                 _obs.ToggleRecording();
-                                _browser.Kill();
+
+                                try
+                                {
+                                    // exception occurs if browser was alreay open
+                                    _browser.Kill();
+                                }
+                                catch (InvalidOperationException)
+                                {
+                                }
 
                                 // save file
                                 if (MoveCaptureFile())
@@ -262,10 +270,25 @@ namespace ZiPreview
 
             try
             {
-                string dest = Path.GetDirectoryName(_file.LinkFilename) + "\\" + 
+                string dest = Path.GetDirectoryName(_file.LinkFilename) + "\\" +
                     Path.GetFileNameWithoutExtension(_file.LinkFilename) + ".mp4";
-                File.Delete(dest); 
-                System.Threading.Thread.Sleep(500);
+                File.Delete(dest);
+
+                while (true)
+                {
+                    try
+                    {
+                        StreamReader sr = new StreamReader(src);
+                        sr.Read();
+                        sr.Close();
+                        break;
+                    }
+                    catch (IOException)
+                    {
+                        System.Threading.Thread.Sleep(200);
+                    }
+                }
+            
                 File.Move(src, dest);
                 _file.VideoFilename = dest;
                 return true;
@@ -318,8 +341,11 @@ namespace ZiPreview
                                 _obs.ToggleRecording();
                                 _browser.Kill();
                                 string fn = GetNewestFileInDirectory(Constants.ObsCaptureDir, "*.mp4");
-                                System.Threading.Thread.Sleep(1000);
-                                File.Delete(fn);
+                                if (fn.Length > 0)
+                                {
+                                    System.Threading.Thread.Sleep(1000);
+                                    File.Delete(fn);
+                                }
                                 break;
                             case StateT.Countdown:
                                 _browser.Kill();
@@ -378,22 +404,22 @@ namespace ZiPreview
 
         private void SoundBeep()
         {
-            SoundPlayer sound = new SoundPlayer(@"D:\_Rick's\c#\ObsTestRjb\beep.wav");
+            SoundPlayer sound = new SoundPlayer(@"D:\_Ricks\c#\ZiPreview\RunDir\beep.wav");
             sound.Play();
         }
         private void SoundBong()
         {
-            SoundPlayer sound = new SoundPlayer(@"D:\_Rick's\c#\ObsTestRjb\bong.wav");
+            SoundPlayer sound = new SoundPlayer(@"D:\_Ricks\c#\ZiPreview\RunDir\bong.wav");
             sound.Play();
         }
         private void SoundEnded()
         {
-            SoundPlayer sound = new SoundPlayer(@"D:\_Rick's\c#\ObsTestRjb\ended.wav");
+            SoundPlayer sound = new SoundPlayer(@"D:\_Ricks\c#\ZiPreview\RunDir\ended.wav");
             sound.Play();
         }
         private void SoundError()
         {
-            SoundPlayer sound = new SoundPlayer(@"D:\_Rick's\c#\ObsTestRjb\error.wav");
+            SoundPlayer sound = new SoundPlayer(@"D:\_Ricks\c#\ZiPreview\RunDir\error.wav");
             sound.Play();
         }
     }

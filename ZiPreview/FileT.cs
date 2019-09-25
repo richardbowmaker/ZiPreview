@@ -83,7 +83,6 @@ namespace ZiPreview
                 // check to see if an assocaited video file exists
                 ft = files_.Find(delegate (FileT ft1)
                     { return ft1.MatchesImage(file); });
-
             }
 
             if (ft != null)
@@ -180,6 +179,9 @@ namespace ZiPreview
 
         public static bool SaveLinkImage(string link, Bitmap bitmap)
         {
+            // check the user wishes to save the link and image
+            if (!CheckImageLink.Verify(link, bitmap)) return false;
+
             // create a filename pair for the link and the image based on a time stamp
 
             // create unqiue filename
@@ -187,18 +189,8 @@ namespace ZiPreview
 
             string fn = DateTime.Now.ToString("yyyyMMddHHmmss");
 
-            string ifn;
-            string lfn;
-
-            if (Constants.TestMode)
-            {
-                ifn = Constants.TestDir + "\\f" + fn + ".jpg";
-                lfn = Constants.TestDir + "\\f" + fn + ".lnk";
-            }
-            else
-            {
-                // to do
-            }
+            string ifn = Constants.FilesTargetDir + "\\file" + fn + ".jpg";
+            string lfn = Constants.FilesTargetDir + "\\file" + fn + ".lnk";
 
             // save link and image
             StreamWriter sw = new StreamWriter(lfn);
@@ -332,7 +324,9 @@ namespace ZiPreview
             if (!HasImage) return false;
             string vfe = Path.GetDirectoryName(vfile) + "\\" + Path.GetFileNameWithoutExtension(vfile);
             string ife = Path.GetDirectoryName(ImageFilename) + "\\" + Path.GetFileNameWithoutExtension(ImageFilename);
-            return ife.CompareTo(vfe + "-1") == 0;
+            if (ife.CompareTo(vfe + "-1") == 0) return true;
+            if (ife.CompareTo(vfe) == 0) return true;
+            return false;
         }
         public bool LinkMatchesImage(string lfile)
         {
