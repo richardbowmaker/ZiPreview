@@ -33,21 +33,32 @@
             this.splitHorizGridTrace = new System.Windows.Forms.SplitContainer();
             this.gridFiles = new System.Windows.Forms.DataGridView();
             this.listTrace = new System.Windows.Forms.ListBox();
+            this.statusStrip = new System.Windows.Forms.StatusStrip();
+            this.statusProgress = new System.Windows.Forms.ToolStripProgressBar();
+            this.statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer_ = new System.Windows.Forms.Timer(this.components);
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.fileDeleteMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.fileExitMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsCaptureSelectedMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsCaptureWithoutMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolsCaptureMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolsCopyFilesMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolsTestHarnessMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolsCreateVeracryptVolumeMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.fileSelectVolumesMenu = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitVertical)).BeginInit();
             this.splitVertical.Panel1.SuspendLayout();
+            this.splitVertical.Panel2.SuspendLayout();
             this.splitVertical.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitHorizGridTrace)).BeginInit();
             this.splitHorizGridTrace.Panel1.SuspendLayout();
             this.splitHorizGridTrace.Panel2.SuspendLayout();
             this.splitHorizGridTrace.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gridFiles)).BeginInit();
+            this.statusStrip.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -60,6 +71,10 @@
             // splitVertical.Panel1
             // 
             this.splitVertical.Panel1.Controls.Add(this.splitHorizGridTrace);
+            // 
+            // splitVertical.Panel2
+            // 
+            this.splitVertical.Panel2.Controls.Add(this.statusStrip);
             this.splitVertical.Size = new System.Drawing.Size(1188, 635);
             this.splitVertical.SplitterDistance = 396;
             this.splitVertical.TabIndex = 0;
@@ -102,10 +117,33 @@
             // 
             this.listTrace.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listTrace.FormattingEnabled = true;
+            this.listTrace.HorizontalScrollbar = true;
             this.listTrace.Location = new System.Drawing.Point(0, 0);
             this.listTrace.Name = "listTrace";
             this.listTrace.Size = new System.Drawing.Size(396, 153);
             this.listTrace.TabIndex = 0;
+            // 
+            // statusStrip
+            // 
+            this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.statusProgress,
+            this.statusLabel});
+            this.statusStrip.Location = new System.Drawing.Point(0, 613);
+            this.statusStrip.Name = "statusStrip";
+            this.statusStrip.Size = new System.Drawing.Size(788, 22);
+            this.statusStrip.TabIndex = 0;
+            this.statusStrip.Text = "statusStrip1";
+            // 
+            // statusProgress
+            // 
+            this.statusProgress.Name = "statusProgress";
+            this.statusProgress.Size = new System.Drawing.Size(400, 16);
+            // 
+            // statusLabel
+            // 
+            this.statusLabel.Name = "statusLabel";
+            this.statusLabel.Size = new System.Drawing.Size(66, 17);
+            this.statusLabel.Text = "statusLabel";
             // 
             // timer_
             // 
@@ -127,10 +165,19 @@
             // fileMenu
             // 
             this.fileMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileDeleteMenu,
+            this.fileSelectVolumesMenu,
             this.fileExitMenu});
             this.fileMenu.Name = "fileMenu";
             this.fileMenu.Size = new System.Drawing.Size(37, 20);
             this.fileMenu.Text = "&File";
+            // 
+            // fileDeleteMenu
+            // 
+            this.fileDeleteMenu.Name = "fileDeleteMenu";
+            this.fileDeleteMenu.Size = new System.Drawing.Size(180, 22);
+            this.fileDeleteMenu.Text = "Delete ...";
+            this.fileDeleteMenu.Click += new System.EventHandler(this.FileDeleteMenu_Click);
             // 
             // fileExitMenu
             // 
@@ -143,10 +190,15 @@
             // 
             this.toolsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolsCaptureSelectedMenu,
-            this.toolsCaptureWithoutMenu});
+            this.toolsCaptureWithoutMenu,
+            this.toolsCaptureMenu,
+            this.toolsCopyFilesMenu,
+            this.toolsCreateVeracryptVolumeMenu,
+            this.toolsTestHarnessMenu});
             this.toolsMenu.Name = "toolsMenu";
             this.toolsMenu.Size = new System.Drawing.Size(47, 20);
             this.toolsMenu.Text = "Tools";
+            this.toolsMenu.DropDownOpening += new System.EventHandler(this.ToolsMenu_DropDownOpening);
             // 
             // toolsCaptureSelectedMenu
             // 
@@ -162,6 +214,41 @@
             this.toolsCaptureWithoutMenu.Text = "Capture video for those items with no video";
             this.toolsCaptureWithoutMenu.Click += new System.EventHandler(this.ToolsCaptureWithoutMenu_Click);
             // 
+            // toolsCaptureMenu
+            // 
+            this.toolsCaptureMenu.Name = "toolsCaptureMenu";
+            this.toolsCaptureMenu.Size = new System.Drawing.Size(305, 22);
+            this.toolsCaptureMenu.Text = "Capture video ...";
+            this.toolsCaptureMenu.Click += new System.EventHandler(this.ToolsCaptureMenu_Click);
+            // 
+            // toolsCopyFilesMenu
+            // 
+            this.toolsCopyFilesMenu.Name = "toolsCopyFilesMenu";
+            this.toolsCopyFilesMenu.Size = new System.Drawing.Size(305, 22);
+            this.toolsCopyFilesMenu.Text = "Copy Files ... / Abort";
+            this.toolsCopyFilesMenu.Click += new System.EventHandler(this.ToolsCopyFilesMenu_Click);
+            // 
+            // toolsTestHarnessMenu
+            // 
+            this.toolsTestHarnessMenu.Name = "toolsTestHarnessMenu";
+            this.toolsTestHarnessMenu.Size = new System.Drawing.Size(305, 22);
+            this.toolsTestHarnessMenu.Text = "Test Harness";
+            this.toolsTestHarnessMenu.Click += new System.EventHandler(this.ToolsTestHarnessMenu_Click);
+            // 
+            // toolsCreateVeracryptVolumeMenu
+            // 
+            this.toolsCreateVeracryptVolumeMenu.Name = "toolsCreateVeracryptVolumeMenu";
+            this.toolsCreateVeracryptVolumeMenu.Size = new System.Drawing.Size(305, 22);
+            this.toolsCreateVeracryptVolumeMenu.Text = "Create Veracrypt Volume ...";
+            this.toolsCreateVeracryptVolumeMenu.Click += new System.EventHandler(this.ToolsCreateVeracryptVolumeMenu_Click);
+            // 
+            // fileSelectVolumesMenu
+            // 
+            this.fileSelectVolumesMenu.Name = "fileSelectVolumesMenu";
+            this.fileSelectVolumesMenu.Size = new System.Drawing.Size(180, 22);
+            this.fileSelectVolumesMenu.Text = "Select Volumes ...";
+            this.fileSelectVolumesMenu.Click += new System.EventHandler(this.FileSelectVolumesMenu_Click);
+            // 
             // frmZiPreview
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -174,6 +261,8 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmZiPreview_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.splitVertical.Panel1.ResumeLayout(false);
+            this.splitVertical.Panel2.ResumeLayout(false);
+            this.splitVertical.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitVertical)).EndInit();
             this.splitVertical.ResumeLayout(false);
             this.splitHorizGridTrace.Panel1.ResumeLayout(false);
@@ -181,6 +270,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitHorizGridTrace)).EndInit();
             this.splitHorizGridTrace.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.gridFiles)).EndInit();
+            this.statusStrip.ResumeLayout(false);
+            this.statusStrip.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -201,6 +292,15 @@
         private System.Windows.Forms.ToolStripMenuItem toolsMenu;
         private System.Windows.Forms.ToolStripMenuItem toolsCaptureSelectedMenu;
         private System.Windows.Forms.ToolStripMenuItem toolsCaptureWithoutMenu;
+        private System.Windows.Forms.ToolStripMenuItem fileDeleteMenu;
+        private System.Windows.Forms.ToolStripMenuItem toolsCaptureMenu;
+        private System.Windows.Forms.ToolStripMenuItem toolsCopyFilesMenu;
+        private System.Windows.Forms.StatusStrip statusStrip;
+        private System.Windows.Forms.ToolStripProgressBar statusProgress;
+        private System.Windows.Forms.ToolStripStatusLabel statusLabel;
+        private System.Windows.Forms.ToolStripMenuItem toolsTestHarnessMenu;
+        private System.Windows.Forms.ToolStripMenuItem toolsCreateVeracryptVolumeMenu;
+        private System.Windows.Forms.ToolStripMenuItem fileSelectVolumesMenu;
     }
 }
 

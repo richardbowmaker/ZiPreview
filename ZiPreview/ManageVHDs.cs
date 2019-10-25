@@ -8,7 +8,8 @@ using System.Threading;
 
 namespace ZiPreview
 {
-	public class VHD
+
+    public class VHD
 	{
 		public enum VhdType { NotAttached, Attached, Unlocked }; 
 		public string Filepath { get; set; }
@@ -20,14 +21,16 @@ namespace ZiPreview
 	public class ManageVHDs
 	{
 		static private List<VHD> _vhds = new List<VHD>();
-		static private List<string> _scanPaths = new List<string>() { "_Ricks\\JigsawProject", "Encrypted" };
 		static private string _diskPart = "_ManageVhdDiskPart.txt";
-		static private string _powershell = "_ManageVhdPowerShell.ps1";
-        public static IGuiUpdate GuiUpdateIf { set; private get; }
+		static private string _diskDetach = "Detach.bat";
+        static private string _diskPartAll = "_ManageVhdDiskPartAll.txt";
+        static private string _powershell = "_ManageVhdPowerShell.ps1";
         public static string ObsCaptureDir { get; set; }
         public static string FilesTargetDir { get; set; }
 
-        static public bool AttachAllVHDs(string password)
+        public static List<VHD> VirtualDrives { get { return _vhds; } }
+
+        static public bool AttachAllVHDs()
 		{
 			UnattachAllVHDs();
 			_vhds = new List<VHD>();
@@ -40,31 +43,27 @@ namespace ZiPreview
 				DirectoryInfo root = di.RootDirectory;
 				String path = root.FullName;
 				
-				foreach (string sp in _scanPaths)
+				foreach (string sp in Constants.ScanPaths)
 				{
 					if (Directory.Exists(path + sp))
 					{
 						var files = Directory.EnumerateFiles(path + sp, "*.vhd", SearchOption.AllDirectories);
-						foreach (string file in files)
-						{
-							vhdFiles.Add(file);
-						}
-					}
-				}
+                        vhdFiles.AddRange(files);
+                    }
+                }
 
 				// for removable drives scan the root directory
 				if (di.DriveType == DriveType.Removable)
 				{
 					var files = Directory.EnumerateFiles(path, "*.vhd", SearchOption.AllDirectories);
-					foreach (string file in files)
-					{
-						vhdFiles.Add(file);
-					}
-				}
-			}
+                    vhdFiles.AddRange(files);
+                }
+            }
 
 			// quit if no vhd files found
 			if (vhdFiles.Count == 0) return false;
+
+            vhdFiles.Sort();
 
 			foreach (string vhdFile in vhdFiles)
 			{
@@ -74,17 +73,17 @@ namespace ZiPreview
 				List<string> script = new List<string>();
 				script.Add("select vdisk file=" + vhdFile);
 				script.Add("attach vdisk");
-				string sfn = Directory.GetCurrentDirectory() + "\\" + _diskPart;
+				string sfn = Constants.WorkingFolder + "\\" + _diskPart;
 				bool ok = Utilities.RunScript("diskpart /s <file>", sfn, script);
-				DeleteFile(sfn);
+				Utilities.DeleteFile(sfn);
 
                 if (ok)
                 {
-                    GuiUpdateIf.TraceTS("Attached virtual drive " + vhdFile + " OK");
+                    Logger.TraceInfo("Attached virtual drive " + vhdFile + " OK");
                 }
                 else
                 {
-                    GuiUpdateIf.TraceTS("*** Failed to attach virtual drive " + vhdFile);
+                    Logger.TraceError("*** Failed to attach virtual drive " + vhdFile);
                     break;
                 }
 
@@ -116,7 +115,7 @@ namespace ZiPreview
 						try
 						{
 							long l = di1.AvailableFreeSpace;
-                            GuiUpdateIf.TraceTS("*** drive not bitlocked");
+                            Logger.TraceError("*** drive not bitlocked");
                         }
                         catch (Exception)
 						{
@@ -127,7 +126,7 @@ namespace ZiPreview
 					}
 				}
 				dis = dis1;
-			}
+            }
 
 			foreach (VHD vhd in _vhds)
 			{
@@ -140,28 +139,29 @@ namespace ZiPreview
 					List<string> script = new List<string>();
 					script.Add("$SecureString = ConvertTo-SecureString $args[1] -AsPlainText -Force");
 					script.Add("Unlock-BitLocker -MountPoint $args[0] -Password $SecureString");
-					string sfn = Directory.GetCurrentDirectory() + "\\" + _powershell;
+					string sfn = Constants.WorkingFolder + "\\" + _powershell;
 
 					// powershell -executionpolicy bypass -file <file> "G:" "1234567890"
 					bool ok = Utilities.RunScript(
 						"powershell -executionpolicy bypass -file <file>" + 
-						" \"" + vhd.Drive.Substring(0,2) + "\" \"" + password + "\"", 
+						" \"" + vhd.Drive.Substring(0,2) + "\" \"" + Constants.Password + "\"", 
 						sfn, script);
 
                     if (ok)
                     {
                         vhd._Type = VHD.VhdType.Unlocked;
-                        GuiUpdateIf.TraceTS("Drive unlocked: " + vhd.Filepath);
+                        Logger.TraceInfo("Drive unlocked: " + vhd.Filepath);
                     }
                     else
                     {
-                        GuiUpdateIf.TraceTS("*** drive not unlocked: " + vhd.Filepath);
+                        Logger.TraceError("*** drive not unlocked: " + vhd.Filepath);
                     }
-                    DeleteFile(sfn);
+                    Utilities.DeleteFile(sfn);
 				}
 			}
 
-			return true;
+            GenerateDetachAllScript();
+            return true;
 		}
 		static public bool UnattachAllVHDs()
 		{
@@ -172,16 +172,16 @@ namespace ZiPreview
                 List<string> script = new List<string>();
                 script.Add("select vdisk file = " + vhd.Filepath);
                 script.Add("detach vdisk");
-                string sfn = Directory.GetCurrentDirectory() + "\\" + _diskPart;
+                string sfn = Constants.WorkingFolder + "\\" + _diskPart;
                 bool ok = Utilities.RunScript("diskpart /s <file>", sfn, script);
                 if (ok)
                 {
                     vhd._Type = VHD.VhdType.NotAttached;
-                    GuiUpdateIf.TraceTS("Drive detached: " + vhd.Filepath);
+                    Logger.TraceInfo("Drive detached: " + vhd.Filepath);
                 }
                 else
                 {
-                    GuiUpdateIf.TraceTS("*** drive did not detach: " + vhd.Filepath);
+                    Logger.TraceError("*** drive did not detach: " + vhd.Filepath);
                     result = false;
                 }
             }
@@ -194,7 +194,24 @@ namespace ZiPreview
 			return true;
 		}
 
-		static public List<string> GetAllFiles()
+        static public string GenerateDetachAllScript()
+        {
+            StreamWriter sw = new StreamWriter(Constants.WorkingFolder + "\\" + _diskPartAll, false);
+            foreach (VHD vhd in _vhds)
+            {
+                sw.WriteLine("select vdisk file = " + vhd.Filepath);
+                sw.WriteLine("detach vdisk");
+            }
+            sw.Close();
+
+            sw = new StreamWriter(Constants.WorkingFolder + "\\" + _diskDetach, false);
+            sw.WriteLine("diskpart /s " + Constants.WorkingFolder + "\\" + _diskPartAll);
+            sw.Close();
+
+            return Constants.WorkingFolder + "\\" + _diskDetach;
+        }
+
+        static public List<string> GetAllFiles()
 		{
 			SortedList<string, string> fileList = new SortedList<string, string>();
 
@@ -223,15 +240,23 @@ namespace ZiPreview
 
                 // create obs capture directory
                 // the last drive iterated will be the one used
-                ObsCaptureDir = vhd.Drive.Substring(0, 2) + Constants.ObsCapturePath;
-                Directory.CreateDirectory(ObsCaptureDir);
-                GuiUpdateIf.TraceTS("OBS capture folder: " + ObsCaptureDir);
+                try
+                {
+                    ObsCaptureDir = vhd.Drive.Substring(0, 2) + Constants.ObsCapturePath;
+                    Directory.CreateDirectory(ObsCaptureDir);
+                    Logger.TraceInfo("OBS capture folder: " + ObsCaptureDir);
 
-                // create target directory for new files
-                // the last drive iterated will be the one used
-                FilesTargetDir = vhd.Drive.Substring(0, 2) + Constants.FilesTargetPath;
-                Directory.CreateDirectory(FilesTargetDir);
-                GuiUpdateIf.TraceTS("Files target folder: " + FilesTargetDir);
+                    // create target directory for new files
+                    // the last drive iterated will be the one used
+                    FilesTargetDir = vhd.Drive.Substring(0, 2) + Constants.FilesTargetPath;
+                    Directory.CreateDirectory(FilesTargetDir);
+                    Logger.TraceInfo("Files target folder: " + FilesTargetDir);
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Failed to create folders: " + ObsCaptureDir + ", " + FilesTargetDir, 
+                        Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
 
             List<string> result = new List<string>();
@@ -243,7 +268,7 @@ namespace ZiPreview
             return result;
 		}
 
-        public static List<string> GetDrives()
+        static public List<string> GetDrives()
         {
             List<string> ds = new List<string>();
             foreach (VHD vhd in _vhds)
@@ -253,17 +278,22 @@ namespace ZiPreview
             return ds;
         }
 
-		static private void DeleteFile(string fn)
-		{
-			// delete file, no exceptions
-			try
-			{
-				File.Delete(fn);
-			}
-			catch (Exception)
-			{
-			}
-		}
+        static public string FindDiskWithFreeSpace(long bytes)
+        {
+            if (Constants.TestMode)
+            {
+                return Constants.WorkingFolder;
+            }
+            else
+            {
+                foreach (VHD vhd in _vhds)
+                {
+                    long fs = Utilities.GetDriveFreeSpace(vhd.Drive);
 
-	}
+                    if (fs > bytes) return vhd.Drive;
+                }
+                return "";
+            }
+        }
+    }
 }

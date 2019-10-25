@@ -83,6 +83,8 @@
             this.Controls.Add(this.lblUrl);
             this.Controls.Add(this.butCancel);
             this.Controls.Add(this.butOK);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "CheckImageLink";
             this.Text = "CheckImageLink";
             this.Load += new System.EventHandler(this.CheckImageLink_Load);

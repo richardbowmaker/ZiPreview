@@ -105,7 +105,7 @@ namespace ZiPreview
                 _picBox.Top  = _nTop;
                 _picBox.Refresh();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }
@@ -204,7 +204,7 @@ namespace ZiPreview
                 _picBox.Top = _nTop;
                 _picBox.Refresh();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }

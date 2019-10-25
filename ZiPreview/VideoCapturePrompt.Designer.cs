@@ -111,6 +111,8 @@
             this.Controls.Add(this.lblURL);
             this.Controls.Add(this.butCancel);
             this.Controls.Add(this.butOK);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "VideoCapturePrompt";
             this.Text = "Start Video Capture";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.VideoCapturePrompt_FormClosing);

@@ -11,8 +11,11 @@ namespace ZiPreview
     public interface IGuiUpdate
     {
         void AddFileToGridTS(FileT file);
-        void RefreshGridRowTS(FileT file); 
-        void TraceTS(string text); 
+        void RefreshGridRowTS(FileT file);
+        void RemoveGridRowTS(FileT file);
+        void UpdateProgressTS(int value, int max);
+        void SetStatusLabelTS(string text);
+        void MessageBoxTS(string text, MessageBoxButtons buttons, MessageBoxIcon icon);
     }
 
     public partial class frmZiPreview : Form, IGuiUpdate, ImagesViewerData
@@ -27,6 +30,8 @@ namespace ZiPreview
         private int _noOfImages;
 
         private VideoCapture _videoCapture;
+
+        private bool _initialised = false;
 
         //-----------------------------------------------------
         // ImagesViewerData
@@ -51,6 +56,14 @@ namespace ZiPreview
         {
             return ((FileT)gridFiles.Rows[n].Tag).VideoFilename;
         }
+        public void ImageSelected(int n)
+        {
+            gridFiles.Rows[n].Selected = true;
+        }
+        public void ImagePlay(int n)
+        {
+            PlayFile((FileT)gridFiles.Rows[n].Tag);
+        }
 
         //-----------------------------------------------------
         // IGuiUpdate
@@ -59,20 +72,8 @@ namespace ZiPreview
         private delegate void VoidString(string str);
         private delegate void VoidDataGridViewRow(DataGridViewRow row);
         private delegate void VoidVoid();
-
-        public void TraceTS(string text)
-        {
-            if (InvokeRequired)
-            {
-                VoidString action = new VoidString(TraceTS);
-                Invoke(action, new object[] { text });
-            }
-            else
-            {
-                // output trace
-                listTrace.Items.Add(text);
-            }
-        }
+        private delegate void VoidIntInt(int int1, int int2);
+        private delegate void VoidStringMessageBoxButtonsAndIcon(string text, MessageBoxButtons buttons, MessageBoxIcon icon);
 
         public void RefreshGridRowTS(FileT file)
         {
@@ -111,12 +112,69 @@ namespace ZiPreview
             }
         }
 
+        public void RemoveGridRowTS(FileT file)
+        {
+            if (InvokeRequired)
+            {
+                VoidFileT action = new VoidFileT(RemoveGridRowTS);
+                Invoke(action, new object[] { file });
+            }
+            else
+            {
+                // add to grid
+                gridFiles.Rows.RemoveAt(file.Row.Index);
+            }
+        }
+
+        public void UpdateProgressTS(int value, int max)
+        {
+            if (InvokeRequired)
+            {
+                VoidIntInt action = new VoidIntInt(UpdateProgressTS);
+                Invoke(action, new object[] { value, max });
+            }
+            else
+            {
+                statusProgress.Minimum = 0;
+                statusProgress.Maximum = max;
+                statusProgress.Value = value;
+            }
+        }
+
+        public void SetStatusLabelTS(string text)
+        {
+            if (InvokeRequired)
+            {
+                VoidString action = new VoidString(SetStatusLabelTS);
+                Invoke(action, new object[] { text });
+            }
+            else
+            {
+                statusLabel.Text = text;
+            }
+        }
+
+        public void MessageBoxTS(string text, MessageBoxButtons buttons, MessageBoxIcon icon)
+        {
+            if (InvokeRequired)
+            {
+                VoidStringMessageBoxButtonsAndIcon action = new VoidStringMessageBoxButtonsAndIcon(MessageBoxTS);
+                Invoke(action, new object[] { text, buttons, icon});
+            }
+            else
+            {
+                MessageBox.Show(text, Constants.Title, buttons, icon);
+            }
+        }
 
         //-------------------------------------------------------------------------------
 
         //-----------------------------------------------------
         // Form
         //-----------------------------------------------------
+
+        public static IGuiUpdate GuiUpdateIf { set; get; }
+
         public frmZiPreview()
         {
             InitializeComponent();
@@ -124,12 +182,27 @@ namespace ZiPreview
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            string cd = Directory.GetCurrentDirectory();
+
+            if (Debugger.IsAttached)
+            {
+                DirectoryInfo di = Directory.GetParent(cd);
+                di = Directory.GetParent(di.FullName);
+                di = Directory.GetParent(di.FullName);
+                Constants.WorkingFolder = di.FullName;
+            }
+            else
+            {
+                DirectoryInfo di = Directory.GetParent(cd);
+                Constants.WorkingFolder = di.FullName;
+            }
+
             // get password, quit on cancel
             string pwd = "";
             if (!Constants.TestMode)
             {
-                pwd = frmPassword.GetPassword();
-                if (pwd == "")
+                Constants.Password = frmPassword.GetPassword();
+                if (Constants.Password == "")
                 {
                     Close();
                     return;
@@ -138,6 +211,21 @@ namespace ZiPreview
 
             Text = Constants.Title;
             _noOfImages = 2;
+            statusProgress.Minimum = 0;
+            statusProgress.Maximum = 0;
+            statusProgress.Value = 0;
+            statusLabel.Text = "";
+
+            Logger.TheListBox = listTrace;
+            Logger.Level = Logger.LoggerLevel.Info;
+
+            // prep the video capture
+            _videoCapture = new VideoCapture();
+            if (!_videoCapture.Initialise(this))
+            {
+                Close();
+                return;
+            }
 
             // create two panels and add to vertical split RHS
             _imagesPanel = new Panel();
@@ -162,20 +250,19 @@ namespace ZiPreview
 
             _properties = new PropertyCache();
 
-            // prep the video capture
-            _videoCapture = new VideoCapture();
-            _videoCapture.GuiUpdateIf = this;
-            _videoCapture.Initialise(this);
-
             // set thread safe callback
-            Files.GuiUpdateIf = this;
-            ManageVHDs.GuiUpdateIf = this;
+            GuiUpdateIf = this;
 
             SetupGrid();
 
+            _initialised = true;
+
+            VeracryptManager.FindAllVolumes();
+
             // load data and grid in background
-            Thread tr = new Thread(() => PopulateGrid(pwd));
+            Thread tr = new Thread(() => PopulateGrid());
             tr.Start();
+
         }
 
         private void SetupGrid()
@@ -223,16 +310,16 @@ namespace ZiPreview
             }
         }
 
-        private void PopulateGrid(string pwd)
+        private void PopulateGrid()
         {
-            GetFiles(pwd);
+            GetFiles();
             LoadGrid();
             PopulateImageGridTS();
-            TraceTS("Files: " + gridFiles.Rows.Count.ToString());
+            Logger.TraceInfo("Files: " + gridFiles.Rows.Count.ToString());
             Files.CreateImages();
         }
 
-        private void GetFiles(string pwd)
+        private void GetFiles()
         {
             Files.Clear();
 
@@ -245,7 +332,7 @@ namespace ZiPreview
             }
             else
             {
-                ManageVHDs.AttachAllVHDs(pwd);
+                ManageVHDs.AttachAllVHDs();
                 List<string> fs = ManageVHDs.GetAllFiles();
                 Files.AddFiles(fs);
 
@@ -269,9 +356,27 @@ namespace ZiPreview
         private void GridFiles_SelectionChanged(object sender, EventArgs e)
         {
             SelectImagesViewer();
-            var row = gridFiles.SelectedRows[0];
-            FileT file = (FileT)row.Tag;
-            _images.SetSelected(row.Index);
+            DataGridViewSelectedRowCollection rows = gridFiles.SelectedRows;
+            if (rows.Count == 1)
+            {
+                DataGridViewRow r = rows[0];
+                FileT file = (FileT)r.Tag;
+
+                if (file != null)
+                {
+                    _images.SetSelected(r.Index);
+
+                    int fri = gridFiles.FirstDisplayedScrollingRowIndex;
+                    int lri = fri + gridFiles.DisplayedRowCount(false) - 1;
+
+                    if (r.Index < fri || r.Index > lri)
+                    {
+                        gridFiles.FirstDisplayedScrollingRowIndex = r.Index;
+                    }
+
+                    Text = Constants.Title + "    [" + file.Filename + "]";
+                }
+            }
         }
 
         private void Dismount()
@@ -324,6 +429,8 @@ namespace ZiPreview
                         case Keys.F5: IncNoOfImages(file); e.SuppressKeyPress = true; break;
                         case Keys.F6: DecNoOfImages(file); e.SuppressKeyPress = true; break;
                         case Keys.F7: CaptureVideo(file); e.SuppressKeyPress = true; break;
+
+                        case Keys.Delete: DeleteSelected();  break;
                     }
                 }
             }
@@ -472,17 +579,27 @@ namespace ZiPreview
         {
             if (file.HasVideo)
             {
+                //if (!VideoPlayer.IsPlaying)
+                //{ 
+                //    _images.StopPreview();
+                //    VideoPlayer.Play(file.VideoFilename, this);
+
+                //    file.Times = _properties.IncCount(file.VideoFilename, "times");
+                //    file.LastDate = _properties.DateStamp(file.VideoFilename, "lasttime");
+                //    RefreshGridRowTS(file);
+                //}
+
                 _images.StopPreview();
+
+                file.Times = _properties.IncCount(file.VideoFilename, "times");
+                file.LastDate = _properties.DateStamp(file.VideoFilename, "lasttime");
+                RefreshGridRowTS(file);
 
                 ProcessStartInfo psi = new ProcessStartInfo(file.VideoFilename);
                 psi.UseShellExecute = true;
                 psi.WindowStyle = ProcessWindowStyle.Maximized;
                 Process.Start(psi);
 
-                file.Times = _properties.IncCount(file.VideoFilename, "times");
-                file.LastDate = _properties.DateStamp(file.VideoFilename, "lasttime");
-
-                RefreshGridRowTS(file);
             }
             else if (file.HasLink)
             {
@@ -516,7 +633,9 @@ namespace ZiPreview
         }
 
         private bool CanClose()
-        { 
+        {
+            if (!_initialised) return true;
+
             _images.StopPreview();
             if (!Constants.TestMode)
             {
@@ -530,7 +649,14 @@ namespace ZiPreview
                 {
                     case DialogResult.Cancel: return false;
                     case DialogResult.Yes: Dismount(); break;
-                    case DialogResult.No: _properties.WriteProperties(); break;
+                    case DialogResult.No:
+                        {
+                            _properties.WriteProperties();
+                            ManageVHDs.GenerateDetachAllScript();
+                            MessageBox.Show("Created detach batch file in " + Constants.WorkingFolder,
+                                Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        break;
                 }
             }
             else
@@ -575,6 +701,69 @@ namespace ZiPreview
             {
                 CaptureVideo(file);
             }
+        }
+
+        private void FileDeleteMenu_Click(object sender, EventArgs e)
+        {
+            DeleteSelected();
+        }
+
+        private void DeleteSelected()
+        {
+            DataGridViewSelectedRowCollection rs = gridFiles.SelectedRows;
+            if (rs.Count == 1)
+            {
+                _images.StopPlay();
+                VerifyDelete.DoDelete((FileT)rs[0].Tag);
+                _images.Refresh();
+            }
+        }
+
+        private void ToolsCaptureMenu_Click(object sender, EventArgs e)
+        {
+            DataGridViewSelectedRowCollection rs = gridFiles.SelectedRows;
+            if (rs.Count == 1)
+            {
+                _images.StopPlay();
+                CaptureVideo((FileT)rs[0].Tag);
+            }
+        }
+
+        private void ToolsCopyFilesMenu_Click(object sender, EventArgs e)
+        {
+            if (CopyFilesThread.IsRunning())
+            {
+                CopyFilesThread.Stop();
+            }
+            else
+            {
+                CopyFiles.Show_();
+            }
+        }
+
+        private void ToolsMenu_DropDownOpening(object sender, EventArgs e)
+        {
+            if (CopyFilesThread.IsRunning())
+            {
+                toolsCopyFilesMenu.Text = "Abort copy files";
+            }
+            else
+            {
+                toolsCopyFilesMenu.Text = "Copy files ...";
+            }
+        }
+
+        private void ToolsTestHarnessMenu_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void ToolsCreateVeracryptVolumeMenu_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void FileSelectVolumesMenu_Click(object sender, EventArgs e)
+        {
+            SelectVolumes.Run();
         }
     }
 }

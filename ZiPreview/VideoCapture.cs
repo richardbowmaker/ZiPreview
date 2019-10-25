@@ -43,12 +43,14 @@ namespace ZiPreview
 
         private OBSWebsocket _obs;
         private Process _browser;
+        private string _obsCaptureDir;
 
         // video capture to determine when play is complete
         private byte[] _capture1 = null;
         private byte[] _capture2 = null;
         private Rectangle _region;
         private float _captureLastChanged; // last time capture changed in seconds
+        private float _videoStoppedAt;
 
         private enum StateT
         {
@@ -57,6 +59,7 @@ namespace ZiPreview
             Countdown,
             Recording,
             Paused,
+            VideoStopped,
             RecordingComplete,
             CaptureError
         }
@@ -67,9 +70,7 @@ namespace ZiPreview
         {
         }
 
-        public IGuiUpdate GuiUpdateIf { set; private get; }
-
-        public void Initialise(Form form)
+        public bool Initialise(Form form)
         {
             _hwin = form.Handle;
 
@@ -84,9 +85,18 @@ namespace ZiPreview
             _screenW = r.Width;
             _screenH = r.Height;
 
-            _obs = new OBSWebsocket();
-
             _state = StateT.Stopped;
+
+            try
+            {
+                _obs = new OBSWebsocket();
+                return true;
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("OBS DLLs missing", Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
         }
 
         public void Uninitialise()
@@ -129,6 +139,15 @@ namespace ZiPreview
                  notify client of capture
                */
 
+            // find a vhd drive with sufficient space
+            string drive = ManageVHDs.FindDiskWithFreeSpace(500 * 1000000);
+            if (drive.Length == 0)
+            {
+                MessageBox.Show("Insufficient drive space", 
+                    Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+
             _file = file;
             _obs.Connect(Constants.ObsConnect, Constants.ObsPassword);
 
@@ -138,7 +157,8 @@ namespace ZiPreview
                 if (!VideoCapturePrompt.Display(file.Link)) return;
 
                 _browser = Utilities.LaunchBrowser(file);
-                _obs.SetRecordingFolder(Constants.ObsCaptureDir);
+                _obsCaptureDir = drive + Constants.ObsCapturePath;
+                _obs.SetRecordingFolder(_obsCaptureDir);
 
                 // start timer state machine running
                 EnableHotKeys(true);
@@ -146,6 +166,7 @@ namespace ZiPreview
                 _ticks = 0;
                 _state = StateT.WaitForStartKey;
                 _timer.Enabled = true;
+                Logger.TraceInfo("Starting capture of " + file.Link);
             }
             else
             {
@@ -185,6 +206,7 @@ namespace ZiPreview
                             _captureLastChanged = secs;
                             _state = StateT.Recording;
                             _obs.ToggleRecording();
+                            Logger.TraceInfo("Recording started: " + secs.ToString());
                         }
                     }
                     break;
@@ -215,28 +237,39 @@ namespace ZiPreview
                             // for 5 seconds, then video has stopped playing
                             if (secs - _captureLastChanged > 5.0f)
                             {
+                                _state = StateT.VideoStopped;
                                 _obs.ToggleRecording();
+                                _videoStoppedAt = secs;
+                                Logger.TraceInfo("Video stopped playing: " + secs.ToString());
 
                                 try
                                 {
-                                    // exception occurs if browser was alreay open
+                                    // exception occurs if browser was already open
                                     _browser.Kill();
                                 }
                                 catch (InvalidOperationException)
                                 {
                                 }
+                            }
+                        }
+                    }
+                    break;
 
-                                // save file
-                                if (MoveCaptureFile())
-                                {
-                                    _state = StateT.RecordingComplete;
-                                    GuiUpdateIf.RefreshGridRowTS(_file);
-                                    GuiUpdateIf.TraceTS("Video captured: " + _file.VideoFilename);
-                                }
-                                else
-                                {
-                                    _state = StateT.CaptureError;
-                                }
+                case StateT.VideoStopped:
+                    {
+                        // give obs 2 secs to wind up before moving video file
+                        if (secs - _videoStoppedAt > 2.5)
+                        {
+                            // save file
+                            if (MoveCaptureFile())
+                            {
+                                _state = StateT.RecordingComplete;
+                                frmZiPreview.GuiUpdateIf.RefreshGridRowTS(_file);
+                                Logger.TraceInfo("Video captured: " + _file.VideoFilename);
+                            }
+                            else
+                            {
+                                _state = StateT.CaptureError;
                             }
                         }
                     }
@@ -265,45 +298,25 @@ namespace ZiPreview
         private bool MoveCaptureFile()
         {
             // get capture file and move it to new home
-            string src = GetNewestFileInDirectory(Constants.ObsCaptureDir, "*.mp4");
+            string src = GetNewestFileInDirectory(_obsCaptureDir, "*.mp4");
             if (src.Length == 0) return false;
 
-            try
-            {
-                string dest = Path.GetDirectoryName(_file.LinkFilename) + "\\" +
-                    Path.GetFileNameWithoutExtension(_file.LinkFilename) + ".mp4";
-                File.Delete(dest);
+            if (!Utilities.WaitForFileReady(src, 10000)) return false;
 
-                while (true)
-                {
-                    try
-                    {
-                        StreamReader sr = new StreamReader(src);
-                        sr.Read();
-                        sr.Close();
-                        break;
-                    }
-                    catch (IOException)
-                    {
-                        System.Threading.Thread.Sleep(200);
-                    }
-                }
-            
-                File.Move(src, dest);
+            string dest = Path.GetDirectoryName(_file.LinkFilename) + "\\" +
+                Path.GetFileNameWithoutExtension(_file.LinkFilename) + ".mp4";
+
+            if (Utilities.MoveFile(src, dest))
+            {
                 _file.VideoFilename = dest;
                 return true;
             }
-            catch (IOException e)
-            {
-                return false;
-            }
+            else return false;
         }
 
         private string GetNewestFileInDirectory(string dir, string searchPattern)
         {
             string fn = "";
-
-            // get capture file and move it to new home
             string[] fs = Directory.GetFiles(dir, searchPattern);
 
             if (fs.Length > 0)
@@ -344,13 +357,14 @@ namespace ZiPreview
                                 if (fn.Length > 0)
                                 {
                                     System.Threading.Thread.Sleep(1000);
-                                    File.Delete(fn);
+                                    Utilities.DeleteFile(fn);
                                 }
                                 break;
                             case StateT.Countdown:
                                 _browser.Kill();
                                 break;
                             case StateT.RecordingComplete:
+                            case StateT.VideoStopped:
                             case StateT.CaptureError:
                             case StateT.WaitForStartKey:
                                 break;
@@ -404,22 +418,22 @@ namespace ZiPreview
 
         private void SoundBeep()
         {
-            SoundPlayer sound = new SoundPlayer(@"D:\_Ricks\c#\ZiPreview\RunDir\beep.wav");
+            SoundPlayer sound = new SoundPlayer(Constants.BeepWav);
             sound.Play();
         }
         private void SoundBong()
         {
-            SoundPlayer sound = new SoundPlayer(@"D:\_Ricks\c#\ZiPreview\RunDir\bong.wav");
+            SoundPlayer sound = new SoundPlayer(Constants.BongWav);
             sound.Play();
         }
         private void SoundEnded()
         {
-            SoundPlayer sound = new SoundPlayer(@"D:\_Ricks\c#\ZiPreview\RunDir\ended.wav");
+            SoundPlayer sound = new SoundPlayer(Constants.EndedWav);
             sound.Play();
         }
         private void SoundError()
         {
-            SoundPlayer sound = new SoundPlayer(@"D:\_Ricks\c#\ZiPreview\RunDir\error.wav");
+            SoundPlayer sound = new SoundPlayer(Constants.ErrorWav);
             sound.Play();
         }
     }

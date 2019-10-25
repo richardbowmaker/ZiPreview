@@ -15,6 +15,8 @@ namespace ZiPreview
         int GetNoOfCols();
         string GetThumbNail(int n);
         string GetVideo(int n);
+        void ImageSelected(int n);
+        void ImagePlay(int n);
     }
 
     class ImagesViewer
@@ -73,6 +75,14 @@ namespace ZiPreview
                     // add picture box with border
                     PictureBox box = new PictureBox();
                     p.Controls.Add(box);
+
+                    box.Click += new System.EventHandler(Panel_Click);
+                    box.DoubleClick += new System.EventHandler(Panel_DoubleClick);
+                    box.Tag = c + r * _data.GetNoOfCols();
+
+                    _player.ClickEvent += _player_ClickEvent;
+                    _player.DoubleClickEvent += _player_DoubleClickEvent;
+                    _player.KeyPressEvent += _player_KeyPressEvent;
                 }
             }
 
@@ -89,6 +99,11 @@ namespace ZiPreview
         public void StopPreview()
         {
             StopPlay();
+        }
+
+        public void Refresh()
+        {
+            Draw(_top);
         }
 
         public void Draw(int top)
@@ -179,6 +194,7 @@ namespace ZiPreview
 
             if (_selected != -1)
             {
+                _player.Tag = _selected;
                 StartPlay(_selected);
             }
         }
@@ -201,7 +217,7 @@ namespace ZiPreview
             }
         }
 
-        private void StopPlay()
+        public void StopPlay()
         {
             if (_playing != -1)
             {
@@ -211,9 +227,46 @@ namespace ZiPreview
                 PictureBox box = (PictureBox)p.Controls[0];
                 box.Visible = true;
                 p.Controls.Remove(_player);
+                _player.URL = "";
                 _playing = -1;
             }
         }
+
+        private void Panel_Click(object sender, EventArgs e)
+        {
+            PictureBox box = (PictureBox)sender;
+            if (box != null)
+            {
+                int n = (int)box.Tag;
+                _data.ImageSelected(_top + n);
+            }
+
+        }
+        private void Panel_DoubleClick(object sender, EventArgs e)
+        {
+            PictureBox box = (PictureBox)sender;
+            if (box != null)
+            {
+                int n = (int)box.Tag;
+                _data.ImagePlay(_top + n);
+            }
+        }
+
+        private void _player_ClickEvent(object sender, AxWMPLib._WMPOCXEvents_ClickEvent e)
+        {
+            _data.ImageSelected(_selected);
+        }
+
+        private void _player_DoubleClickEvent(object sender, AxWMPLib._WMPOCXEvents_DoubleClickEvent e)
+        {
+            _data.ImagePlay(_selected);
+        }
+
+        private void _player_KeyPressEvent(object sender, AxWMPLib._WMPOCXEvents_KeyPressEvent e)
+        {
+            _data.ImagePlay(_selected);
+        }
+
     }
 
 }

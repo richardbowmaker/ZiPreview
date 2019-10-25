@@ -34,13 +34,14 @@ namespace ZiPreview
         private void VideoCapturePrompt_Load(object sender, EventArgs e)
         {
             lblURL.Text = _url;
+            MaximumSize = Size;
+            MinimumSize = Size;
             textInstructions.Text =
                 "1. Close this dialog\r\n" +
                 "2. Setup browser to full screen mode\r\n" +
                 "3. Press Ctrl-F8 to start recording, there will be a countdown of 5 beeps\r\n" +
                 "4. Start browser playing\r\n\r\n" +
-                "Record can be stopped with Ctrl-F9\r\n" +
-                "Record can be paused with Ctrl-F10\r\n";
+                "Record can be stopped with Ctrl-F9\r\n";
 
             chkMuteDuring.Checked = Mute;
             chkUnmuteAfter.Checked = Unmute;

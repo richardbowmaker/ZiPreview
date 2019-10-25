@@ -9,13 +9,11 @@ namespace ZiPreview
 {
     class Files
     {
-        private static List<FileT> files_ = new List<FileT>();
-
-        public static IGuiUpdate GuiUpdateIf { set; private get; }
+        private static List<FileT> _files = new List<FileT>();
 
         public static List<FileT> GetFiles()
         {
-            return files_;
+            return _files;
         }
 
         public static void AddFile(string file)
@@ -40,13 +38,13 @@ namespace ZiPreview
         private static void AddImageFile(string file)
         {
             // check to see if it already exists, shouldn't happen
-            FileT ft = files_.Find(delegate (FileT ft1) 
+            FileT ft = _files.Find(delegate (FileT ft1) 
                 { return ft1.ImageFilename.CompareTo(file) == 0; });
 
             if (ft == null)
             {
                 // check to see if an associated video file exists
-                ft = files_.Find(delegate (FileT ft1)
+                ft = _files.Find(delegate (FileT ft1)
                     { return ft1.MatchesVideo(file); });
             }
 
@@ -57,7 +55,7 @@ namespace ZiPreview
             else
             {
                 // check to see if an associated link file exists
-                ft = files_.Find(delegate (FileT ft1)
+                ft = _files.Find(delegate (FileT ft1)
                 { return ft1.ImageMatchesLink(file); });
 
                 if (ft != null)
@@ -68,20 +66,20 @@ namespace ZiPreview
                 {
                     FileT f = new FileT();
                     f.ImageFilename = file;
-                    files_.Add(f);
+                    _files.Add(f);
                 }
             }
         }
         private static void AddVideoFile(string file)
         {
             // check to see if it already exists, shouldn't happen
-            FileT ft = files_.Find(delegate (FileT ft1)
+            FileT ft = _files.Find(delegate (FileT ft1)
                 { return ft1.VideoFilename.CompareTo(file) == 0; });
 
             if (ft == null)
             {
                 // check to see if an assocaited video file exists
-                ft = files_.Find(delegate (FileT ft1)
+                ft = _files.Find(delegate (FileT ft1)
                     { return ft1.MatchesImage(file); });
             }
 
@@ -93,20 +91,20 @@ namespace ZiPreview
             {
                 FileT f = new FileT();
                 f.VideoFilename = file;
-                files_.Add(f);
+                _files.Add(f);
             }
         }
 
         private static void AddLinkFile(string file)
         {
             // check to see if it already exists, shouldn't happen
-            FileT ft = files_.Find(delegate (FileT ft1)
+            FileT ft = _files.Find(delegate (FileT ft1)
             { return ft1.VideoFilename.CompareTo(file) == 0; });
 
             if (ft == null)
             {
                 // check to see if an associated image file exists
-                ft = files_.Find(delegate (FileT ft1)
+                ft = _files.Find(delegate (FileT ft1)
                     { return ft1.LinkMatchesImage(file); });
             }
 
@@ -118,7 +116,7 @@ namespace ZiPreview
             {
                 FileT f = new FileT();
                 f.LinkFilename = file;
-                files_.Add(f);
+                _files.Add(f);
             }
         }
 
@@ -134,13 +132,13 @@ namespace ZiPreview
 
         public static void Clear()
         {
-            files_.Clear();
+            _files.Clear();
         }
 
         // creates an image preview for videos that have no image
         public static void CreateImages()
         {
-            foreach (FileT file in files_)
+            foreach (FileT file in _files)
             {
                 if (file.HasVideo && !file.HasImage)
                 {
@@ -166,12 +164,12 @@ namespace ZiPreview
                     if (File.Exists(fie + "-1.jpg"))
                     {
                         file.ImageFilename = fie + "-1.jpg";
-                        GuiUpdateIf.RefreshGridRowTS(file);
-                        GuiUpdateIf.TraceTS("Created image for: " + file.VideoFilename);
+                        frmZiPreview.GuiUpdateIf.RefreshGridRowTS(file);
+                        Logger.TraceInfo("Created image for: " + file.VideoFilename);
                     }
                     else
                     {
-                        GuiUpdateIf.TraceTS("*** Failed to create image for: " + file.VideoFilename);
+                        Logger.TraceError("*** Failed to create image for: " + file.VideoFilename);
                     }
                 }
             }
@@ -188,9 +186,27 @@ namespace ZiPreview
             // check for folder already exists
 
             string fn = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string ifn = "";
+            string lfn = "";
 
-            string ifn = Constants.FilesTargetDir + "\\file" + fn + ".jpg";
-            string lfn = Constants.FilesTargetDir + "\\file" + fn + ".lnk";
+            if (Constants.TestMode)
+            {
+                ifn = Constants.TestDir + "\\file" + fn + ".jpg";
+                lfn = Constants.TestDir + "\\file" + fn + ".lnk";
+            }
+            else
+            {
+                string drive = ManageVHDs.FindDiskWithFreeSpace(500 * 1000000);
+                if (drive.Length == 0)
+                {
+                    MessageBox.Show("Insufficient disk space",
+                        Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    return false;
+                }
+
+                ifn = drive + Constants.FilesTargetPath + "\\file" + fn + ".jpg";
+                lfn = drive + Constants.FilesTargetPath + "\\file" + fn + ".lnk";
+            }
 
             // save link and image
             StreamWriter sw = new StreamWriter(lfn);
@@ -202,12 +218,42 @@ namespace ZiPreview
             FileT file = new FileT();
             file.ImageFilename = ifn;
             file.LinkFilename = lfn;
-            files_.Add(file);
+            _files.Add(file);
 
             // add to gui
-            GuiUpdateIf.AddFileToGridTS(file);
+            frmZiPreview.GuiUpdateIf.AddFileToGridTS(file);
 
             return true;
+        }
+
+        public static void DeleteFile(FileT file, bool image, bool video, bool link)
+        {
+            if (image)
+            {
+                Utilities.DeleteFile(file.ImageFilename);
+                file.ImageFilename = "";
+            }
+            if (video)
+            {
+                Utilities.DeleteFile(file.VideoFilename);
+                file.VideoFilename = "";
+            }
+            if (link)
+            {
+                Utilities.DeleteFile(file.LinkFilename);
+                file.LinkFilename = "";
+            }
+
+            if (file.HasImage || file.HasVideo || file.HasLink)
+            {
+                frmZiPreview.GuiUpdateIf.RefreshGridRowTS(file);
+            }
+            else
+            {
+                int i = _files.FindIndex(delegate (FileT f) { return f == file; });
+                if (i != -1) _files.RemoveAt(i);
+                frmZiPreview.GuiUpdateIf.RemoveGridRowTS(file);
+            }
         }
     }
     public class FileT

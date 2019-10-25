@@ -1,0 +1,2 @@
+select vdisk file = F:\Encrypted\Vol10.vhd
+detach vdisk

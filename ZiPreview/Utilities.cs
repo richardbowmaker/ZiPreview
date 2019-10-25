@@ -18,7 +18,6 @@ namespace ZiPreview
         // before invoking it with the command 'cmd'
         // note the cmd should include the placeholder <file> for the position of script filename parameter;
         //  e.g diskpart <file> /s will be expanded eventually to cmd /C diskpart scriptfilename /s
-
         static public bool RunScript(string cmd, string filename, List<string> script)
         {
             StreamWriter sFile = new StreamWriter(filename);
@@ -48,7 +47,8 @@ namespace ZiPreview
             return ok;
         }
 
-        static public bool RunCommandSync(string cmd, string args)
+        // runs a command line and waits for it to finish
+        static public bool RunCommandSync(string cmd, string args, int timeout = 30000)
         {
             try
             {
@@ -62,7 +62,7 @@ namespace ZiPreview
 
                 if (process.Start())
                 {
-                    if (process.WaitForExit(30000))
+                    if (process.WaitForExit(timeout))
                     {
                         process.Close();
                         return true;
@@ -87,6 +87,112 @@ namespace ZiPreview
             {
                 return null;
             }
+        }
+
+        static public bool DeleteFile(string fn)
+        {
+            // delete file, no exceptions
+            try
+            {
+                File.Delete(fn);
+                Logger.TraceInfo("Deleted file: " + fn);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        static public bool MoveFile(string src, string dest)
+        {
+            // no nonsense move file
+            DeleteFile(dest);
+            try
+            {
+                File.Move(src, dest);
+                Logger.TraceInfo("Moved file " + src + " to " + dest);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        static public bool WaitForFileReady(string file, int timeout)
+        {
+            int t = 0;
+
+            while (true)
+            {
+                try
+                {
+                    StreamReader sr = new StreamReader(file);
+                    sr.Read();
+                    sr.Close();
+                    return true;
+                }
+                catch (IOException)
+                {
+                    if (t >= timeout) return false;
+                    System.Threading.Thread.Sleep(250);
+                    t += 250;
+                }
+            }
+        }
+
+        static private int count = 0;
+
+        static public long GetDriveFreeSpace(string driveName)
+        {
+            //if (Constants.TestMode)
+            //{
+            //    count++;
+            //    if (driveName.CompareTo(Constants.TestDestFolder1) == 0)
+            //    {
+            //        return count < 8 ? 1000000000 : -1;
+            //    }
+            //    //if (driveName.CompareTo(Constants.TestDestFolder2) == 0)
+            //    //{
+            //    //    return _filesCopied < 16 ? 1000000000 : -1;
+            //    //}
+            //    return 1000000000;
+            //}
+            //else
+            //{
+                foreach (DriveInfo drive in DriveInfo.GetDrives())
+                {
+                    if (drive.IsReady && drive.Name == driveName)
+                    {
+                        return drive.TotalFreeSpace;
+                    }
+                }
+                return -1;
+ //           }
+        }
+
+        public static string GetFirstFreeDrive()
+        {
+            int i = 0;
+            while( i < 26)
+            {
+                string d = (char)(i + 'J') + "\\:";
+
+                try
+                {
+                    Directory.GetFiles(d);
+                }
+                catch (Exception)
+                {
+                    // drive not used
+                    return d;
+                }
+
+                if (d.CompareTo("Z:\\:") == 0) break;
+                ++i;
+            }
+            return "";
         }
     }
 }

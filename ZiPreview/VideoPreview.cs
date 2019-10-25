@@ -108,6 +108,7 @@ namespace ZiPreview
             _timer.Enabled = false;
             _player.Ctlcontrols.stop();
 			_player.settings.mute = false;
+            _player.URL = "";
 		}
 
 		public void TickEvent(object sender, EventArgs e)
