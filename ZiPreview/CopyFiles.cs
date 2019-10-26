@@ -38,7 +38,7 @@ namespace ZiPreview
             }
             else
             {
-                List<VHD> vhds = ManageVHDs.VirtualDrives;
+                List<VHD> vhds = VhdManager.VirtualDrives;
                 foreach (VHD vhd in vhds)
                 {
                     checkedListBoxDestFolders.Items.Add(vhd.Drive + "  " + vhd.Filepath, false);

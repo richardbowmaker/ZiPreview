@@ -11,6 +11,19 @@ using System.Diagnostics;
 
 namespace ZiPreview
 {
+    // requires OBS to be installed
+    // install web socket plugin, see
+    //      https://obsproject.com/forum/threads/timed-recordings-on-obs.99727/
+    // install
+    //      https://obsproject.com/forum/resources/obs-websocket-remote-control-of-obs-studio-made-easy.466/
+    //      which takes you to https://github.com/Palakis/obs-websocket, 
+    //      project needs compiling to produce the dll obs-websocket-dotnet.dll
+    // then install
+    //      https://github.com/Palakis/obs-websocket/releases (link at bottom of page)
+    //
+    // in OBS goto the Tools>WebSockets Server Settings, and set the password as defined in the Constants class.
+    //
+
     class VideoCapture
     {
         // Win32 imports
@@ -140,7 +153,7 @@ namespace ZiPreview
                */
 
             // find a vhd drive with sufficient space
-            string drive = ManageVHDs.FindDiskWithFreeSpace(500 * 1000000);
+            string drive = VhdManager.FindDiskWithFreeSpace(500 * 1000000);
             if (drive.Length == 0)
             {
                 MessageBox.Show("Insufficient drive space", 

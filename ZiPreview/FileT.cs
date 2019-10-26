@@ -196,7 +196,7 @@ namespace ZiPreview
             }
             else
             {
-                string drive = ManageVHDs.FindDiskWithFreeSpace(500 * 1000000);
+                string drive = VhdManager.FindDiskWithFreeSpace(500 * 1000000);
                 if (drive.Length == 0)
                 {
                     MessageBox.Show("Insufficient disk space",
@@ -255,6 +255,42 @@ namespace ZiPreview
                 frmZiPreview.GuiUpdateIf.RemoveGridRowTS(file);
             }
         }
+
+        public static bool PopulateFiles(List<string> drives)
+        {
+            SortedList<string, string> fileList = new SortedList<string, string>();
+
+            foreach (string drive in drives)
+            {
+                string[] files = {};
+
+                for (int i = 0; i < 10; ++i)
+                {
+                    try
+                    {
+                        files = Directory.GetFiles(drive.Substring(0,2) + Constants.FilesPath, 
+                            "*.*", SearchOption.AllDirectories);
+                        break;
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+
+                foreach (string fn in files)
+                {
+                    string s = Path.GetDirectoryName(fn).Substring(2) + "\\" + Path.GetFileName(fn)
+                                    + fileList.Count.ToString();
+                    fileList.Add(s, fn);
+                }
+            }
+
+            foreach (KeyValuePair<string, string> kvp in fileList)
+                AddFile(kvp.Value);
+
+            return _files.Count > 0;
+        }
+
     }
     public class FileT
     {

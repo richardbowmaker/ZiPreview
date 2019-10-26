@@ -1,6 +1,6 @@
 ﻿namespace ZiPreview
 {
-    partial class VeracryptDialog
+    partial class VeracryptCreateDialog
     {
         /// <summary>
         /// Required designer variable.

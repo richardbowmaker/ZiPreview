@@ -8,7 +8,6 @@ using System.Threading;
 
 namespace ZiPreview
 {
-
     public class VHD
 	{
 		public enum VhdType { NotAttached, Attached, Unlocked }; 
@@ -18,7 +17,7 @@ namespace ZiPreview
 		public bool BitLocked { get; set; }
 	}
 
-	public class ManageVHDs
+	public class VhdManager
 	{
 		static private List<VHD> _vhds = new List<VHD>();
 		static private string _diskPart = "_ManageVhdDiskPart.txt";

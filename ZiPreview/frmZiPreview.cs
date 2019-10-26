@@ -16,6 +16,8 @@ namespace ZiPreview
         void UpdateProgressTS(int value, int max);
         void SetStatusLabelTS(string text);
         void MessageBoxTS(string text, MessageBoxButtons buttons, MessageBoxIcon icon);
+        void RedrawGrid();
+
     }
 
     public partial class frmZiPreview : Form, IGuiUpdate, ImagesViewerData
@@ -167,6 +169,18 @@ namespace ZiPreview
             }
         }
 
+        public void RedrawGrid()
+        {
+            List<string> drives = VeracryptManager.GetDrives();
+            //VhdManager.GetDrives();
+            Files.PopulateFiles(drives);
+            gridFiles.Rows.Clear();
+            LoadGrid();
+            PopulateImageGridTS();
+            Logger.TraceInfo("Files: " + gridFiles.Rows.Count.ToString());
+            Files.CreateImages();
+        }
+
         //-------------------------------------------------------------------------------
 
         //-----------------------------------------------------
@@ -198,7 +212,6 @@ namespace ZiPreview
             }
 
             // get password, quit on cancel
-            string pwd = "";
             if (!Constants.TestMode)
             {
                 Constants.Password = frmPassword.GetPassword();
@@ -218,6 +231,8 @@ namespace ZiPreview
 
             Logger.TheListBox = listTrace;
             Logger.Level = Logger.LoggerLevel.Info;
+
+            Logger.TraceInfo("Working folder = " + Constants.WorkingFolder);
 
             // prep the video capture
             _videoCapture = new VideoCapture();
@@ -258,11 +273,6 @@ namespace ZiPreview
             _initialised = true;
 
             VeracryptManager.FindAllVolumes();
-
-            // load data and grid in background
-            Thread tr = new Thread(() => PopulateGrid());
-            tr.Start();
-
         }
 
         private void SetupGrid()
@@ -325,18 +335,18 @@ namespace ZiPreview
 
             if (Constants.TestMode)
             {
-                string[] fs = Directory.GetFiles(Constants.TestDir, "*.*", SearchOption.AllDirectories);
-                Files.AddFiles(fs);
+                //string[] fs = Directory.GetFiles(Constants.TestDir, "*.*", SearchOption.AllDirectories);
+                //Files.AddFiles(fs);
 
-                _properties.AddDirectory(Constants.TestDir);
+                //_properties.AddDirectory(Constants.TestDir);
             }
             else
             {
-                ManageVHDs.AttachAllVHDs();
-                List<string> fs = ManageVHDs.GetAllFiles();
+                VhdManager.AttachAllVHDs();
+                List<string> fs = VhdManager.GetAllFiles();
                 Files.AddFiles(fs);
 
-                List <string> drs = ManageVHDs.GetDrives();
+                List <string> drs = VhdManager.GetDrives();
                 foreach (string dr in drs) _properties.AddDirectory(dr);
             }
         }
@@ -382,7 +392,8 @@ namespace ZiPreview
         private void Dismount()
         {
             _properties.WriteProperties();
-            ManageVHDs.UnattachAllVHDs();
+            VhdManager.UnattachAllVHDs();
+            VeracryptManager.UnmountVolumes();
         }
 
         private void GridFiles_KeyUp(object sender, KeyEventArgs e)
@@ -652,7 +663,7 @@ namespace ZiPreview
                     case DialogResult.No:
                         {
                             _properties.WriteProperties();
-                            ManageVHDs.GenerateDetachAllScript();
+                            VhdManager.GenerateDetachAllScript();
                             MessageBox.Show("Created detach batch file in " + Constants.WorkingFolder,
                                 Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
@@ -663,6 +674,7 @@ namespace ZiPreview
             {
                 _properties.WriteProperties();
             }
+            VeracryptManager.UnmountVolumes();
             _videoCapture.Uninitialise();
             return true;
         }
@@ -759,6 +771,7 @@ namespace ZiPreview
 
         private void ToolsCreateVeracryptVolumeMenu_Click(object sender, EventArgs e)
         {
+            VeracryptCreateDialog.Run();
         }
 
         private void FileSelectVolumesMenu_Click(object sender, EventArgs e)

@@ -100,7 +100,7 @@
     <Compile Include="HotkeyHelper.cs" />
     <Compile Include="ImagesViewer.cs" />
     <Compile Include="Logger.cs" />
-    <Compile Include="ManageVHDs.cs" />
+    <Compile Include="VhdManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyCache.cs" />
@@ -111,12 +111,13 @@
       <DependentUpon>SelectVolumes.cs</DependentUpon>
     </Compile>
     <Compile Include="Utilities.cs" />
-    <Compile Include="VeracryptDialog.cs">
+    <Compile Include="VeracryptCreateDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="VeracryptDialog.Designer.cs">
-      <DependentUpon>VeracryptDialog.cs</DependentUpon>
+    <Compile Include="VeracryptCreateDialog.Designer.cs">
+      <DependentUpon>VeracryptCreateDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="VeracryptManager.cs" />
     <Compile Include="VerifyDelete.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -161,8 +162,8 @@
     <EmbeddedResource Include="SelectVolumes.resx">
       <DependentUpon>SelectVolumes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="VeracryptDialog.resx">
-      <DependentUpon>VeracryptDialog.cs</DependentUpon>
+    <EmbeddedResource Include="VeracryptCreateDialog.resx">
+      <DependentUpon>VeracryptCreateDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="VerifyDelete.resx">
       <DependentUpon>VerifyDelete.cs</DependentUpon>

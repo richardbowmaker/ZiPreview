@@ -31,12 +31,13 @@ namespace ZiPreview
             chksVeracrypt.Items.Clear();
 
             foreach (VeracryptManager.VeracryptVolume vol in vols)
-                chksVeracrypt.Items.Add(vol, vol._selected);
+                chksVeracrypt.Items.Add(vol, vol.IsSelected);
         }
 
         private void ButOK_Click(object sender, EventArgs e)
         {
             VeracryptManager.MountSelectedVolumes();
+            frmZiPreview.GuiUpdateIf.RedrawGrid();
             Close();
         }
 
@@ -51,9 +52,9 @@ namespace ZiPreview
                 (VeracryptManager.VeracryptVolume)chksVeracrypt.Items[e.Index];
 
             // if already mounted cannot unselect it
-            if (vol._mounted) e.NewValue = CheckState.Checked;
+            if (vol.IsMounted) e.NewValue = CheckState.Checked;
             // set selected status
-            else vol._selected = e.NewValue == CheckState.Checked;
+            else vol.IsSelected = e.NewValue == CheckState.Checked;
         }
     }
 }

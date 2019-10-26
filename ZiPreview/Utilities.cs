@@ -177,7 +177,7 @@ namespace ZiPreview
             int i = 0;
             while( i < 26)
             {
-                string d = (char)(i + 'J') + "\\:";
+                string d = (char)(i + 'O') + ":\\";
 
                 try
                 {

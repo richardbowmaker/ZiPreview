@@ -1,17 +1,3 @@
-select vdisk file = E:\Encrypted\Vol01.vhd
-detach vdisk
-select vdisk file = E:\Encrypted\Vol02.vhd
-detach vdisk
-select vdisk file = E:\Encrypted\Vol03.vhd
-detach vdisk
-select vdisk file = E:\Encrypted\Vol04.vhd
-detach vdisk
-select vdisk file = E:\Encrypted\Vol05.vhd
-detach vdisk
-select vdisk file = E:\Encrypted\Vol06.vhd
-detach vdisk
-select vdisk file = E:\Encrypted\Vol07.vhd
-detach vdisk
 select vdisk file = E:\Encrypted\Vol08.vhd
 detach vdisk
 select vdisk file = E:\Encrypted\Vol09.vhd

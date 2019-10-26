@@ -43,7 +43,7 @@
             this.butOK.Name = "butOK";
             this.butOK.Size = new System.Drawing.Size(75, 23);
             this.butOK.TabIndex = 0;
-            this.butOK.Text = "Select";
+            this.butOK.Text = "Mount";
             this.butOK.UseVisualStyleBackColor = true;
             this.butOK.Click += new System.EventHandler(this.ButOK_Click);
             // 

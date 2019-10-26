@@ -22,8 +22,18 @@ namespace ZiPreview
 
         public const string ObsCapturePath = @"\ObsCapture";
         public const string FilesTargetPath = @"\Files\All";
+        public const string FilesPath = @"\Files";
 
-        public static List<string> ScanPaths = new List<string>() { "Encrypted" };
+        public static List<string> ScanPaths
+        {
+            get
+            {
+                if (TestMode)
+                    return new List<string>() { "EncryptedTest" };
+                else
+                    return new List<string>() { "Encrypted" };
+            }
+        }
 
         public static string TestDestFolder1 { get { return WorkingFolder + @"\CopyFolder1"; } }
         public static string TestDestFolder2 { get { return WorkingFolder + @"\CopyFolder2"; } }
@@ -42,7 +52,7 @@ namespace ZiPreview
             get
             {
                 if (TestMode) return WorkingFolder + @"\ObsCapture";
-                else return ManageVHDs.ObsCaptureDir;
+                else return VhdManager.ObsCaptureDir;
             }
         }
 
@@ -70,9 +80,9 @@ namespace ZiPreview
             }
         }
 
-        public static string BeepWav { get { return WorkingFolder + @"\bin\beep.wav"; } }
-        public static string BongWav { get { return WorkingFolder + @"\bin\bong.wav"; } }
-        public static string EndedWav { get { return WorkingFolder + @"\bin\ended.wav"; } }
-        public static string ErrorWav { get { return WorkingFolder + @"\bin\error.wav"; } }
+        public static string BeepWav { get { return WorkingFolder + @"\Executable\beep.wav"; } }
+        public static string BongWav { get { return WorkingFolder + @"\Executable\bong.wav"; } }
+        public static string EndedWav { get { return WorkingFolder + @"\Executable\ended.wav"; } }
+        public static string ErrorWav { get { return WorkingFolder + @"\Executable\error.wav"; } }
     }
 }
