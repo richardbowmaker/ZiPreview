@@ -38,7 +38,7 @@ namespace ZiPreview
                 try
                 {
                     string[] s = Directory.GetFiles(drive);
-                    Logger.TraceError("Veracrypt mount, drive " + drive + " already in use");
+                    Logger.Error("Veracrypt mount, drive " + drive + " already in use");
                     return false;
                 }
                 catch (Exception)
@@ -52,14 +52,14 @@ namespace ZiPreview
 
                 if (Utilities.RunCommandSync(cmd, args, 60000))
                 {
-                    Logger.TraceInfo("Mounted Veracrypt volume \"" + File + "\" as " + drive);
+                    Logger.Info("Mounted Veracrypt volume \"" + File + "\" as " + drive);
                     IsMounted = true;
                     Drive = drive;
                     return true;
                 }
                 else
                 {
-                    Logger.TraceError("Failed to mount Veracrypt volume \"" + File + "\" as " + drive);
+                    Logger.Error("Failed to mount Veracrypt volume \"" + File + "\" as " + drive);
                     return false;
                 }
             }
@@ -73,13 +73,13 @@ namespace ZiPreview
 
                     if (Utilities.RunCommandSync(cmd, args, 10000))
                     {
-                        Logger.TraceInfo("Unmounted Veracrypt volume: " + Drive);
+                        Logger.Info("Unmounted Veracrypt volume: " + Drive);
                         IsMounted = false;
                         Drive = "";
                     }
                     else
                     {
-                        Logger.TraceError("Could not unmount Veracrypt volume: " + Drive);
+                        Logger.Error("Could not unmount Veracrypt volume: " + Drive);
                     }
                 }
             }
@@ -136,10 +136,10 @@ namespace ZiPreview
             {
                 if (vol.IsSelected && !vol.IsMounted)
                 {
-                    string drive = Utilities.GetFirstFreeDrive();
-                    if (drive.Length == 0)
+                    string drive = Utilities.GetFirstUnusedDrive();
+                    if (drive == null)
                     {
-                        Logger.TraceError("Veracrypt mount, run out of drive letters");
+                        Logger.Error("Veracrypt mount, run out of drive letters");
                         return false;
                     }
                     vol.MountVolume(drive);
@@ -162,15 +162,15 @@ namespace ZiPreview
             // check file doesn't already exist
             if (File.Exists(file))
             {
-                Logger.TraceError("Veracrypt create volume, file already exists: " + file);
+                Logger.Error("Veracrypt create volume, file already exists: " + file);
                 return false;
             }
 
             // check there is anough free space
-            long fs = Utilities.GetDriveFreeSpace(file.Substring(0, 3));
-            if (fs < size + (size / 10))
+            long? fs = Utilities.GetDriveFreeSpace(file.Substring(0, 3));
+            if (!fs.HasValue || fs < size + (size / 10))
             {
-                Logger.TraceError("Veracrypt create volume, not enough disk space" + file.Substring(0, 3));
+                Logger.Error("Veracrypt create volume, not enough disk space" + file.Substring(0, 3));
                 return false;
             }
 
@@ -196,17 +196,17 @@ namespace ZiPreview
             string args = "/create " + file + " /password " + password + " /hash sha512 " +
                 "/encryption AES /filesystem NTFS /size " + sz + " /force /silent";
 
-            Logger.TraceInfo("Starting creation of Veracrypt volume " + file + " size = " + sz);
+            Logger.Info("Starting creation of Veracrypt volume " + file + " size = " + sz);
 
             if (Utilities.RunCommandSync(cmd, args, Int32.MaxValue))
             {
-                Logger.TraceInfo("Veracrypt volume " + file + " created OK");
+                Logger.Info("Veracrypt volume " + file + " created OK");
                 frmZiPreview.GuiUpdateIf.MessageBoxTS("Veracrypt volume " + file + " created OK",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
-                Logger.TraceError("Veracrypt volume creation " + file + " failed");
+                Logger.Error("Veracrypt volume creation " + file + " failed");
             }
         }
 

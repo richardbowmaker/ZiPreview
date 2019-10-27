@@ -34,11 +34,12 @@
             this.textInstructions = new System.Windows.Forms.TextBox();
             this.chkMuteDuring = new System.Windows.Forms.CheckBox();
             this.chkUnmuteAfter = new System.Windows.Forms.CheckBox();
+            this.chkDoNotShow = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // butOK
             // 
-            this.butOK.Location = new System.Drawing.Point(11, 249);
+            this.butOK.Location = new System.Drawing.Point(11, 271);
             this.butOK.Name = "butOK";
             this.butOK.Size = new System.Drawing.Size(75, 23);
             this.butOK.TabIndex = 0;
@@ -48,7 +49,7 @@
             // 
             // butCancel
             // 
-            this.butCancel.Location = new System.Drawing.Point(364, 249);
+            this.butCancel.Location = new System.Drawing.Point(364, 271);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(75, 23);
             this.butCancel.TabIndex = 1;
@@ -100,11 +101,23 @@
             this.chkUnmuteAfter.Text = "Unmute audio after recording is complete";
             this.chkUnmuteAfter.UseVisualStyleBackColor = true;
             // 
+            // chkDoNotShow
+            // 
+            this.chkDoNotShow.AutoSize = true;
+            this.chkDoNotShow.Location = new System.Drawing.Point(11, 237);
+            this.chkDoNotShow.Name = "chkDoNotShow";
+            this.chkDoNotShow.Size = new System.Drawing.Size(134, 17);
+            this.chkDoNotShow.TabIndex = 6;
+            this.chkDoNotShow.Text = "Do not show this again";
+            this.chkDoNotShow.UseVisualStyleBackColor = true;
+            this.chkDoNotShow.CheckedChanged += new System.EventHandler(this.ChkDoNotShow_CheckedChanged);
+            // 
             // VideoCapturePrompt
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(451, 284);
+            this.ClientSize = new System.Drawing.Size(451, 306);
+            this.Controls.Add(this.chkDoNotShow);
             this.Controls.Add(this.chkUnmuteAfter);
             this.Controls.Add(this.chkMuteDuring);
             this.Controls.Add(this.textInstructions);
@@ -130,5 +143,6 @@
         private System.Windows.Forms.TextBox textInstructions;
         private System.Windows.Forms.CheckBox chkMuteDuring;
         private System.Windows.Forms.CheckBox chkUnmuteAfter;
+        private System.Windows.Forms.CheckBox chkDoNotShow;
     }
 }

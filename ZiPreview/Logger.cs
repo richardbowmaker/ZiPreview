@@ -52,7 +52,7 @@ namespace ZiPreview
 
         private delegate void VoidStringType(string str, LoggerLevel level);
 
-        public static void TraceInfo(string text)
+        public static void Info(string text)
         {
             if (Level > LoggerLevel.Info) return; 
 
@@ -66,7 +66,7 @@ namespace ZiPreview
                 Trace(text, LoggerLevel.Info);
             }
         }
-        public static void TraceError(string text)
+        public static void Error(string text)
         {
             if (TheListBox.InvokeRequired)
             {

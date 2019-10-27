@@ -78,11 +78,11 @@ namespace ZiPreview
 
                 if (ok)
                 {
-                    Logger.TraceInfo("Attached virtual drive " + vhdFile + " OK");
+                    Logger.Info("Attached virtual drive " + vhdFile + " OK");
                 }
                 else
                 {
-                    Logger.TraceError("*** Failed to attach virtual drive " + vhdFile);
+                    Logger.Error("*** Failed to attach virtual drive " + vhdFile);
                     break;
                 }
 
@@ -114,7 +114,7 @@ namespace ZiPreview
 						try
 						{
 							long l = di1.AvailableFreeSpace;
-                            Logger.TraceError("*** drive not bitlocked");
+                            Logger.Error("*** drive not bitlocked");
                         }
                         catch (Exception)
 						{
@@ -149,11 +149,11 @@ namespace ZiPreview
                     if (ok)
                     {
                         vhd._Type = VHD.VhdType.Unlocked;
-                        Logger.TraceInfo("Drive unlocked: " + vhd.Filepath);
+                        Logger.Info("Drive unlocked: " + vhd.Filepath);
                     }
                     else
                     {
-                        Logger.TraceError("*** drive not unlocked: " + vhd.Filepath);
+                        Logger.Error("*** drive not unlocked: " + vhd.Filepath);
                     }
                     Utilities.DeleteFile(sfn);
 				}
@@ -176,11 +176,11 @@ namespace ZiPreview
                 if (ok)
                 {
                     vhd._Type = VHD.VhdType.NotAttached;
-                    Logger.TraceInfo("Drive detached: " + vhd.Filepath);
+                    Logger.Info("Drive detached: " + vhd.Filepath);
                 }
                 else
                 {
-                    Logger.TraceError("*** drive did not detach: " + vhd.Filepath);
+                    Logger.Error("*** drive did not detach: " + vhd.Filepath);
                     result = false;
                 }
             }
@@ -236,26 +236,6 @@ namespace ZiPreview
 									+ fileList.Count.ToString();
 					fileList.Add(s, fn);
 				}
-
-                // create obs capture directory
-                // the last drive iterated will be the one used
-                try
-                {
-                    ObsCaptureDir = vhd.Drive.Substring(0, 2) + Constants.ObsCapturePath;
-                    Directory.CreateDirectory(ObsCaptureDir);
-                    Logger.TraceInfo("OBS capture folder: " + ObsCaptureDir);
-
-                    // create target directory for new files
-                    // the last drive iterated will be the one used
-                    FilesTargetDir = vhd.Drive.Substring(0, 2) + Constants.FilesTargetPath;
-                    Directory.CreateDirectory(FilesTargetDir);
-                    Logger.TraceInfo("Files target folder: " + FilesTargetDir);
-                }
-                catch (Exception)
-                {
-                    MessageBox.Show("Failed to create folders: " + ObsCaptureDir + ", " + FilesTargetDir, 
-                        Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
             }
 
             List<string> result = new List<string>();
@@ -287,9 +267,9 @@ namespace ZiPreview
             {
                 foreach (VHD vhd in _vhds)
                 {
-                    long fs = Utilities.GetDriveFreeSpace(vhd.Drive);
+                    long? fs = Utilities.GetDriveFreeSpace(vhd.Drive);
 
-                    if (fs > bytes) return vhd.Drive;
+                    if (fs.HasValue && fs > bytes) return vhd.Drive;
                 }
                 return "";
             }

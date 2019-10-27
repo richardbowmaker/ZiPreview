@@ -37,15 +37,17 @@ namespace ZiPreview
 
         private static void AddImageFile(string file)
         {
-            // check to see if it already exists, shouldn't happen
-            FileT ft = _files.Find(delegate (FileT ft1) 
-                { return ft1.ImageFilename.CompareTo(file) == 0; });
+            // check to see if it already exists
+            FileT ft = _files.Find(ft1 => ft1.SameImage(file));
 
             if (ft == null)
             {
                 // check to see if an associated video file exists
-                ft = _files.Find(delegate (FileT ft1)
-                    { return ft1.MatchesVideo(file); });
+                ft = _files.Find(ft1 => ft1.ImageMatchesVideo(file));
+            }
+            else
+            {
+                return;
             }
 
             if (ft != null)
@@ -55,8 +57,7 @@ namespace ZiPreview
             else
             {
                 // check to see if an associated link file exists
-                ft = _files.Find(delegate (FileT ft1)
-                { return ft1.ImageMatchesLink(file); });
+                ft = _files.Find(ft1 => ft1.ImageMatchesLink(file));
 
                 if (ft != null)
                 {
@@ -72,15 +73,17 @@ namespace ZiPreview
         }
         private static void AddVideoFile(string file)
         {
-            // check to see if it already exists, shouldn't happen
-            FileT ft = _files.Find(delegate (FileT ft1)
-                { return ft1.VideoFilename.CompareTo(file) == 0; });
+            // check to see if it already exists
+            FileT ft = _files.Find(ft1 => ft1.SameVideo(file));
 
             if (ft == null)
             {
-                // check to see if an assocaited video file exists
-                ft = _files.Find(delegate (FileT ft1)
-                    { return ft1.MatchesImage(file); });
+                // check to see if an associated video file exists
+                ft = _files.Find(ft1 => ft1.VideoMatchesImage(file));
+            }
+            else
+            {
+                return;
             }
 
             if (ft != null)
@@ -97,15 +100,17 @@ namespace ZiPreview
 
         private static void AddLinkFile(string file)
         {
-            // check to see if it already exists, shouldn't happen
-            FileT ft = _files.Find(delegate (FileT ft1)
-            { return ft1.VideoFilename.CompareTo(file) == 0; });
+            // check to see if it already exists
+            FileT ft = _files.Find(ft1 => ft1.SameLink(file));
 
             if (ft == null)
             {
                 // check to see if an associated image file exists
-                ft = _files.Find(delegate (FileT ft1)
-                    { return ft1.LinkMatchesImage(file); });
+                ft = _files.Find(ft1 => ft1.LinkMatchesImage(file));
+            }
+            else
+            {
+                return;
             }
 
             if (ft != null)
@@ -165,11 +170,11 @@ namespace ZiPreview
                     {
                         file.ImageFilename = fie + "-1.jpg";
                         frmZiPreview.GuiUpdateIf.RefreshGridRowTS(file);
-                        Logger.TraceInfo("Created image for: " + file.VideoFilename);
+                        Logger.Info("Created image for: " + file.VideoFilename);
                     }
                     else
                     {
-                        Logger.TraceError("*** Failed to create image for: " + file.VideoFilename);
+                        Logger.Error("*** Failed to create image for: " + file.VideoFilename);
                     }
                 }
             }
@@ -196,23 +201,33 @@ namespace ZiPreview
             }
             else
             {
-                string drive = VhdManager.FindDiskWithFreeSpace(500 * 1000000);
-                if (drive.Length == 0)
+                // link and image should only need 250kb max
+                List<string> drives = VeracryptManager.GetDrives();
+                string drive = Utilities.FindDriveWithFreeSpace(drives, 250000);
+
+                if (drive == null)
                 {
                     MessageBox.Show("Insufficient disk space",
                         Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     return false;
                 }
 
+                if (!Utilities.MakeDirectory(Constants.FilesTargetPath))
+                    return false;
+
                 ifn = drive + Constants.FilesTargetPath + "\\file" + fn + ".jpg";
                 lfn = drive + Constants.FilesTargetPath + "\\file" + fn + ".lnk";
             }
 
-            // save link and image
+            // save link
             StreamWriter sw = new StreamWriter(lfn);
             sw.WriteLine(link);
             sw.Close();
+            Logger.Info("Saved link \"" + link + "\" to file: " + lfn);
+
+            // save image
             bitmap.Save(ifn, ImageFormat.Jpeg);
+            Logger.Info("Saved image to file: " + ifn);
 
             // create file structure and add to list
             FileT file = new FileT();
@@ -268,7 +283,7 @@ namespace ZiPreview
                 {
                     try
                     {
-                        files = Directory.GetFiles(drive.Substring(0,2) + Constants.FilesPath, 
+                        files = Directory.GetFiles(drive + Constants.FilesPath, 
                             "*.*", SearchOption.AllDirectories);
                         break;
                     }
@@ -280,7 +295,7 @@ namespace ZiPreview
                 foreach (string fn in files)
                 {
                     string s = Path.GetDirectoryName(fn).Substring(2) + "\\" + Path.GetFileName(fn)
-                                    + fileList.Count.ToString();
+                                    + fileList.Count.ToString("0000000");
                     fileList.Add(s, fn);
                 }
             }
@@ -394,14 +409,42 @@ namespace ZiPreview
             Selected = !Selected;
         }
 
-        public bool MatchesVideo(string ifile)
+        public bool SameImage(string ifile)
+        {
+            // test for the same image possible on a different volume
+            if (!HasImage) return false;
+            string if1 = ifile.Substring(3); // remove drive letter
+            string if2 = ImageFilename.Substring(3);
+            return if1.CompareTo(if2) == 0;
+        }
+
+        public bool SameVideo(string vfile)
+        {
+            // test for the same image possible on a different volume
+            if (!HasVideo) return false;
+            string vf1 = vfile.Substring(3); // remove drive letter
+            string vf2 = VideoFilename.Substring(3);
+            return vf1.CompareTo(vf2) == 0;
+        }
+
+        public bool SameLink(string lfile)
+        {
+            // test for the same image possible on a different volume
+            if (!HasLink) return false;
+            string lf1 = lfile.Substring(3); // remove drive letter
+            string lf2 = LinkFilename.Substring(3);
+            return lf1.CompareTo(lf2) == 0;
+        }
+
+        public bool ImageMatchesVideo(string ifile)
         {
             if (!HasVideo) return false;
             string ife = Path.GetDirectoryName(ifile) + "\\" + Path.GetFileNameWithoutExtension(ifile);
             string vfe = Path.GetDirectoryName(VideoFilename) + "\\" + Path.GetFileNameWithoutExtension(VideoFilename);
             return ife.CompareTo(vfe + "-1") == 0;
         }
-        public bool MatchesImage(string vfile)
+
+        public bool VideoMatchesImage(string vfile)
         {
             if (!HasImage) return false;
             string vfe = Path.GetDirectoryName(vfile) + "\\" + Path.GetFileNameWithoutExtension(vfile);
@@ -410,6 +453,7 @@ namespace ZiPreview
             if (ife.CompareTo(vfe) == 0) return true;
             return false;
         }
+
         public bool LinkMatchesImage(string lfile)
         {
             if (!HasImage) return false;
@@ -417,12 +461,60 @@ namespace ZiPreview
             string ife = Path.GetDirectoryName(ImageFilename) + "\\" + Path.GetFileNameWithoutExtension(ImageFilename);
             return ife.CompareTo(lfe) == 0;
         }
+
         public bool ImageMatchesLink(string ifile)
         {
             if (!HasLink) return false;
             string ife = Path.GetDirectoryName(ifile) + "\\" + Path.GetFileNameWithoutExtension(ifile);
             string lfe = Path.GetDirectoryName(LinkFilename) + "\\" + Path.GetFileNameWithoutExtension(LinkFilename);
             return ife.CompareTo(lfe) == 0;
+        }
+
+        // move files to a different volume, drive letter
+        public bool MoveFilesToVolume(string drive)
+        {
+            bool ok = true;
+            string idest = "";
+            string ldest = "";
+            string vdest = "";
+
+            if (HasImage)
+            {
+                idest = drive + ImageFilename.Substring(3);
+                ok = Utilities.CopyFile(ImageFilename, idest);
+            }
+            if (ok && HasLink)
+            {
+                ldest = drive + LinkFilename.Substring(3);
+                ok = Utilities.MoveFile(LinkFilename, ldest);
+            }
+            if (ok && HasVideo)
+            {
+                vdest = drive + VideoFilename.Substring(3);
+                ok = Utilities.MoveFile(VideoFilename, vdest);
+            }
+
+            if (ok)
+            {
+                // files copied ok, update the class attributes
+                // and delee theoriginal files
+                Utilities.DeleteFile(ImageFilename);
+                ImageFilename = idest;
+                Utilities.DeleteFile(LinkFilename);
+                LinkFilename = ldest;
+                Utilities.DeleteFile(VideoFilename);
+                VideoFilename = vdest;
+            }
+            else
+            {
+                Logger.Error("FileT: could not move image/link/video files");
+
+                // one of the copies failed, so unwind
+                Utilities.DeleteFile(idest);
+                Utilities.DeleteFile(ldest);
+                Utilities.DeleteFile(vdest);
+            }
+            return ok;
         }
     }
 

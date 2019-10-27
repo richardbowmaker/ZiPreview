@@ -95,7 +95,7 @@ namespace ZiPreview
             try
             {
                 File.Delete(fn);
-                Logger.TraceInfo("Deleted file: " + fn);
+                Logger.Info("Deleted file: " + fn);
                 return true;
             }
             catch (Exception)
@@ -111,15 +111,32 @@ namespace ZiPreview
             try
             {
                 File.Move(src, dest);
-                Logger.TraceInfo("Moved file " + src + " to " + dest);
+                Logger.Info("Moved file " + src + " to " + dest);
                 return true;
             }
             catch (Exception)
             {
+                Logger.Error("Error moving file " + src + " to " + dest);
                 return false;
             }
         }
 
+        static public bool CopyFile(string src, string dest)
+        {
+            // no nonsense move file
+            DeleteFile(dest);
+            try
+            {
+                File.Copy(src, dest);
+                Logger.Info("Copied file " + src + " to " + dest);
+                return true;
+            }
+            catch (Exception)
+            {
+                Logger.Error("Error copying file " + src + " to " + dest);
+                return false;
+            }
+        }
         static public bool WaitForFileReady(string file, int timeout)
         {
             int t = 0;
@@ -142,42 +159,20 @@ namespace ZiPreview
             }
         }
 
-        static private int count = 0;
-
-        static public long GetDriveFreeSpace(string driveName)
+        public static long? GetDriveFreeSpace(string file)
         {
-            //if (Constants.TestMode)
-            //{
-            //    count++;
-            //    if (driveName.CompareTo(Constants.TestDestFolder1) == 0)
-            //    {
-            //        return count < 8 ? 1000000000 : -1;
-            //    }
-            //    //if (driveName.CompareTo(Constants.TestDestFolder2) == 0)
-            //    //{
-            //    //    return _filesCopied < 16 ? 1000000000 : -1;
-            //    //}
-            //    return 1000000000;
-            //}
-            //else
-            //{
-                foreach (DriveInfo drive in DriveInfo.GetDrives())
-                {
-                    if (drive.IsReady && drive.Name == driveName)
-                    {
-                        return drive.TotalFreeSpace;
-                    }
-                }
-                return -1;
- //           }
+            long? fs = null;
+            DriveInfo drive = new DriveInfo(file);
+            if (drive.IsReady) fs = drive.TotalFreeSpace;
+            return fs;
         }
 
-        public static string GetFirstFreeDrive()
+        public static string GetFirstUnusedDrive()
         {
             int i = 0;
             while( i < 26)
             {
-                string d = (char)(i + 'O') + ":\\";
+                string d = (char)(i + 'H') + ":\\";
 
                 try
                 {
@@ -192,7 +187,40 @@ namespace ZiPreview
                 if (d.CompareTo("Z:\\:") == 0) break;
                 ++i;
             }
-            return "";
+            return null;
+        }
+
+        // check each drive in turn and return the first one that has the required
+        // no. of free bytes
+        public static string FindDriveWithFreeSpace(List<string> drives, long rqd)
+        {
+            foreach (string d in drives)
+            {
+                long? fs = GetDriveFreeSpace(d);
+                if (fs.HasValue && fs > rqd) return d;
+            }
+            return null;
+        }
+
+        public static bool MakeDirectory(string path)
+        {
+            // if the directory doesn't already exists it creates it
+            if (!Directory.Exists(path))
+            {
+                try
+                {
+                    Directory.CreateDirectory(path);
+                    Logger.Info("Created folder: " + path);
+                    return true;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    Logger.Error("Could not create folder: " + path);
+                    return false;
+                }
+ 
+            }
+            return true;
         }
     }
 }

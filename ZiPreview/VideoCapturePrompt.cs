@@ -15,6 +15,7 @@ namespace ZiPreview
         public static bool OK = true;
         public static bool Mute = true;
         public static bool Unmute = true;
+        private static bool _doNotShow = false;
         private static string _url = "";
 
         public VideoCapturePrompt()
@@ -22,8 +23,11 @@ namespace ZiPreview
             InitializeComponent();
         }
 
-        public static bool Display(string url)
+        public static bool Run(string url)
         {
+            // by pass dialog
+            if (_doNotShow) return true;
+
             _url = url;
             OK = false;
             VideoCapturePrompt form = new VideoCapturePrompt();
@@ -63,6 +67,11 @@ namespace ZiPreview
         {
             Mute = chkMuteDuring.Checked;
             Unmute = chkUnmuteAfter.Checked;
+        }
+
+        private void ChkDoNotShow_CheckedChanged(object sender, EventArgs e)
+        {
+            _doNotShow = chkDoNotShow.Checked;
         }
     }
 }

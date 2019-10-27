@@ -8,7 +8,7 @@ namespace ZiPreview
 {
     class Constants
     {
-        public const bool TestMode = true;
+        public const bool TestMode = false;
 
         public static string WorkingFolder { get; set; }
         public const string Title = "ZiPreview";
@@ -20,9 +20,9 @@ namespace ZiPreview
         public const string ObsConnect = "ws://127.0.0.1:4444";
         public const string ObsPassword = "XespePerfo0";
 
-        public const string ObsCapturePath = @"\ObsCapture";
-        public const string FilesTargetPath = @"\Files\All";
-        public const string FilesPath = @"\Files";
+        public const string ObsCapturePath = @"ObsCapture";
+        public const string FilesTargetPath = @"Files\All";
+        public const string FilesPath = @"Files";
 
         public static List<string> ScanPaths
         {
@@ -79,6 +79,9 @@ namespace ZiPreview
                 else return _password;
             }
         }
+
+        // minimum disk space required for OBS capture
+        public static long MinimumCaptureSpace = 20L * 1000000L; // 500 MB
 
         public static string BeepWav { get { return WorkingFolder + @"\Executable\beep.wav"; } }
         public static string BongWav { get { return WorkingFolder + @"\Executable\bong.wav"; } }

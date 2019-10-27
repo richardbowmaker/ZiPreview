@@ -177,7 +177,7 @@ namespace ZiPreview
             gridFiles.Rows.Clear();
             LoadGrid();
             PopulateImageGridTS();
-            Logger.TraceInfo("Files: " + gridFiles.Rows.Count.ToString());
+            Logger.Info("Files: " + gridFiles.Rows.Count.ToString());
             Files.CreateImages();
         }
 
@@ -232,7 +232,7 @@ namespace ZiPreview
             Logger.TheListBox = listTrace;
             Logger.Level = Logger.LoggerLevel.Info;
 
-            Logger.TraceInfo("Working folder = " + Constants.WorkingFolder);
+            Logger.Info("Working folder = " + Constants.WorkingFolder);
 
             // prep the video capture
             _videoCapture = new VideoCapture();
@@ -325,7 +325,7 @@ namespace ZiPreview
             GetFiles();
             LoadGrid();
             PopulateImageGridTS();
-            Logger.TraceInfo("Files: " + gridFiles.Rows.Count.ToString());
+            Logger.Info("Files: " + gridFiles.Rows.Count.ToString());
             Files.CreateImages();
         }
 
@@ -672,9 +672,9 @@ namespace ZiPreview
             }
             else
             {
+                VeracryptManager.UnmountVolumes();
                 _properties.WriteProperties();
             }
-            VeracryptManager.UnmountVolumes();
             _videoCapture.Uninitialise();
             return true;
         }

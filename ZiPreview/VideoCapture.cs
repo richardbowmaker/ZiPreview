@@ -8,6 +8,7 @@ using System.Media;
 using System.Linq;
 using System.IO;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace ZiPreview
 {
@@ -152,26 +153,64 @@ namespace ZiPreview
                  notify client of capture
                */
 
-            // find a vhd drive with sufficient space
-            string drive = VhdManager.FindDiskWithFreeSpace(500 * 1000000);
-            if (drive.Length == 0)
+            // does the volume with the link file have sufficient space for
+            // the video capture
+            string drive = file.Filename.Substring(0, 3);
+            long? free = Utilities.GetDriveFreeSpace(drive);
+
+            if (free.HasValue && free > Constants.MinimumCaptureSpace)
             {
-                MessageBox.Show("Insufficient drive space", 
-                    Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                return;
+                Logger.Info("Sufficient space on source drive: " + drive);
+            }
+            else
+            {
+                // scan all mounted volumes looking for one that has a least
+                // 500 MB free for video capture
+                List<string> drives = VeracryptManager.GetDrives();
+                drive = Utilities.FindDriveWithFreeSpace(drives, Constants.MinimumCaptureSpace);
+
+                if (drive == null)
+                {
+                    MessageBox.Show("No volumes have sufficient diskspace", Constants.Title,
+                        MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    return;
+                }
+
+                Logger.Info("Sufficient space found on another drive: " + drive);
+
+                // the image/link files will need to be moved to the same volume
+                // as the video capture volume
+                if (!file.MoveFilesToVolume(drive)) return;
+
+                // update the grid display
+                frmZiPreview.GuiUpdateIf.RefreshGridRowTS(file);
             }
 
-            _file = file;
+            // create the capture folder
+            _obsCaptureDir = drive + Constants.ObsCapturePath;
+            if (!Utilities.MakeDirectory(_obsCaptureDir)) return;
+
+            //// find a vhd drive with sufficient space
+            //string drive = VhdManager.FindDiskWithFreeSpace(500 * 1000000);
+            //if (drive.Length == 0)
+            //{
+            //    MessageBox.Show("Insufficient drive space", 
+            //        Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            //    return;
+            //}
+
             _obs.Connect(Constants.ObsConnect, Constants.ObsPassword);
 
             if (_obs.IsConnected)
             {
-                // prompt user to start playing the video
-                if (!VideoCapturePrompt.Display(file.Link)) return;
-
-                _browser = Utilities.LaunchBrowser(file);
-                _obsCaptureDir = drive + Constants.ObsCapturePath;
                 _obs.SetRecordingFolder(_obsCaptureDir);
+                _file = file;
+
+                // prompt user to start playing the video
+                if (!VideoCapturePrompt.Run(file.Link)) return;
+
+                // start the browser
+                _browser = Utilities.LaunchBrowser(file);
 
                 // start timer state machine running
                 EnableHotKeys(true);
@@ -179,11 +218,12 @@ namespace ZiPreview
                 _ticks = 0;
                 _state = StateT.WaitForStartKey;
                 _timer.Enabled = true;
-                Logger.TraceInfo("Starting capture of " + file.Link);
+                Logger.Info("Starting capture of " + file.Link);
             }
             else
             {
-                MessageBox.Show("OBS is not running", Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show("OBS is not running", Constants.Title, 
+                    MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 
@@ -219,7 +259,7 @@ namespace ZiPreview
                             _captureLastChanged = secs;
                             _state = StateT.Recording;
                             _obs.ToggleRecording();
-                            Logger.TraceInfo("Recording started: " + secs.ToString());
+                            Logger.Info("Recording started: " + secs.ToString());
                         }
                     }
                     break;
@@ -253,7 +293,7 @@ namespace ZiPreview
                                 _state = StateT.VideoStopped;
                                 _obs.ToggleRecording();
                                 _videoStoppedAt = secs;
-                                Logger.TraceInfo("Video stopped playing: " + secs.ToString());
+                                Logger.Info("Video stopped playing: " + secs.ToString());
 
                                 try
                                 {
@@ -278,7 +318,7 @@ namespace ZiPreview
                             {
                                 _state = StateT.RecordingComplete;
                                 frmZiPreview.GuiUpdateIf.RefreshGridRowTS(_file);
-                                Logger.TraceInfo("Video captured: " + _file.VideoFilename);
+                                Logger.Info("Video captured: " + _file.VideoFilename);
                             }
                             else
                             {

@@ -170,7 +170,7 @@ namespace ZiPreview
             if (Interlocked.CompareExchange(ref _state,
                 (long)StateT.StopRequest, (long)StateT.Running) != (long)StateT.Running)
             {
-                Logger.TraceError("Thread not running");
+                Logger.Error("Thread not running");
                 return false;
             }
             return true;
@@ -187,7 +187,7 @@ namespace ZiPreview
                 (long)StateT.Stopped, (long)StateT.StopRequest) == (long)StateT.StopRequest)
             {
                 Finish();
-                Logger.TraceError("*** Copy aborted ***");
+                Logger.Error("*** Copy aborted ***");
                 return true;
             }
             return false;
@@ -272,10 +272,10 @@ namespace ZiPreview
 
         private static void OutputSummary()
         {
-            Logger.TraceInfo("Total files: " + _totalFiles.ToString());
-            Logger.TraceInfo("Files copied: " + _filesCopied.ToString() + " (" + _bytesCopied + " bytes)");
-            Logger.TraceInfo("Files already existing: " + _filesExisting.ToString());
-            Logger.TraceInfo("Files not copied: " + (_totalFiles - _filesCopied).ToString());
+            Logger.Info("Total files: " + _totalFiles.ToString());
+            Logger.Info("Files copied: " + _filesCopied.ToString() + " (" + _bytesCopied + " bytes)");
+            Logger.Info("Files already existing: " + _filesExisting.ToString());
+            Logger.Info("Files not copied: " + (_totalFiles - _filesCopied).ToString());
         }
 
         private static bool FileGroupAlreadyExists(List<string> files)
@@ -305,8 +305,8 @@ namespace ZiPreview
                     if (files.Count == n)
                     {
                         // all files found in destination
-                        Logger.TraceError("File(s) already exist in: " + drive);
-                        foreach (string file in files) Logger.TraceError("    " + file);
+                        Logger.Error("File(s) already exist in: " + drive);
+                        foreach (string file in files) Logger.Error("    " + file);
                         return true;
                     }
                 }
@@ -326,14 +326,14 @@ namespace ZiPreview
 
             // find disk that has available space
             string destFolder;
-            long free;
+            long? free;
 
             while (true)
             {
                 destFolder = _destFolders[_destFolderIx];
                 free = Utilities.GetDriveFreeSpace(destFolder);
 
-                if (fsize < free) break;
+                if (free.HasValue && fsize < free) break;
                 if (++_destFolderIx >= _destFolders.Count) return false;
             }
 
@@ -346,21 +346,21 @@ namespace ZiPreview
                 if (!Directory.Exists(dpath))
                 {
                     Directory.CreateDirectory(dpath);
-                    Logger.TraceInfo("Created output directory: " + dpath);
+                    Logger.Info("Created output directory: " + dpath);
                 }
 
                 // copy file only if destination does not exist
                 if (!File.Exists(dest))
                 {
                     File.Copy(file, dest);
-                    Logger.TraceInfo("Copied " + file + " to " + dest);
+                    Logger.Info("Copied " + file + " to " + dest);
                     _filesCopied++;
                     FileInfo fi = new FileInfo(dest);
                     _bytesCopied += fi.Length;
                 }
                 else
                 {
-                    Logger.TraceError("Destination file already exists: " + dest);
+                    Logger.Error("Destination file already exists: " + dest);
                     _filesExisting++;
                 }
             }
