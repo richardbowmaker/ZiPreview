@@ -38,11 +38,11 @@ namespace ZiPreview
             }
             else
             {
-                List<VHD> vhds = VhdManager.VirtualDrives;
-                foreach (VHD vhd in vhds)
-                {
-                    checkedListBoxDestFolders.Items.Add(vhd.Drive + "  " + vhd.Filepath, false);
-                }
+                List<VhdVolume> vhds = VhdManager.Volumes;
+                vhds.ForEach(v => checkedListBoxDestFolders.Items.Add(v.Drive + "  " + v.Filepath, false));
+
+                List<VeracryptVolume> vols = VeracryptManager.Volumes;
+                vols.ForEach(v => checkedListBoxDestFolders.Items.Add(v.Drive + "  " + v.Filepath, false));
             }
         }
 

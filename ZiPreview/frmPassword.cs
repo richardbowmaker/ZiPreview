@@ -11,14 +11,16 @@ namespace ZiPreview
 {
 	public partial class frmPassword : Form
 	{
-		static private string _password;
+        private static string _password;
+        private static bool _ok;
 
-		static public string GetPassword()
+		static public bool GetPassword(ref string password)
 		{
 			_password = "";
 			frmPassword frm = new frmPassword();
 			frm.ShowDialog();
-			return _password;
+            password = _password;
+            return _ok;
 		}
 
 		public frmPassword()
@@ -47,6 +49,7 @@ namespace ZiPreview
 		private void cmdCancel_Click(object sender, EventArgs e)
 		{
 			_password = "";
+            _ok = false;
 			Close();
 		}
 
@@ -72,6 +75,7 @@ namespace ZiPreview
 
 		private void Done()
 		{
+            _ok = true;
 			_password = txtPassword.Text;
 			Close();
 		}

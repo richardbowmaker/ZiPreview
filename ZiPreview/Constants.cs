@@ -15,25 +15,15 @@ namespace ZiPreview
 
         public static string TestDir { get { return WorkingFolder + @"\TestData"; } }
 
-        public static string X {  get { return WorkingFolder + @"\"; } }
-
         public const string ObsConnect = "ws://127.0.0.1:4444";
         public const string ObsPassword = "XespePerfo0";
 
         public const string ObsCapturePath = @"ObsCapture";
         public const string FilesTargetPath = @"Files\All";
         public const string FilesPath = @"Files";
+        public static string UnmountFile { get { return WorkingFolder + @"\\unmount.bat"; } }
 
-        public static List<string> ScanPaths
-        {
-            get
-            {
-                if (TestMode)
-                    return new List<string>() { "EncryptedTest" };
-                else
-                    return new List<string>() { "Encrypted" };
-            }
-        }
+        public static List<string> ScanPaths = new List<string>() { "Encrypted" };
 
         public static string TestDestFolder1 { get { return WorkingFolder + @"\CopyFolder1"; } }
         public static string TestDestFolder2 { get { return WorkingFolder + @"\CopyFolder2"; } }
@@ -65,17 +55,16 @@ namespace ZiPreview
             get => @"C:\Program Files\VeraCrypt\VeraCrypt Format.exe";
         }
 
-        private static string _password;
+        private static string _password = "";
         public static string Password
         {
             set
             {
-                if (!TestMode) _password = value;
-                else _password = "";
+                _password = value;
             }
             get
             {
-                if (TestMode) return "dummypassword";
+                if (_password.Length == 0) return "dummypassword";
                 else return _password;
             }
         }

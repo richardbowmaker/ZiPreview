@@ -26,19 +26,23 @@ namespace ZiPreview
         private void SelectVolumes_Load(object sender, EventArgs e)
         {
             Text = Constants.Title + " Select volumes";
+            MinimumSize = Size;
 
-            List<VeracryptManager.VeracryptVolume> vols = VeracryptManager.Volumes;
+            // populate Veracrypt volumes
             chksVeracrypt.Items.Clear();
-
-            foreach (VeracryptManager.VeracryptVolume vol in vols)
+            foreach (VeracryptVolume vol in VeracryptManager.Volumes)
                 chksVeracrypt.Items.Add(vol, vol.IsSelected);
+
+            // populate Bitlocker volumes
+            chksBitLocker.Items.Clear();
+            foreach (VhdVolume vol in VhdManager.Volumes)
+                chksBitLocker.Items.Add(vol, vol.IsSelected);
         }
 
         private void ButOK_Click(object sender, EventArgs e)
         {
-            VeracryptManager.MountSelectedVolumes();
-            frmZiPreview.GuiUpdateIf.RedrawGrid();
             Close();
+            frmZiPreview.GuiUpdateIf.PopulateGrid();
         }
 
         private void ButCancel_Click(object sender, EventArgs e)
@@ -46,15 +50,34 @@ namespace ZiPreview
             Close();
         }
 
+        private void ButSelectAll_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < chksBitLocker.Items.Count; ++i)
+                chksBitLocker.SetItemChecked(i, true);
+
+            for (int i = 0; i < chksVeracrypt.Items.Count; ++i)
+                chksVeracrypt.SetItemChecked(i, true);
+        }
+
+        private void ButDeselectAll_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < chksBitLocker.Items.Count; ++i)
+                chksBitLocker.SetItemChecked(i, false);
+
+            for (int i = 0; i < chksVeracrypt.Items.Count; ++i)
+                chksVeracrypt.SetItemChecked(i, false);
+        }
+
         private void ChksVeracrypt_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            VeracryptManager.VeracryptVolume vol = 
-                (VeracryptManager.VeracryptVolume)chksVeracrypt.Items[e.Index];
+            VeracryptVolume vol = (VeracryptVolume)chksVeracrypt.Items[e.Index];
+            vol.IsSelected = e.NewValue == CheckState.Checked;
+        }
 
-            // if already mounted cannot unselect it
-            if (vol.IsMounted) e.NewValue = CheckState.Checked;
-            // set selected status
-            else vol.IsSelected = e.NewValue == CheckState.Checked;
+        private void ChksBitLocker_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            VhdVolume vol = (VhdVolume)chksBitLocker.Items[e.Index];
+            vol.IsSelected = e.NewValue == CheckState.Checked;
         }
     }
 }

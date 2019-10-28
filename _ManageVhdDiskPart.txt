@@ -1,2 +1,2 @@
-select vdisk file = E:\Encrypted\Vol10.vhd
+select vdisk file = F:\Encrypted\Vol06.vhd
 detach vdisk

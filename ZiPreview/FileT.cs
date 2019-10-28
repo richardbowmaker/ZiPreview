@@ -300,6 +300,7 @@ namespace ZiPreview
                 }
             }
 
+            _files.Clear();
             foreach (KeyValuePair<string, string> kvp in fileList)
                 AddFile(kvp.Value);
 

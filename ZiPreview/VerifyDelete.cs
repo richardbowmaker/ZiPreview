@@ -23,7 +23,7 @@ namespace ZiPreview
             InitializeComponent();
         }
 
-        public static void DoDelete(FileT file)
+        public static void Run(FileT file)
         {
             _file = file;
             VerifyDelete form = new VerifyDelete();
@@ -78,7 +78,10 @@ namespace ZiPreview
         {
             if (_preview != null) _preview.PreviewCancel();
             Close();
+            Hide();
+            Cursor.Current = Cursors.WaitCursor;
             Files.DeleteFile(_file, chkImage.Checked, chkVideo.Checked, chkLink.Checked);
+            Cursor.Current = Cursors.Default;
         }
 
         private void ChkImage_CheckedChanged(object sender, EventArgs e)

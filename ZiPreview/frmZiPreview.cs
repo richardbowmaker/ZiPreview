@@ -16,7 +16,7 @@ namespace ZiPreview
         void UpdateProgressTS(int value, int max);
         void SetStatusLabelTS(string text);
         void MessageBoxTS(string text, MessageBoxButtons buttons, MessageBoxIcon icon);
-        void RedrawGrid();
+        void PopulateGrid();
 
     }
 
@@ -169,16 +169,34 @@ namespace ZiPreview
             }
         }
 
-        public void RedrawGrid()
+        public void PopulateGrid()
         {
+            // mount the volumes
+            Cursor.Current = Cursors.WaitCursor;
+            VeracryptManager.MountSelectedVolumes();
+            VhdManager.MountSelectedVolumes();
+
+            // get all the mounted volumes
             List<string> drives = VeracryptManager.GetDrives();
-            //VhdManager.GetDrives();
+            drives.AddRange(VhdManager.GetDrives());
+
             Files.PopulateFiles(drives);
             gridFiles.Rows.Clear();
             LoadGrid();
             PopulateImageGridTS();
             Logger.Info("Files: " + gridFiles.Rows.Count.ToString());
             Files.CreateImages();
+
+            // generate unmount script
+            List<string> script = new List<string>();
+            script.AddRange(VhdManager.GenerateUnmountScript());
+            script.AddRange(VeracryptManager.GenerateUnmountScript());
+
+            StreamWriter sw = new StreamWriter(Constants.UnmountFile);
+            script.ForEach(s => sw.WriteLine(s));
+            sw.Close();
+
+            Cursor.Current = Cursors.Default;
         }
 
         //-------------------------------------------------------------------------------
@@ -198,6 +216,9 @@ namespace ZiPreview
         {
             string cd = Directory.GetCurrentDirectory();
 
+            Logger.TheListBox = listTrace;
+            Logger.Level = Logger.LoggerLevel.Info;
+
             if (Debugger.IsAttached)
             {
                 DirectoryInfo di = Directory.GetParent(cd);
@@ -210,16 +231,18 @@ namespace ZiPreview
                 DirectoryInfo di = Directory.GetParent(cd);
                 Constants.WorkingFolder = di.FullName;
             }
+            Logger.Info("Working folder = " + Constants.WorkingFolder);
 
             // get password, quit on cancel
             if (!Constants.TestMode)
             {
-                Constants.Password = frmPassword.GetPassword();
-                if (Constants.Password == "")
+                string pwd = "";
+                if (!frmPassword.GetPassword(ref pwd))
                 {
                     Close();
                     return;
                 }
+                Constants.Password = pwd;
             }
 
             Text = Constants.Title;
@@ -228,11 +251,6 @@ namespace ZiPreview
             statusProgress.Maximum = 0;
             statusProgress.Value = 0;
             statusLabel.Text = "";
-
-            Logger.TheListBox = listTrace;
-            Logger.Level = Logger.LoggerLevel.Info;
-
-            Logger.Info("Working folder = " + Constants.WorkingFolder);
 
             // prep the video capture
             _videoCapture = new VideoCapture();
@@ -270,9 +288,10 @@ namespace ZiPreview
 
             SetupGrid();
 
-            _initialised = true;
-
             VeracryptManager.FindAllVolumes();
+            VhdManager.FindAllVolumes();
+
+            _initialised = true;
         }
 
         private void SetupGrid()
@@ -320,38 +339,9 @@ namespace ZiPreview
             }
         }
 
-        private void PopulateGrid()
-        {
-            GetFiles();
-            LoadGrid();
-            PopulateImageGridTS();
-            Logger.Info("Files: " + gridFiles.Rows.Count.ToString());
-            Files.CreateImages();
-        }
-
-        private void GetFiles()
-        {
-            Files.Clear();
-
-            if (Constants.TestMode)
-            {
-                //string[] fs = Directory.GetFiles(Constants.TestDir, "*.*", SearchOption.AllDirectories);
-                //Files.AddFiles(fs);
-
-                //_properties.AddDirectory(Constants.TestDir);
-            }
-            else
-            {
-                VhdManager.AttachAllVHDs();
-                List<string> fs = VhdManager.GetAllFiles();
-                Files.AddFiles(fs);
-
-                List <string> drs = VhdManager.GetDrives();
-                foreach (string dr in drs) _properties.AddDirectory(dr);
-            }
-        }
         private void LoadGrid()
         {
+            _images.Initialise();
             List<FileT> files = Files.GetFiles();
 
             foreach (FileT file in files)
@@ -392,7 +382,7 @@ namespace ZiPreview
         private void Dismount()
         {
             _properties.WriteProperties();
-            VhdManager.UnattachAllVHDs();
+            VhdManager.UnmountVolumes();
             VeracryptManager.UnmountVolumes();
         }
 
@@ -647,10 +637,9 @@ namespace ZiPreview
         {
             if (!_initialised) return true;
 
-            _images.StopPreview();
-            if (!Constants.TestMode)
+            if (VhdManager.HasMountedVolumes || VeracryptManager.HasMountedVolumes)
             {
-                DialogResult res = MessageBox.Show("Do you want to dismount the virtual drives ?",
+                DialogResult res = MessageBox.Show("Do you want to unmount the volumes ?",
                 Constants.Title,
                 MessageBoxButtons.YesNoCancel,
                 MessageBoxIcon.Question,
@@ -660,59 +649,13 @@ namespace ZiPreview
                 {
                     case DialogResult.Cancel: return false;
                     case DialogResult.Yes: Dismount(); break;
-                    case DialogResult.No:
-                        {
-                            _properties.WriteProperties();
-                            VhdManager.GenerateDetachAllScript();
-                            MessageBox.Show("Created detach batch file in " + Constants.WorkingFolder,
-                                Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                        break;
                 }
             }
-            else
-            {
-                VeracryptManager.UnmountVolumes();
-                _properties.WriteProperties();
-            }
+
+            _images.StopPreview();
+            _properties.WriteProperties();
             _videoCapture.Uninitialise();
             return true;
-        }
-
-        private void ToolsCaptureSelectedMenu_Click(object sender, EventArgs e)
-        {
-            List<FileT> files = Files.GetFiles().FindAll(delegate (FileT file)
-                { return file.Selected && file.HasLink; });
-
-            if (files.Count == 0)
-            {
-                MessageBox.Show("No files with links have been selected", 
-                    Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                return;
-            }
-
-            foreach (FileT file in files)
-            {
-                CaptureVideo(file);
-            }
-        }
-
-        private void ToolsCaptureWithoutMenu_Click(object sender, EventArgs e)
-        {
-            List<FileT> files = Files.GetFiles().FindAll(delegate (FileT file)
-            { return !file.HasVideo && file.HasLink; });
-
-            if (files.Count == 0)
-            {
-                MessageBox.Show("No files with links are missing videos",
-                    Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                return;
-            }
-
-            foreach (FileT file in files)
-            {
-                CaptureVideo(file);
-            }
         }
 
         private void FileDeleteMenu_Click(object sender, EventArgs e)
@@ -726,7 +669,7 @@ namespace ZiPreview
             if (rs.Count == 1)
             {
                 _images.StopPlay();
-                VerifyDelete.DoDelete((FileT)rs[0].Tag);
+                VerifyDelete.Run((FileT)rs[0].Tag);
                 _images.Refresh();
             }
         }
@@ -777,6 +720,24 @@ namespace ZiPreview
         private void FileSelectVolumesMenu_Click(object sender, EventArgs e)
         {
             SelectVolumes.Run();
+        }
+
+        private void ViewMoreImagesMenu_Click(object sender, EventArgs e)
+        {
+            var rows = gridFiles.SelectedRows;
+            if (rows.Count == 1) IncNoOfImages((FileT)rows[0].Tag);
+        }
+
+        private void ViewLessImagesMenu_Click(object sender, EventArgs e)
+        {
+            var rows = gridFiles.SelectedRows;
+            if (rows.Count == 1) DecNoOfImages((FileT)rows[0].Tag);
+        }
+
+        private void ViewViewMenu_Click(object sender, EventArgs e)
+        {
+            var rows = gridFiles.SelectedRows;
+            if (rows.Count == 1) PlayFile((FileT)rows[0].Tag);
         }
     }
 }

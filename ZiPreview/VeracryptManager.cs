@@ -6,84 +6,85 @@ using System.Collections.Generic;
 
 namespace ZiPreview
 {
-    public class VeracryptManager
+    public class VeracryptVolume
     {
-        public class VeracryptVolume
+        public VeracryptVolume(string file)
         {
-            public VeracryptVolume(string file)
+            Filepath = file;
+            Drive = "";
+            IsMounted = false;
+            IsSelected = true;
+        }
+
+        public override string ToString()
+        {
+            if (IsMounted) return Filepath + " [" + Drive + "]";
+            else return Filepath;
+        }
+
+        public string Filepath;
+        public string Drive;
+        public bool IsMounted;
+        public bool IsSelected;
+
+        public bool MountVolume(string drive)
+        {
+            // quit if already mounted
+            if (IsMounted) return true;
+
+            // test to see if drive is already mounted
+            try
             {
-                File = file;
-                Drive = "";
-                IsMounted = false;
-                IsSelected = true;
+                string[] s = Directory.GetFiles(drive);
+                Logger.Error("Veracrypt mount, drive " + drive + " already in use");
+                return false;
+            }
+            catch (Exception)
+            {
             }
 
-            public override string ToString()
+            // mount:
+            //      "C:\Program Files\VeraCrypt\VeraCrypt.exe" /q /a /hash sha512 /v VolAccounts.hc /l x /p password
+            string cmd = Constants.VeracryptExe;
+            string args = "/q /a /hash sha512" + " /v \"" + Filepath + "\" /l " + drive.Substring(0, 1).ToLower() + " /p " + Constants.Password;
+
+            if (Utilities.RunCommandSync(cmd, args, 60000))
             {
-                if (IsMounted) return File + " [" + Drive + "]";
-                else return File;
+                Logger.Info("Mounted Veracrypt volume \"" + Filepath + "\" as " + drive);
+                IsMounted = true;
+                Drive = drive;
+                return true;
             }
-
-            public string File;
-            public string Drive;
-            public bool IsMounted;
-            public bool IsSelected;
-
-            public bool MountVolume(string drive)
+            else
             {
-                // quit if already mounted
-                if (IsMounted) return true;
+                Logger.Error("Failed to mount Veracrypt volume \"" + Filepath + "\" as " + drive);
+                return false;
+            }
+        }
 
-                // test to see if drive is already mounted
-                try
-                {
-                    string[] s = Directory.GetFiles(drive);
-                    Logger.Error("Veracrypt mount, drive " + drive + " already in use");
-                    return false;
-                }
-                catch (Exception)
-                {
-                }
-
-                // mount:
-                //      "C:\Program Files\VeraCrypt\VeraCrypt.exe" /q /a /hash sha512 /v VolAccounts.hc /l x /p password
+        public void Unmount()
+        {
+            if (IsMounted)
+            {
                 string cmd = Constants.VeracryptExe;
-                string args = "/q /a /hash sha512" + " /v \"" + File + "\" /l " + drive.Substring(0, 1).ToLower() + " /p " + Constants.Password;
+                string args = "/q /d " + Drive.Substring(0, 1).ToLower();
 
-                if (Utilities.RunCommandSync(cmd, args, 60000))
+                if (Utilities.RunCommandSync(cmd, args, 10000))
                 {
-                    Logger.Info("Mounted Veracrypt volume \"" + File + "\" as " + drive);
-                    IsMounted = true;
-                    Drive = drive;
-                    return true;
+                    Logger.Info("Unmounted Veracrypt volume: " + Drive);
+                    IsMounted = false;
+                    Drive = "";
                 }
                 else
                 {
-                    Logger.Error("Failed to mount Veracrypt volume \"" + File + "\" as " + drive);
-                    return false;
-                }
-            }
-
-            public void Unmount()
-            {
-                if (IsMounted)
-                {
-                    string cmd = Constants.VeracryptExe;
-                    string args = "/q /d " + Drive.Substring(0, 1).ToLower();
-
-                    if (Utilities.RunCommandSync(cmd, args, 10000))
-                    {
-                        Logger.Info("Unmounted Veracrypt volume: " + Drive);
-                        IsMounted = false;
-                        Drive = "";
-                    }
-                    else
-                    {
-                        Logger.Error("Could not unmount Veracrypt volume: " + Drive);
-                    }
+                    Logger.Error("Could not unmount Veracrypt volume: " + Drive);
                 }
             }
         }
+    }
+
+    public class VeracryptManager
+    {
 
         private static List<VeracryptVolume> _volumes = new List<VeracryptVolume>();
 
@@ -148,13 +149,31 @@ namespace ZiPreview
             return true;
         }
 
-        public static void UnmountVolumes()
+        public static void UnmountVolumes(bool all = true)
         {
             // unmount: "C:\Program Files\VeraCrypt\VeraCrypt.exe" /q /d x
             foreach (VeracryptVolume vol in _volumes)
             {
-                vol.Unmount();
+                // if all is set, then detach all mounted volumes
+                // if not all, then detach only the deselected volumes
+                if ((all && vol.IsMounted) || (!all && vol.IsMounted && !vol.IsSelected))
+                    vol.Unmount();
             }
+        }
+        static public List<string> GenerateUnmountScript()
+        {
+            List<string> script = new List<string>();
+            _volumes.ForEach(v =>
+            {
+                if (v.IsMounted) script.Add
+                ("\"" + Constants.VeracryptExe + "\" /q /d " + v.Drive.Substring(0, 1).ToLower());
+            });
+            return script;
+        }
+
+        public static bool HasMountedVolumes
+        {
+            get { return _volumes.FindIndex(v => v.IsMounted) != -1; }
         }
 
         public static bool CreateVolume(string file, long size)
