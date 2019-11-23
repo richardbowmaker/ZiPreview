@@ -34,6 +34,7 @@
             this.checkedListBoxDestFolders = new System.Windows.Forms.CheckedListBox();
             this.butCancel = new System.Windows.Forms.Button();
             this.butCopy = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // listBoxSourceFolders
@@ -92,11 +93,21 @@
             this.butCopy.UseVisualStyleBackColor = true;
             this.butCopy.Click += new System.EventHandler(this.ButCopy_Click);
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(344, 12);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(97, 13);
+            this.label2.TabIndex = 7;
+            this.label2.Text = "Destination folders:";
+            // 
             // CopyFiles
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(719, 356);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.butCopy);
             this.Controls.Add(this.butCancel);
             this.Controls.Add(this.checkedListBoxDestFolders);
@@ -123,5 +134,6 @@
         private System.Windows.Forms.CheckedListBox checkedListBoxDestFolders;
         private System.Windows.Forms.Button butCancel;
         private System.Windows.Forms.Button butCopy;
+        private System.Windows.Forms.Label label2;
     }
 }

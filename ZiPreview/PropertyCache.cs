@@ -8,8 +8,9 @@ namespace ZiPreview
 {
 	public class PropertyCache
 	{
-		private List<string> _dirs;
-		private static string _cacheFile = @"\PropertyCache.txt";
+		private static List<string> _dirs;
+        private static List<PropertyItem> _properties;
+        private static string _cacheFile = @"\PropertyCache.txt";
 
 		public class PropertyItem
 		{
@@ -28,15 +29,13 @@ namespace ZiPreview
 			}
 		}
 
-		private List<PropertyItem> _properties;
+        public static void Setup()
+        {
+            _dirs = new List<string>();
+            _properties = new List<PropertyItem>();
+        }
 
-		public PropertyCache()
-		{
-			_dirs = new List<string>();
-			_properties = new List<PropertyItem>();
-		}
-
-		public void AddDirectory(string dir)
+        public static void AddDirectory(string dir)
 		{
 			if (_dirs.Find(delegate (string s) { return s.Equals(dir); }) == null)
 			{
@@ -54,7 +53,7 @@ namespace ZiPreview
 			}
 		}
 
-		private void ReadProperties(string path)
+		private static void ReadProperties(string path)
 		{
 			string du = path.Substring(0, 2).ToUpper();
 			string[] lines = File.ReadAllLines(path);
@@ -73,7 +72,7 @@ namespace ZiPreview
 						Value = tokens[2]
 					};
 
-                    if (pis.Find(delegate (PropertyItem pi1) { return pi.Equals(pi1); }) == null)
+                    if (pis.Find(pi1 => pi.Equals(pi1)) == null)
 					{
 						pis.Add(pi);
 					}
@@ -82,7 +81,7 @@ namespace ZiPreview
 			AddProperties(pis);
 		}
 
-		public void WriteProperties()
+		public static void WriteProperties()
 		{
 			foreach (string dir in _dirs)
 			{
@@ -100,7 +99,7 @@ namespace ZiPreview
 			}
 		}
 
-		private void AddProperties(List<PropertyItem> properties)
+		private static void AddProperties(List<PropertyItem> properties)
 		{
 			foreach (PropertyItem pi in properties)
 			{
@@ -111,16 +110,16 @@ namespace ZiPreview
 			}
 		}
 
-		public string SetProperty(string file, string key, string value)
+		public static string SetProperty(string file, string key, string value)
 		{
 			PropertyItem pi = CreateProperty(file, key);
 			pi.Value = value;
             return value;
         }
 
-        public string GetProperty(string file, string key)
+        public static string GetProperty(string file, string key)
         {
-            PropertyItem pi = _properties.Find(delegate (PropertyItem pi1) { return pi1.Equals(file, key); });
+            PropertyItem pi = _properties.Find(pi1 => pi1.Equals(file, key));
 
             if (pi != null)
             {
@@ -132,9 +131,9 @@ namespace ZiPreview
             }
         }
 
-        public PropertyItem CreateProperty(string file, string key)
+        public static PropertyItem CreateProperty(string file, string key)
 		{
-			PropertyItem pi = _properties.Find(delegate (PropertyItem pi1) { return pi1.Equals(file, key); });
+            PropertyItem pi = _properties.Find(pi1 => pi1.Equals(file, key));
 
 			if (pi == null)
 			{
@@ -149,7 +148,7 @@ namespace ZiPreview
 			return pi;
 		}
 
-		public string IncCount(string file, string key)
+		public static string IncCount(string file, string key)
 		{
 			PropertyItem pi = CreateProperty(file, key);
 			int c = 0;
@@ -161,20 +160,20 @@ namespace ZiPreview
             return pi.Value;
 		}
 
-		public int GetCount(string file, string key)
+		public static int GetCount(string file, string key)
 		{
 			return Convert.ToInt32(GetProperty(file, key));
 		}
 
-        public string DateStamp(string file, string key)
+        public static string DateStamp(string file, string key)
         {
             return SetProperty(file, key, DateTime.Now.ToString("dd/MM/yyyy"));
+
         }
 
-        public string GetDateStamp(string file, string key)
+        public static string GetDateStamp(string file, string key)
         {
             return GetProperty(file, key);
         }
-
     }
 }

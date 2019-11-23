@@ -27,6 +27,7 @@ namespace ZiPreview
         {
             Text = Constants.Title + " Select volumes";
             MinimumSize = Size;
+            MaximumSize = Size;
 
             // populate Veracrypt volumes
             chksVeracrypt.Items.Clear();

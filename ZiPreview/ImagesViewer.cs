@@ -96,11 +96,6 @@ namespace ZiPreview
 
         public int Top {  get { return _top; } }
 
-        public void StopPreview()
-        {
-            StopPlay();
-        }
-
         public void Refresh()
         {
             Draw(_top);

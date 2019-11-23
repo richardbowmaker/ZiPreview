@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 using System.Drawing;
+using System.IO;
+using System;
 
 namespace ZiPreview
 {
@@ -37,6 +34,7 @@ namespace ZiPreview
         }
 
         private static ListBox _listBox = null;
+        private static string _filename = null;
         public static LoggerLevel Level { get; set; }
 
         public static ListBox TheListBox
@@ -75,8 +73,50 @@ namespace ZiPreview
             }
             else
             {
-                Trace(text, LoggerLevel.Error);
+                Trace("Error: " + text, LoggerLevel.Error);
             }
+        }
+
+        public static void WriteToFile(string filename = null)
+        {
+            if (filename == null)
+            {
+                // no filename provided, so prompt user for one
+                SaveFileDialog dlg = new SaveFileDialog();
+                if (_filename != null) dlg.FileName = _filename;
+                dlg.OverwritePrompt = true;
+                dlg.Filter = "Text file|*.txt";
+                dlg.Title = Constants.Title + ", save log to file";
+                dlg.ShowDialog();
+
+                if (dlg.FileName.Length == 0) return;
+                filename = dlg.FileName;
+            }
+
+            _filename = filename;
+
+            // write to log file
+            StreamWriter sw = new StreamWriter(filename);
+            for (int i = 0; i < _listBox.Items.Count; ++ i)
+            {
+                sw.WriteLine(_listBox.Items[i]);
+            }
+            sw.Close();
+        }
+
+        public static void Clear()
+        {
+            _listBox.Items.Clear();
+        }
+
+        public static void Assert(bool test, string description)
+        {
+            if (!test) Error(description);
+        }
+
+        public static void Assert(string s1, string s2, string description)
+        {
+            if (s1.CompareTo(s2) != 0) Error(description);
         }
 
         private static void Trace(string text, LoggerLevel level)

@@ -38,11 +38,11 @@ namespace ZiPreview
             }
             else
             {
-                List<VhdVolume> vhds = VhdManager.Volumes;
-                vhds.ForEach(v => checkedListBoxDestFolders.Items.Add(v.Drive + "  " + v.Filepath, false));
+                List<DriveVolume> drives = new List<DriveVolume>();
+                drives.AddRange(VhdManager.GetDrives());
+                drives.AddRange(VeracryptManager.GetDrives());
 
-                List<VeracryptVolume> vols = VeracryptManager.Volumes;
-                vols.ForEach(v => checkedListBoxDestFolders.Items.Add(v.Drive + "  " + v.Filepath, false));
+                drives.ForEach(v => checkedListBoxDestFolders.Items.Add(v.Drive + "  " + v.Volume, false));
             }
         }
 
@@ -53,6 +53,13 @@ namespace ZiPreview
             if (dr == DialogResult.OK)
             {
                 string fdr = _folderSelectDlg.SelectedPath;
+
+                if (fdr.Length < 4)
+                {
+                    MessageBox.Show("Must select a folder, not just a drive", Constants.Title + ", copy files",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
                 listBoxSourceFolders.Items.Add(fdr);
             }
         }
@@ -146,6 +153,11 @@ namespace ZiPreview
             _srcFolders = srcFolders;
             _destFolders = destFolders;
 
+            Logger.Info("Copying all files from:");
+            foreach (string s in _srcFolders) Logger.Info(s);
+            Logger.Info("to:");
+            foreach (string s in _destFolders) Logger.Info(s);
+
             _thread = new Thread(() => RunCopyFiles());
             _thread.Start();
 
@@ -155,7 +167,6 @@ namespace ZiPreview
         private static void Finish()
         {
             OutputSummary();
-            frmZiPreview.GuiUpdateIf.UpdateProgressTS(0, 0);
             _destFolders = null;
             _srcFolders = null;
             _thread = null;
@@ -176,9 +187,9 @@ namespace ZiPreview
             return true;
         }
 
-        public static bool IsRunning()
+        public static bool IsRunning
         {
-            return Interlocked.Read(ref _state) == (long)StateT.Running;
+            get { return Interlocked.Read(ref _state) == (long)StateT.Running; }
         }
 
         private static bool CheckStop()
@@ -253,13 +264,14 @@ namespace ZiPreview
             {
                 if (!FileGroupAlreadyExists(grp))
                 {
-                    if (!CopyFileGroup(grp))
-                    {
-                        OutputSummary();
-                        Interlocked.CompareExchange(ref _state,
-                            (long)StateT.Stopped, (long)StateT.Running);
-                        return;
-                    }
+                    CopyFileGroup(grp);
+                    //if (!CopyFileGroup(grp))
+                    //{
+                    //    OutputSummary();
+                    //    Interlocked.CompareExchange(ref _state,
+                    //        (long)StateT.Stopped, (long)StateT.Running);
+                    //    return;
+                    //}
                 }
                 UpdateProgress();
                 if (CheckStop()) return;
@@ -314,11 +326,13 @@ namespace ZiPreview
 
             return false;
         }
-        private static bool CopyFileGroup(List<string> files)
+        private static bool CopyFileGroup(List<string> group)
         {
+            _destFolderIx = 0;
+
             // get total size of files
             long fsize = 0;
-            foreach (string file in files)
+            foreach (string file in group)
             {
                 FileInfo fi = new FileInfo(file);
                 fsize += fi.Length + 2000; // disk space size will be higher
@@ -334,11 +348,16 @@ namespace ZiPreview
                 free = Utilities.GetDriveFreeSpace(destFolder);
 
                 if (free.HasValue && fsize < free) break;
-                if (++_destFolderIx >= _destFolders.Count) return false;
+                if (++_destFolderIx >= _destFolders.Count)
+                {
+                    Logger.Error("Run out of space on destination drives, files not copied:");
+                    foreach (string s in group) Logger.Error(s);
+                    return false;
+                }
             }
 
             // copy files to the group
-            foreach (string file in files)
+            foreach (string file in group)
             {
                 // create destination directory
                 string dest = destFolder + "\\" + GetFilePathNoDrive(file);

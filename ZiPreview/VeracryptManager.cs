@@ -8,21 +8,27 @@ namespace ZiPreview
 {
     public class VeracryptVolume
     {
-        public VeracryptVolume(string file)
+        public VeracryptVolume(string file, bool isSelected)
         {
-            Filepath = file;
+            Filename = file;
             Drive = "";
             IsMounted = false;
-            IsSelected = true;
+            IsSelected = isSelected;
         }
 
         public override string ToString()
         {
-            if (IsMounted) return Filepath + " [" + Drive + "]";
-            else return Filepath;
+            if (IsMounted)
+            {
+                long? fs = Utilities.GetDriveFreeSpace(Drive);
+                string fss = "";
+                if (fs.HasValue) fss = String.Format("{0:n0}", fs.Value);
+                return Filename + ", " + Drive + ", " + fss + " bytes";
+            }
+            else return Filename;
         }
 
-        public string Filepath;
+        public string Filename;
         public string Drive;
         public bool IsMounted;
         public bool IsSelected;
@@ -46,18 +52,24 @@ namespace ZiPreview
             // mount:
             //      "C:\Program Files\VeraCrypt\VeraCrypt.exe" /q /a /hash sha512 /v VolAccounts.hc /l x /p password
             string cmd = Constants.VeracryptExe;
-            string args = "/q /a /hash sha512" + " /v \"" + Filepath + "\" /l " + drive.Substring(0, 1).ToLower() + " /p " + Constants.Password;
+            string args = "/q /a /hash sha512" + " /v \"" + Filename + "\" /l " + drive.Substring(0, 1).ToLower() + " /p " + Constants.Password;
 
             if (Utilities.RunCommandSync(cmd, args, 60000))
             {
-                Logger.Info("Mounted Veracrypt volume \"" + Filepath + "\" as " + drive);
+                Logger.Info("Mounted Veracrypt volume \"" + Filename + "\" as " + drive);
                 IsMounted = true;
                 Drive = drive;
+
+                // ensure that the files directory exists
+                Utilities.MakeDirectory(drive + Constants.FilesTargetPath);
+
+                // add to property cache
+                PropertyCache.AddDirectory(drive);
                 return true;
             }
             else
             {
-                Logger.Error("Failed to mount Veracrypt volume \"" + Filepath + "\" as " + drive);
+                Logger.Error("Failed to mount Veracrypt volume \"" + Filename + "\" as " + drive);
                 return false;
             }
         }
@@ -71,13 +83,13 @@ namespace ZiPreview
 
                 if (Utilities.RunCommandSync(cmd, args, 10000))
                 {
-                    Logger.Info("Unmounted Veracrypt volume: " + Drive);
+                    Logger.Info("Unmounted Veracrypt volume: " + Drive + ", " + Filename);
                     IsMounted = false;
                     Drive = "";
                 }
                 else
                 {
-                    Logger.Error("Could not unmount Veracrypt volume: " + Drive);
+                    Logger.Error("Could not unmount Veracrypt volume: " + Drive + ", " + Filename);
                 }
             }
         }
@@ -85,7 +97,6 @@ namespace ZiPreview
 
     public class VeracryptManager
     {
-
         private static List<VeracryptVolume> _volumes = new List<VeracryptVolume>();
 
         public static List<VeracryptVolume> Volumes { get => _volumes; }
@@ -95,6 +106,37 @@ namespace ZiPreview
         {
             get => _nextFreeDrive;
             set => _nextFreeDrive = value.Substring(0, 1).ToUpper() + "\\";
+        }
+
+        public static void SetVolumes(List<VeracryptVolume> volumes)
+        {
+            // unmount volumes that are not present in the new list of volumes
+            foreach (VeracryptVolume vol in _volumes)
+            {
+                int n = volumes.FindIndex(v => v.Filename.CompareTo(vol.Filename) == 0);
+                if (n == -1)
+                {
+                    if (vol.IsMounted) vol.Unmount();
+                }
+            }
+
+            // create new volumes list 
+            foreach (VeracryptVolume vol in volumes)
+            {
+                // find it in the current list of volumes
+                int n = _volumes.FindIndex(v => v.Filename.CompareTo(vol.Filename) == 0);
+                if (n != -1)
+                {
+                    // if volume is no longer selected unmount it
+                    if (!vol.IsSelected && vol.IsMounted) vol.Unmount();
+                }
+            }
+
+            // in filename order
+            volumes.Sort((v1, v2) => v1.Filename.CompareTo(v2.Filename));
+            _volumes = volumes;
+
+            MountSelectedVolumes();
         }
 
         public static bool FindAllVolumes()
@@ -119,13 +161,13 @@ namespace ZiPreview
                 }
             }
 
-            // quit if no vhd files found
+            // quit if no hc files found
             if (volFiles.Count == 0) return false;
 
             volFiles.Sort();
             foreach (string volFile in volFiles)
             {
-                VeracryptVolume vol = new VeracryptVolume(volFile);
+                VeracryptVolume vol = new VeracryptVolume(volFile, false);
                 _volumes.Add(vol);
             }
             return true;
@@ -176,65 +218,14 @@ namespace ZiPreview
             get { return _volumes.FindIndex(v => v.IsMounted) != -1; }
         }
 
-        public static bool CreateVolume(string file, long size)
+        public static List<DriveVolume> GetDrives()
         {
-            // check file doesn't already exist
-            if (File.Exists(file))
-            {
-                Logger.Error("Veracrypt create volume, file already exists: " + file);
-                return false;
-            }
-
-            // check there is anough free space
-            long? fs = Utilities.GetDriveFreeSpace(file.Substring(0, 3));
-            if (!fs.HasValue || fs < size + (size / 10))
-            {
-                Logger.Error("Veracrypt create volume, not enough disk space" + file.Substring(0, 3));
-                return false;
-            }
-
-            // launch the volume creation task
-            Thread tr = new Thread(() => CreateVolumeTask(file, size, Constants.Password));
-            tr.Start();
-
-            return true;
-        }
-
-        private static void CreateVolumeTask(string file, long size, string password)
-        {
-            // format the size
-            string sz = "";
-            if (size > 10 * 1000 * 1000000L) sz = (size / (1000 * 1000000L)).ToString() + "G";
-            else if (size > 10 * 1000000L) sz = (size / (1000000L)).ToString() + "M";
-            else sz = size.ToString();
-
-            // create:
-            //      "C:\Program Files\VeraCrypt\VeraCrypt Format.exe" /create d:\Encrypted\test1.hc /password perfoaltze0 /hash sha512 
-            //                  /encryption AES /filesystem NTFS /size 10M /force /silent
-            string cmd = Constants.VeracryptFormatExe;
-            string args = "/create " + file + " /password " + password + " /hash sha512 " +
-                "/encryption AES /filesystem NTFS /size " + sz + " /force /silent";
-
-            Logger.Info("Starting creation of Veracrypt volume " + file + " size = " + sz);
-
-            if (Utilities.RunCommandSync(cmd, args, Int32.MaxValue))
-            {
-                Logger.Info("Veracrypt volume " + file + " created OK");
-                frmZiPreview.GuiUpdateIf.MessageBoxTS("Veracrypt volume " + file + " created OK",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
-            {
-                Logger.Error("Veracrypt volume creation " + file + " failed");
-            }
-        }
-
-        public static List<string> GetDrives()
-        {
-            List<string> drives = new List<string>();
+            List<DriveVolume> drives = new List<DriveVolume>();
             foreach (VeracryptVolume vol in _volumes)
             {
-                if (vol.IsMounted) drives.Add(vol.Drive);
+                if (vol.IsMounted)
+                    drives.Add(new DriveVolume(vol.Drive, vol.Filename + " [Veracrypt]"));
+ 
             }
             return drives;
         }

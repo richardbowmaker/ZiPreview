@@ -12,7 +12,7 @@ namespace ZiPreview
 {
     public partial class VerifyDelete : Form
     {
-        private static FileT _file;
+        private static FileSet _file;
 
         private CPicture _picture;
         private AxWMPLib.AxWindowsMediaPlayer _player;
@@ -23,7 +23,7 @@ namespace ZiPreview
             InitializeComponent();
         }
 
-        public static void Run(FileT file)
+        public static void Run(FileSet file)
         {
             _file = file;
             VerifyDelete form = new VerifyDelete();
@@ -80,7 +80,7 @@ namespace ZiPreview
             Close();
             Hide();
             Cursor.Current = Cursors.WaitCursor;
-            Files.DeleteFile(_file, chkImage.Checked, chkVideo.Checked, chkLink.Checked);
+            FileManager.DeleteFile(_file, chkImage.Checked, chkVideo.Checked, chkLink.Checked);
             Cursor.Current = Cursors.Default;
         }
 

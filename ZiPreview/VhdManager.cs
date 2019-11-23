@@ -10,27 +10,34 @@ namespace ZiPreview
 {
     public class VhdVolume
 	{
-        public VhdVolume(string file)
+        public VhdVolume(string file, string name)
         {
-            Filepath = file;
+            Filename = file;
             Drive = "";
             _Type = VhdType.NotAttached;
             IsBitLocked = false;
             IsSelected = true;
+            Name = name;
         }
 
         public enum VhdType { NotAttached, Attached, Unlocked }; 
-		public string Filepath { get; set; }
+		public string Filename { get; set; }
 		public string Drive { get; set; }
 		public VhdType _Type { get; set; }
 		public bool IsBitLocked { get; set; }
-
         public bool IsSelected { get; set; }
+        public string Name { get; set; }
 
         public override string ToString()
         {
-            if (_Type == VhdType.Unlocked) return Filepath + " [" + Drive + "]";
-            else return Filepath;
+            if (_Type == VhdType.Unlocked)
+            {
+                long? fs = Utilities.GetDriveFreeSpace(Drive);
+                string fss = "";
+                if (fs.HasValue) fss = String.Format("{0:n0}", fs.Value);
+                return Filename + " [" + Drive + ", " + Filename.Substring(0, 3) + Name + "] " + fss + " bytes";
+            }
+            else return Filename + " [" + Filename.Substring(0, 3) + Name + "]";
         }
     }
 
@@ -75,7 +82,8 @@ namespace ZiPreview
 
             foreach (string volFile in volFiles)
             {
-                VhdVolume vol = new VhdVolume(volFile);
+                DriveInfo di = new DriveInfo(volFile);
+                VhdVolume vol = new VhdVolume(volFile, di.VolumeLabel);
                 _volumes.Add(vol);
             }
             return true;
@@ -83,8 +91,6 @@ namespace ZiPreview
 
         public static bool MountSelectedVolumes()
         {
-            UnmountVolumes(false);
-
             DriveInfo[] dsOld = DriveInfo.GetDrives();
 
             foreach (VhdVolume vol in _volumes)
@@ -95,7 +101,7 @@ namespace ZiPreview
                     //    select vdisk file = D:\_Rick's\c#\ManageVHD\TestBitLockerVol.vhd
                     //    attach vdisk
                     List<string> script = new List<string>();
-                    script.Add("select vdisk file=" + vol.Filepath);
+                    script.Add("select vdisk file=" + vol.Filename);
                     script.Add("attach vdisk");
                     string sfn = Constants.WorkingFolder + "\\" + _diskPart;
                     bool ok = Utilities.RunScript("diskpart /s <file>", sfn, script);
@@ -103,11 +109,11 @@ namespace ZiPreview
 
                     if (ok)
                     {
-                        Logger.Info("Attached virtual drive " + vol.Filepath + " OK");
+                        Logger.Info("Attached virtual drive " + vol.Filename + " OK");
                     }
                     else
                     {
-                        Logger.Error("*** Failed to attach virtual drive " + vol.Filepath);
+                        Logger.Error("*** Failed to attach virtual drive " + vol.Filename);
                         break;
                     }
 
@@ -143,10 +149,10 @@ namespace ZiPreview
                 }
             }
 
-			foreach (VhdVolume vhd in _volumes)
+			foreach (VhdVolume vol in _volumes)
 			{
 				// unlock the vhd
-				if (vhd._Type == VhdVolume.VhdType.Attached)
+				if (vol._Type == VhdVolume.VhdType.Attached)
 				{
 					// create power shell script to unlock drive;
 					//     $SecureString = ConvertTo-SecureString $args[1] -AsPlainText -Force
@@ -159,17 +165,20 @@ namespace ZiPreview
 					// powershell -executionpolicy bypass -file <file> "G:" "1234567890"
 					bool ok = Utilities.RunScript(
 						"powershell -executionpolicy bypass -file <file>" + 
-						" \"" + vhd.Drive.Substring(0,2) + "\" \"" + Constants.Password + "\"", 
+						" \"" + vol.Drive.Substring(0,2) + "\" \"" + Constants.Password + "\"", 
 						sfn, script);
 
                     if (ok)
                     {
-                        vhd._Type = VhdVolume.VhdType.Unlocked;
-                        Logger.Info("Drive unlocked: " + vhd.Filepath);
+                        vol._Type = VhdVolume.VhdType.Unlocked;
+                        Logger.Info("Drive unlocked: " + vol.Filename);
+
+                        // add to property cache
+                        PropertyCache.AddDirectory(vol.Drive);
                     }
                     else
                     {
-                        Logger.Error("*** drive not unlocked: " + vhd.Filepath);
+                        Logger.Error("*** drive not unlocked: " + vol.Filename);
                     }
                     Utilities.DeleteFile(sfn);
 				}
@@ -188,18 +197,18 @@ namespace ZiPreview
                      (!all && vhd._Type != VhdVolume.VhdType.NotAttached && !vhd.IsSelected))
                 {
                     List<string> script = new List<string>();
-                    script.Add("select vdisk file = " + vhd.Filepath);
+                    script.Add("select vdisk file = " + vhd.Filename);
                     script.Add("detach vdisk");
                     string sfn = Constants.WorkingFolder + "\\" + _diskPart;
                     bool ok = Utilities.RunScript("diskpart /s <file>", sfn, script);
                     if (ok)
                     {
                         vhd._Type = VhdVolume.VhdType.NotAttached;
-                        Logger.Info("Drive detached: " + vhd.Filepath);
+                        Logger.Info("Drive detached: " + vhd.Filename);
                     }
                     else
                     {
-                        Logger.Error("*** drive did not detach: " + vhd.Filepath);
+                        Logger.Error("*** drive did not detach: " + vhd.Filename);
                         result = false;
                     }
                 }
@@ -221,7 +230,7 @@ namespace ZiPreview
             {
                 if (vhd._Type != VhdVolume.VhdType.NotAttached)
                 {
-                    sw.WriteLine("select vdisk file = " + vhd.Filepath);
+                    sw.WriteLine("select vdisk file = " + vhd.Filename);
                     sw.WriteLine("detach vdisk");
                 }
             }
@@ -274,14 +283,16 @@ namespace ZiPreview
             return result;
 		}
 
-        static public List<string> GetDrives()
+        public static List<DriveVolume> GetDrives()
         {
-            List<string> ds = new List<string>();
-            foreach (VhdVolume vhd in _volumes)
+            List<DriveVolume> drives = new List<DriveVolume>();
+            foreach (VhdVolume vol in _volumes)
             {
-                ds.Add(vhd.Drive);
+                if (vol._Type == VhdVolume.VhdType.Unlocked)
+                    drives.Add(new DriveVolume(vol.Drive, vol.Filename + " [Bitlocker]"));
+
             }
-            return ds;
+            return drives;
         }
 
         static public string FindDiskWithFreeSpace(long bytes)

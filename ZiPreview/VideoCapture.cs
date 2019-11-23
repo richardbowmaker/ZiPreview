@@ -53,7 +53,7 @@ namespace ZiPreview
         private const int _kStopHotkeyId = 1;
 
         private IntPtr _hwin;
-        private FileT _file;
+        private FileSet _file;
 
         private OBSWebsocket _obs;
         private Process _browser;
@@ -138,20 +138,11 @@ namespace ZiPreview
             }
         }
 
-        public void StartCapture(FileT file)
+        public bool IsCaptureInProgress { get { return _state != StateT.Stopped; } }
+
+        public void StartCapture(FileSet file)
         {
-            /*
-                 check for obs running
-                 launch browser
-                 message box, get user to prepare, clicks ok or cancel
-                 wait for hot key
-                 beep 5 times
-                 bong once
-                 start obs recording, set working directory
-                 monitor screen capture for stopped
-                 find the recorded file
-                 notify client of capture
-               */
+            if (IsCaptureInProgress) return;
 
             // does the volume with the link file have sufficient space for
             // the video capture
@@ -166,38 +157,34 @@ namespace ZiPreview
             {
                 // scan all mounted volumes looking for one that has a least
                 // 500 MB free for video capture
-                List<string> drives = VeracryptManager.GetDrives();
-                drive = Utilities.FindDriveWithFreeSpace(drives, Constants.MinimumCaptureSpace);
+                List<DriveVolume> drives = new List<DriveVolume>();
+                drives.AddRange(VeracryptManager.GetDrives());
+                drives.AddRange(VhdManager.GetDrives());
+                DriveVolume d = Utilities.FindDriveWithFreeSpace(drives, Constants.MinimumCaptureSpace);
 
-                if (drive == null)
+                if (d == null)
                 {
                     MessageBox.Show("No volumes have sufficient diskspace", Constants.Title,
                         MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     return;
                 }
 
-                Logger.Info("Sufficient space found on another drive: " + drive);
+                Logger.Info("Sufficient space found on another drive: " + d.Drive);
 
                 // the image/link files will need to be moved to the same volume
                 // as the video capture volume
-                if (!file.MoveFilesToVolume(drive)) return;
+                if (!file.MoveFilesToVolume(d.Drive)) return;
 
                 // update the grid display
                 frmZiPreview.GuiUpdateIf.RefreshGridRowTS(file);
+
+                drive = d.Drive;
             }
 
             // create the capture folder
             _obsCaptureDir = drive + Constants.ObsCapturePath;
             if (!Utilities.MakeDirectory(_obsCaptureDir)) return;
-
-            //// find a vhd drive with sufficient space
-            //string drive = VhdManager.FindDiskWithFreeSpace(500 * 1000000);
-            //if (drive.Length == 0)
-            //{
-            //    MessageBox.Show("Insufficient drive space", 
-            //        Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-            //    return;
-            //}
+            Logger.Info("Capturing to folder: " + _obsCaptureDir);
 
             _obs.Connect(Constants.ObsConnect, Constants.ObsPassword);
 
@@ -225,6 +212,17 @@ namespace ZiPreview
                 MessageBox.Show("OBS is not running", Constants.Title, 
                     MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
+        }
+
+        public void StopCapture()
+        {
+            _timer.Enabled = false;
+            if (_state == StateT.Recording)
+            {
+                _obs.ToggleRecording();
+                _browser.Kill();
+            }
+            _state = StateT.Stopped;
         }
 
         private void TimerTick(object sender, EventArgs e)

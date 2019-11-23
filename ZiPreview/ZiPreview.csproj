@@ -84,7 +84,8 @@
       <DependentUpon>CopyFiles.cs</DependentUpon>
     </Compile>
     <Compile Include="CPicture.cs" />
-    <Compile Include="FileT.cs" />
+    <Compile Include="FileManager.cs" />
+    <Compile Include="FileSet.cs" />
     <Compile Include="frmZiPreview.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -100,6 +101,12 @@
     <Compile Include="HotkeyHelper.cs" />
     <Compile Include="ImagesViewer.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="SelectDrives.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SelectDrives.Designer.cs">
+      <DependentUpon>SelectDrives.cs</DependentUpon>
+    </Compile>
     <Compile Include="VhdManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -111,12 +118,6 @@
       <DependentUpon>SelectVolumes.cs</DependentUpon>
     </Compile>
     <Compile Include="Utilities.cs" />
-    <Compile Include="VeracryptCreateDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="VeracryptCreateDialog.Designer.cs">
-      <DependentUpon>VeracryptCreateDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="VeracryptManager.cs" />
     <Compile Include="VerifyDelete.cs">
       <SubType>Form</SubType>
@@ -159,11 +160,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="SelectDrives.resx">
+      <DependentUpon>SelectDrives.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="SelectVolumes.resx">
       <DependentUpon>SelectVolumes.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="VeracryptCreateDialog.resx">
-      <DependentUpon>VeracryptCreateDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="VerifyDelete.resx">
       <DependentUpon>VerifyDelete.cs</DependentUpon>
@@ -209,4 +210,10 @@
     </COMReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /y $(TargetPath) $(SolutionDir)\Executable
+copy /y $(SolutionDir)\Executable\Newtonsoft.Json.dll $(TargetDir)
+copy /y $(SolutionDir)\Executable\websocket-sharp.dll $(TargetDir)
+</PostBuildEvent>
+  </PropertyGroup>
 </Project>

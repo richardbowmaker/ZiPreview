@@ -77,14 +77,16 @@ namespace ZiPreview
             }
         }
 
-        static public Process LaunchBrowser(FileT file)
+        static public Process LaunchBrowser(FileSet file)
         {
             if (file.HasLink)
             {
+                Logger.Info("Launching browser: " + Constants.Browser + ", link: " + file.Link);
                 return Process.Start(Constants.Browser, file.Link);
             }
             else
             {
+                Logger.Error("Launch browser but no link specified");
                 return null;
             }
         }
@@ -192,11 +194,11 @@ namespace ZiPreview
 
         // check each drive in turn and return the first one that has the required
         // no. of free bytes
-        public static string FindDriveWithFreeSpace(List<string> drives, long rqd)
+        public static DriveVolume FindDriveWithFreeSpace(List<DriveVolume> drives, long rqd)
         {
-            foreach (string d in drives)
+            foreach (DriveVolume d in drives)
             {
-                long? fs = GetDriveFreeSpace(d);
+                long? fs = GetDriveFreeSpace(d.Drive);
                 if (fs.HasValue && fs > rqd) return d;
             }
             return null;
@@ -221,6 +223,15 @@ namespace ZiPreview
  
             }
             return true;
+        }
+
+        public static void CreateFileIfNotExist(string file)
+        {
+            if (!File.Exists(file))
+            {
+                File.Create(file);
+                Logger.Info("Created file: " + file);
+            }
         }
     }
 }

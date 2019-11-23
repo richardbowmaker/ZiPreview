@@ -21,9 +21,21 @@ namespace ZiPreview
         public const string ObsCapturePath = @"ObsCapture";
         public const string FilesTargetPath = @"Files\All";
         public const string FilesPath = @"Files";
+        public static string PropertiesFile = @"\PropertyCache.txt";
+        public static string PropertiesFile1 = @"\PropertyCache1.txt";
+
         public static string UnmountFile { get { return WorkingFolder + @"\\unmount.bat"; } }
 
-        public static List<string> ScanPaths = new List<string>() { "Encrypted" };
+        public static List<string> ScanPaths
+        {
+            get
+            {
+                if (TestMode)
+                    return new List<string>() { "Encrypted", "EncryptedTest" };
+                else
+                    return new List<string>() { "Encrypted" };
+            }
+        }
 
         public static string TestDestFolder1 { get { return WorkingFolder + @"\CopyFolder1"; } }
         public static string TestDestFolder2 { get { return WorkingFolder + @"\CopyFolder2"; } }
@@ -33,7 +45,8 @@ namespace ZiPreview
             get
             {
                 if (TestMode) return @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe";
-                else return WorkingFolder + @"\Tor Browser\Browser\firefox.exe";
+                //else return WorkingFolder + @"\Tor Browser\Browser\firefox.exe";
+                else return WorkingFolder + @"\Tor Browser\Tor - Shortcut.lnk";
             }
         }
 
@@ -70,7 +83,7 @@ namespace ZiPreview
         }
 
         // minimum disk space required for OBS capture
-        public static long MinimumCaptureSpace = 20L * 1000000L; // 500 MB
+        public static long MinimumCaptureSpace = 500L * 1000000L; // 500 MB
 
         public static string BeepWav { get { return WorkingFolder + @"\Executable\beep.wav"; } }
         public static string BongWav { get { return WorkingFolder + @"\Executable\bong.wav"; } }

@@ -41,7 +41,7 @@
             // butOK
             // 
             this.butOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.butOK.Location = new System.Drawing.Point(20, 473);
+            this.butOK.Location = new System.Drawing.Point(20, 509);
             this.butOK.Name = "butOK";
             this.butOK.Size = new System.Drawing.Size(75, 23);
             this.butOK.TabIndex = 0;
@@ -52,7 +52,7 @@
             // butCancel
             // 
             this.butCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.butCancel.Location = new System.Drawing.Point(432, 473);
+            this.butCancel.Location = new System.Drawing.Point(635, 509);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(75, 23);
             this.butCancel.TabIndex = 1;
@@ -73,7 +73,7 @@
             // 
             this.lblVeracrypt.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblVeracrypt.AutoSize = true;
-            this.lblVeracrypt.Location = new System.Drawing.Point(282, 16);
+            this.lblVeracrypt.Location = new System.Drawing.Point(357, 16);
             this.lblVeracrypt.Name = "lblVeracrypt";
             this.lblVeracrypt.Size = new System.Drawing.Size(55, 13);
             this.lblVeracrypt.TabIndex = 3;
@@ -87,7 +87,7 @@
             this.chksBitLocker.FormattingEnabled = true;
             this.chksBitLocker.Location = new System.Drawing.Point(20, 32);
             this.chksBitLocker.Name = "chksBitLocker";
-            this.chksBitLocker.Size = new System.Drawing.Size(222, 424);
+            this.chksBitLocker.Size = new System.Drawing.Size(316, 454);
             this.chksBitLocker.TabIndex = 4;
             this.chksBitLocker.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.ChksBitLocker_ItemCheck);
             // 
@@ -97,15 +97,15 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.chksVeracrypt.CheckOnClick = true;
             this.chksVeracrypt.FormattingEnabled = true;
-            this.chksVeracrypt.Location = new System.Drawing.Point(285, 32);
+            this.chksVeracrypt.Location = new System.Drawing.Point(360, 32);
             this.chksVeracrypt.Name = "chksVeracrypt";
-            this.chksVeracrypt.Size = new System.Drawing.Size(222, 424);
+            this.chksVeracrypt.Size = new System.Drawing.Size(350, 454);
             this.chksVeracrypt.TabIndex = 5;
             this.chksVeracrypt.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.ChksVeracrypt_ItemCheck);
             // 
             // butSelectAll
             // 
-            this.butSelectAll.Location = new System.Drawing.Point(176, 474);
+            this.butSelectAll.Location = new System.Drawing.Point(231, 509);
             this.butSelectAll.Name = "butSelectAll";
             this.butSelectAll.Size = new System.Drawing.Size(66, 22);
             this.butSelectAll.TabIndex = 6;
@@ -115,7 +115,7 @@
             // 
             // butDeselectAll
             // 
-            this.butDeselectAll.Location = new System.Drawing.Point(285, 473);
+            this.butDeselectAll.Location = new System.Drawing.Point(410, 509);
             this.butDeselectAll.Name = "butDeselectAll";
             this.butDeselectAll.Size = new System.Drawing.Size(82, 23);
             this.butDeselectAll.TabIndex = 7;
@@ -127,7 +127,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(527, 508);
+            this.ClientSize = new System.Drawing.Size(730, 544);
             this.Controls.Add(this.butDeselectAll);
             this.Controls.Add(this.butSelectAll);
             this.Controls.Add(this.chksVeracrypt);
@@ -136,7 +136,10 @@
             this.Controls.Add(this.lblBitLocker);
             this.Controls.Add(this.butCancel);
             this.Controls.Add(this.butOK);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "SelectVolumes";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "SelectVolumes";
             this.Load += new System.EventHandler(this.SelectVolumes_Load);
             this.ResumeLayout(false);
