@@ -3,6 +3,7 @@
 *.avi
 *.hc
 *.vhd
+*.exe
 TestData
 TestData - Copy
 ObsCapture
