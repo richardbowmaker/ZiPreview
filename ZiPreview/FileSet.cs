@@ -11,20 +11,18 @@ namespace ZiPreview
         public string VideoFilename { get; set; }
         public string LinkFilename { get; set; }
         public string Volume { get; set; }
-        public string LastDate { get; set; }
-        public string Times { get; set; }
+        public string LastDate { get { return GetProperty("lasttime"); } }
+        public string Times { get { return GetProperty("times"); } }
         public bool Selected { get; set; }
 
         public List<Property> Properties { get; set; }
-
+    
         public FileSet()
         {
             ImageFilename = "";
             VideoFilename = "";
             LinkFilename = "";
             Volume = "";
-            LastDate = "";
-            Times = "";
             Selected = false;
             Properties = new List<Property>();
         }
@@ -225,23 +223,25 @@ namespace ZiPreview
         // any of the image/link/video
         public bool MatchesAny(string file)
         {
-            string fne = FilenameNoDriveAndExtensionLc(file);
+            string fne = FilenameNoDriveAndExtension(file);
+            if (fne.EndsWith("-1")) fne = fne.Substring(0, fne.Length - 2);
+
             if (HasImage)
             {
-                string f = FilenameNoDriveAndExtensionLc(ImageFilename);
+                string f = FilenameNoDriveAndExtension(ImageFilename);
                 if (f.EndsWith("-1")) f = f.Substring(0, f.Length - 2);
-                return (fne.CompareTo(f) == 0);
+                return (String.Compare(fne, f, true) == 0);
             }
-            if (HasVideo) return (fne.CompareTo(FilenameNoDriveAndExtensionLc(VideoFilename)) == 0);
-            if (HasLink) return (fne.CompareTo(FilenameNoDriveAndExtensionLc(LinkFilename)) == 0);
+            if (HasVideo) return (String.Compare(fne, FilenameNoDriveAndExtension(VideoFilename), true) == 0);
+            if (HasLink) return (String.Compare(fne, FilenameNoDriveAndExtension(LinkFilename), true) == 0);
+
             return false;
         }
 
-        private string FilenameNoDriveAndExtensionLc(string file)
+        private string FilenameNoDriveAndExtension(string file)
         {
             string fne = Path.GetDirectoryName(file) + "\\" +
-                        Path.GetFileNameWithoutExtension(file);
-            fne = fne.ToLower();
+                         Path.GetFileNameWithoutExtension(file);
             int n = fne.IndexOf(":");
             if (n != -1) fne = fne.Substring(n + 1);
             return fne;
@@ -349,9 +349,11 @@ namespace ZiPreview
         {
             foreach (Property p in Properties)
             {
-                string fn = Filename;
-                int n = fn.IndexOf(":");
-                if (n > 0) fn = fn.Substring(n + 1);
+                string fn = FilenameNoDriveAndExtension(Filename);
+
+                // remove trailing -1 if it is image filename
+                if (fn.EndsWith("-1")) fn = fn.Substring(0, fn.Length - 2);
+
                 sw.WriteLine(fn + ";" + p.Key + ";" + p.Value);
             }
         }

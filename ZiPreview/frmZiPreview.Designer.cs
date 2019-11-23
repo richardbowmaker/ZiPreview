@@ -56,6 +56,7 @@
             this.toolsSaveLogMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsClearLogMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsRunTestsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewRandomPageMenu = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitVertical)).BeginInit();
             this.splitVertical.Panel1.SuspendLayout();
             this.splitVertical.Panel2.SuspendLayout();
@@ -222,7 +223,8 @@
             this.viewViewMenu,
             this.viewNextSelectedMenu,
             this.viewPreviousSelectedMenu,
-            this.viewLinkMenu});
+            this.viewLinkMenu,
+            this.viewRandomPageMenu});
             this.viewMenu.Name = "viewMenu";
             this.viewMenu.Size = new System.Drawing.Size(55, 24);
             this.viewMenu.Text = "View";
@@ -266,7 +268,7 @@
             // 
             this.viewLinkMenu.Name = "viewLinkMenu";
             this.viewLinkMenu.Size = new System.Drawing.Size(272, 26);
-            this.viewLinkMenu.Text = "Link";
+            this.viewLinkMenu.Text = "Goto link (F4)";
             this.viewLinkMenu.Click += new System.EventHandler(this.viewLinkMenu_Click);
             // 
             // toolsMenu
@@ -324,6 +326,13 @@
             this.toolsRunTestsMenu.Size = new System.Drawing.Size(227, 26);
             this.toolsRunTestsMenu.Text = "Run Tests";
             this.toolsRunTestsMenu.Click += new System.EventHandler(this.toolsRunTestsMenu_Click);
+            // 
+            // viewRandomPageMenu
+            // 
+            this.viewRandomPageMenu.Name = "viewRandomPageMenu";
+            this.viewRandomPageMenu.Size = new System.Drawing.Size(272, 26);
+            this.viewRandomPageMenu.Text = "Random page (F3)";
+            this.viewRandomPageMenu.Click += new System.EventHandler(this.viewRandomPageMenu_Click);
             // 
             // frmZiPreview
             // 
@@ -385,6 +394,7 @@
         private System.Windows.Forms.ToolStripMenuItem fileSelectMenu;
         private System.Windows.Forms.ToolStripMenuItem viewLinkMenu;
         private System.Windows.Forms.ToolStripMenuItem toolsRunTestsMenu;
+        private System.Windows.Forms.ToolStripMenuItem viewRandomPageMenu;
     }
 }
 

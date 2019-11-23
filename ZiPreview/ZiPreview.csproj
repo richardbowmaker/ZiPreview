@@ -107,17 +107,10 @@
     <Compile Include="SelectDrives.Designer.cs">
       <DependentUpon>SelectDrives.cs</DependentUpon>
     </Compile>
-    <Compile Include="VhdManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PropertyCache.cs" />
-    <Compile Include="SelectVolumes.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SelectVolumes.Designer.cs">
-      <DependentUpon>SelectVolumes.cs</DependentUpon>
-    </Compile>
     <Compile Include="Utilities.cs" />
+    <Compile Include="VeracrptVolume.cs" />
     <Compile Include="VeracryptManager.cs" />
     <Compile Include="VerifyDelete.cs">
       <SubType>Form</SubType>
@@ -162,9 +155,6 @@
     </Compile>
     <EmbeddedResource Include="SelectDrives.resx">
       <DependentUpon>SelectDrives.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SelectVolumes.resx">
-      <DependentUpon>SelectVolumes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="VerifyDelete.resx">
       <DependentUpon>VerifyDelete.cs</DependentUpon>

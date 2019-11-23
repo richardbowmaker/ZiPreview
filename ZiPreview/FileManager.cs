@@ -16,8 +16,6 @@ namespace ZiPreview
             return _files;
         }
 
-        // key value pair = <filename, volume description>
-        //  
         public static void AddFile(FileVolume file)
         {
             switch (Path.GetExtension(file.Filename).ToLower())
@@ -203,10 +201,8 @@ namespace ZiPreview
             else
             {
                 // link and image should only need 250kb max
-                List<DriveVolume> drives = new List<DriveVolume>();
-                drives.AddRange(VeracryptManager.GetDrives());
-                drives.AddRange(VhdManager.GetDrives());
-                DriveVolume drive = Utilities.FindDriveWithFreeSpace(drives, 250000);
+                DriveVolume drive = Utilities
+                    .FindDriveWithFreeSpace(VeracryptManager.GetDrives(), 250000);
 
                 if (drive == null)
                 {
@@ -311,7 +307,7 @@ namespace ZiPreview
             foreach (DriveVolume drive in drives)
             {
                 // read the properties file
-                string fn = drive.Drive + Constants.PropertiesFile1;
+                string fn = drive.Drive + Constants.PropertiesFile;
                 Utilities.CreateFileIfNotExist(fn);
                 string[] lines = File.ReadAllLines(fn);
 
@@ -339,7 +335,7 @@ namespace ZiPreview
         {
             foreach (VeracryptVolume vol in VeracryptManager.Volumes)
             {
-                string fn = vol.Drive + Constants.PropertiesFile1;
+                string fn = vol.Drive + Constants.PropertiesFile;
                 StreamWriter sw = new StreamWriter(fn);
 
                 foreach (FileSet fs in _files)

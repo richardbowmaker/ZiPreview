@@ -157,10 +157,8 @@ namespace ZiPreview
             {
                 // scan all mounted volumes looking for one that has a least
                 // 500 MB free for video capture
-                List<DriveVolume> drives = new List<DriveVolume>();
-                drives.AddRange(VeracryptManager.GetDrives());
-                drives.AddRange(VhdManager.GetDrives());
-                DriveVolume d = Utilities.FindDriveWithFreeSpace(drives, Constants.MinimumCaptureSpace);
+                DriveVolume d = Utilities
+                    .FindDriveWithFreeSpace(VeracryptManager.GetDrives(), Constants.MinimumCaptureSpace);
 
                 if (d == null)
                 {
@@ -404,7 +402,7 @@ namespace ZiPreview
                             case StateT.Recording:
                                 _obs.ToggleRecording();
                                 _browser.Kill();
-                                string fn = GetNewestFileInDirectory(Constants.ObsCaptureDir, "*.mp4");
+                                string fn = GetNewestFileInDirectory(_obsCaptureDir, "*.mp4");
                                 if (fn.Length > 0)
                                 {
                                     System.Threading.Thread.Sleep(1000);

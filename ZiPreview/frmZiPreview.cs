@@ -18,20 +18,17 @@ namespace ZiPreview
         void MessageBoxTS(string text, MessageBoxButtons buttons, MessageBoxIcon icon);
         void PopulateGrid();
     }
-
+    
     public partial class frmZiPreview : Form, IGuiUpdate, ImagesViewerData
     {
         private ImagesViewer _images;
         private CPicture _image;
-
         private Panel _imagesPanel;
         private Panel _imagePanel;
-
         private int _noOfImages;
-
         private VideoCapture _videoCapture;
-
         private bool _initialised = false;
+        private Random _rnd;
 
         //-----------------------------------------------------
         // ImagesViewerData
@@ -165,25 +162,10 @@ namespace ZiPreview
         public void PopulateGrid()
         {
             _images.StopPlay();
-            PropertyCache.WriteProperties();
-            PropertyCache.Setup();
-
-            // unmount unselected volumes
-            VhdManager.UnmountVolumes(false);
-            VeracryptManager.UnmountVolumes(false);
-
-            // mount the volumes
             Cursor.Current = Cursors.WaitCursor;
-            VhdManager.MountSelectedVolumes();
-            VeracryptManager.MountSelectedVolumes();
-
-            // get all the mounted volumes
-            List<DriveVolume> drives = new List<DriveVolume>();
-            drives.AddRange(VeracryptManager.GetDrives());
-            drives.AddRange(VhdManager.GetDrives());
 
             // populate th grid
-            FileManager.PopulateFiles(drives);
+            FileManager.PopulateFiles(VeracryptManager.GetDrives());
             gridFiles.Rows.Clear();
             LoadGrid();
             PopulateImageGridTS();
@@ -191,9 +173,7 @@ namespace ZiPreview
             FileManager.CreateImages();
 
             // generate unmount script
-            List<string> script = new List<string>();
-            script.AddRange(VhdManager.GenerateUnmountScript());
-            script.AddRange(VeracryptManager.GenerateUnmountScript());
+            List<string> script = VeracryptManager.GenerateUnmountScript();
             StreamWriter sw = new StreamWriter(Constants.UnmountFile);
             script.ForEach(s => sw.WriteLine(s));
             sw.Close();
@@ -220,6 +200,8 @@ namespace ZiPreview
 
             Logger.TheListBox = listTrace;
             Logger.Level = Logger.LoggerLevel.Info;
+
+            _rnd = new Random();
 
             if (Debugger.IsAttached)
             {
@@ -273,8 +255,6 @@ namespace ZiPreview
 
             // set thread safe callback
             GuiUpdateIf = this;
-
-            PropertyCache.Setup();
 
             InitialiseGrid();
 
@@ -336,9 +316,6 @@ namespace ZiPreview
 
             foreach (FileSet file in files)
             {
-                file.LastDate = PropertyCache.GetProperty(file.VideoFilename, "lasttime");
-                file.Times = PropertyCache.GetProperty(file.VideoFilename, "times");
-
                 AddFileToGridTS(file);
             }
 
@@ -373,9 +350,7 @@ namespace ZiPreview
 
         private void Dismount()
         {
-            PropertyCache.WriteProperties();
             FileManager.WriteProperties();
-            VhdManager.UnmountVolumes();
             VeracryptManager.UnmountVolumes();
         }
 
@@ -419,7 +394,8 @@ namespace ZiPreview
 
                         case Keys.F1: NextSelectedFile(file); e.SuppressKeyPress = true; break;
                         case Keys.F2: PreviousSelectedFile(file); e.SuppressKeyPress = true; break;
-
+                        case Keys.F3: RandomPage(); e.SuppressKeyPress = true; break;
+                        case Keys.F4: Utilities.LaunchBrowser(file); e.SuppressKeyPress = true; break;
                         case Keys.F5: IncNoOfImages(file); e.SuppressKeyPress = true; break;
                         case Keys.F6: DecNoOfImages(file); e.SuppressKeyPress = true; break;
                         case Keys.F7: CaptureVideo(file); e.SuppressKeyPress = true; break;
@@ -575,10 +551,8 @@ namespace ZiPreview
             {
                 _images.StopPlay();
 
-                file.Times = PropertyCache.IncCount(file.VideoFilename, "times");
-                file.LastDate = PropertyCache.DateStamp(file.VideoFilename, "lasttime");
-                file.Times = file.IncCount("times");
-                file.LastDate = file.SetDateStamp("lasttime");
+                file.IncCount("times");
+                file.SetDateStamp("lasttime");
                 RefreshGridRowTS(file);
 
                 ProcessStartInfo psi = new ProcessStartInfo(file.VideoFilename);
@@ -637,9 +611,8 @@ namespace ZiPreview
                 _videoCapture.StopCapture();
             }
 
-            if (VhdManager.HasMountedVolumes || VeracryptManager.HasMountedVolumes)
+            if (VeracryptManager.HasMountedVolumes)
             {
-                PropertyCache.WriteProperties();
                 FileManager.WriteProperties();
 
                 DialogResult res = MessageBox.Show("Do you want to unmount the volumes ?",
@@ -708,11 +681,6 @@ namespace ZiPreview
 
         private void ToolsTestHarnessMenu_Click(object sender, EventArgs e)
         {
-        }
-
-        private void FileSelectVolumesMenu_Click(object sender, EventArgs e)
-        {
-            SelectVolumes.Run();
         }
 
         private void ViewMoreImagesMenu_Click(object sender, EventArgs e)
@@ -827,6 +795,20 @@ namespace ZiPreview
         private void toolsRunTestsMenu_Click(object sender, EventArgs e)
         {
             FileSet.PropertyTests();
+        }
+
+        private void viewRandomPageMenu_Click(object sender, EventArgs e)
+        {
+            RandomPage();
+        }
+
+        private void RandomPage()
+        {
+            if (gridFiles.Rows.Count == 0) return;
+            int r = _rnd.Next(0, gridFiles.Rows.Count - 1);
+            _images.SetSelected(r);
+            gridFiles.FirstDisplayedScrollingRowIndex = r;
+            gridFiles.Rows[r].Selected = true;
         }
     }
 }

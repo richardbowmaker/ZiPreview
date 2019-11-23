@@ -11,6 +11,9 @@ namespace ZiPreview
         private static string _filter = "";
         private static string _folder = "";
         private static string _password = "";
+        //private static string _filter = "*.hc";
+        //private static string _folder = @"D:\_Ricks\c#\ZiPreview\EncryptedTest";
+        //private static string _password = "dummypassword";
 
         public static bool Run()
         {
@@ -95,24 +98,20 @@ namespace ZiPreview
             }
 
             Constants.Password = _password;
-            Close();
 
             Logger.Info("Select drives update");
-            
             Cursor.Current = Cursors.WaitCursor;
 
             // write out the properties and clear them
-            PropertyCache.WriteProperties();
-            PropertyCache.Setup();
+            FileManager.WriteProperties();
 
             // mount volumes and redisplay
             VeracryptManager.SetVolumes(vols);
+
             frmZiPreview.GuiUpdateIf.PopulateGrid();
 
-            // read properties
-            vols.ForEach(v => PropertyCache.AddDirectory(v.Drive));
-
             Cursor.Current = Cursors.Default;
+            Close();
         }
 
         private void butFind_Click(object sender, EventArgs e)
@@ -153,6 +152,8 @@ namespace ZiPreview
                 chkFiles.Items.Add(vol, vol.IsSelected);
             }
             Cursor.Current = Cursors.Default;
+
+            UpdateGUI();
         }
 
         private void butSelectAll_Click(object sender, EventArgs e)

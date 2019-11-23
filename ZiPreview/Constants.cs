@@ -22,7 +22,6 @@ namespace ZiPreview
         public const string FilesTargetPath = @"Files\All";
         public const string FilesPath = @"Files";
         public static string PropertiesFile = @"\PropertyCache.txt";
-        public static string PropertiesFile1 = @"\PropertyCache1.txt";
 
         public static string UnmountFile { get { return WorkingFolder + @"\\unmount.bat"; } }
 
@@ -47,15 +46,6 @@ namespace ZiPreview
                 if (TestMode) return @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe";
                 //else return WorkingFolder + @"\Tor Browser\Browser\firefox.exe";
                 else return WorkingFolder + @"\Tor Browser\Tor - Shortcut.lnk";
-            }
-        }
-
-        public static string ObsCaptureDir
-        {
-            get
-            {
-                if (TestMode) return WorkingFolder + @"\ObsCapture";
-                else return VhdManager.ObsCaptureDir;
             }
         }
 

@@ -38,10 +38,7 @@ namespace ZiPreview
             }
             else
             {
-                List<DriveVolume> drives = new List<DriveVolume>();
-                drives.AddRange(VhdManager.GetDrives());
-                drives.AddRange(VeracryptManager.GetDrives());
-
+                List<DriveVolume> drives = VeracryptManager.GetDrives();
                 drives.ForEach(v => checkedListBoxDestFolders.Items.Add(v.Drive + "  " + v.Volume, false));
             }
         }
