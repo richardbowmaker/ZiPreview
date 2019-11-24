@@ -49,6 +49,7 @@
             this.viewNextSelectedMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.viewPreviousSelectedMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.viewLinkMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewRandomPageMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsCaptureMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsCopyFilesMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -56,7 +57,6 @@
             this.toolsSaveLogMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsClearLogMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsRunTestsMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.viewRandomPageMenu = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitVertical)).BeginInit();
             this.splitVertical.Panel1.SuspendLayout();
             this.splitVertical.Panel2.SuspendLayout();
@@ -271,15 +271,22 @@
             this.viewLinkMenu.Text = "Goto link (F4)";
             this.viewLinkMenu.Click += new System.EventHandler(this.viewLinkMenu_Click);
             // 
+            // viewRandomPageMenu
+            // 
+            this.viewRandomPageMenu.Name = "viewRandomPageMenu";
+            this.viewRandomPageMenu.Size = new System.Drawing.Size(272, 26);
+            this.viewRandomPageMenu.Text = "Random page (F3)";
+            this.viewRandomPageMenu.Click += new System.EventHandler(this.viewRandomPageMenu_Click);
+            // 
             // toolsMenu
             // 
             this.toolsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolsCaptureMenu,
             this.toolsCopyFilesMenu,
-            this.toolsTestHarnessMenu,
             this.toolsSaveLogMenu,
             this.toolsClearLogMenu,
-            this.toolsRunTestsMenu});
+            this.toolsRunTestsMenu,
+            this.toolsTestHarnessMenu});
             this.toolsMenu.Name = "toolsMenu";
             this.toolsMenu.Size = new System.Drawing.Size(58, 24);
             this.toolsMenu.Text = "Tools";
@@ -326,13 +333,6 @@
             this.toolsRunTestsMenu.Size = new System.Drawing.Size(227, 26);
             this.toolsRunTestsMenu.Text = "Run Tests";
             this.toolsRunTestsMenu.Click += new System.EventHandler(this.toolsRunTestsMenu_Click);
-            // 
-            // viewRandomPageMenu
-            // 
-            this.viewRandomPageMenu.Name = "viewRandomPageMenu";
-            this.viewRandomPageMenu.Size = new System.Drawing.Size(272, 26);
-            this.viewRandomPageMenu.Text = "Random page (F3)";
-            this.viewRandomPageMenu.Click += new System.EventHandler(this.viewRandomPageMenu_Click);
             // 
             // frmZiPreview
             // 

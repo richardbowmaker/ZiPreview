@@ -220,7 +220,6 @@ namespace ZiPreview
                     Logger.Error("Could not create folder: " + path);
                     return false;
                 }
- 
             }
             return true;
         }

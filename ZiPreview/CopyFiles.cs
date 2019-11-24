@@ -28,19 +28,8 @@ namespace ZiPreview
             _folderSelectDlg = new FolderBrowserDialog();
             MaximumSize = Size;
             MinimumSize = Size;
-
-            if (Constants.TestMode)
-            {
-                checkedListBoxDestFolders.Items.Add(Constants.TestDestFolder1 + "  XX", false);
-                checkedListBoxDestFolders.Items.Add(Constants.TestDestFolder2 + "  XX", false);
-
-                //listBoxSourceFolders.Items.Add(Constants.TestDir);
-            }
-            else
-            {
-                List<DriveVolume> drives = VeracryptManager.GetDrives();
-                drives.ForEach(v => checkedListBoxDestFolders.Items.Add(v.Drive + "  " + v.Volume, false));
-            }
+            List<DriveVolume> drives = VeracryptManager.GetDrives();
+            drives.ForEach(v => checkedListBoxDestFolders.Items.Add(v.Drive + "  " + v.Volume, false));
         }
 
         private void ButAddSourceFolder_Click(object sender, EventArgs e)
@@ -366,9 +355,11 @@ namespace ZiPreview
                 }
 
                 // copy file only if destination does not exist
-                if (!File.Exists(dest))
+                if (!File.Exists(dest) &&
+                     VeracryptManager.IsMountedVolume(file) &&
+                     VeracryptManager.IsMountedVolume(dest))
                 {
-                    File.Copy(file, dest);
+                    Utilities.CopyFile(file, dest);
                     Logger.Info("Copied " + file + " to " + dest);
                     _filesCopied++;
                     FileInfo fi = new FileInfo(dest);
@@ -376,7 +367,7 @@ namespace ZiPreview
                 }
                 else
                 {
-                    Logger.Error("Destination file already exists: " + dest);
+                    Logger.Error("Destination invalid: " + dest);
                     _filesExisting++;
                 }
             }

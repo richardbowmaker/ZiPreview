@@ -7,7 +7,7 @@ using System.Drawing.Imaging;
 
 namespace ZiPreview
 {
-    class FileManager
+    class FileSetManager
     {
         private static List<FileSet> _files = new List<FileSet>();
 
@@ -38,18 +38,7 @@ namespace ZiPreview
         private static void AddImageFile(FileVolume file)
         {
             // check to see if it already exists
-            FileSet ft = _files.Find(ft1 => ft1.SameImage(file.Filename));
-
-            if (ft == null)
-            {
-                // check to see if an associated video file exists
-                ft = _files.Find(ft1 => ft1.ImageMatchesVideo(file.Filename));
-            }
-            else
-            {
-                // already exists
-                return;
-            }
+            FileSet ft = _files.Find(ft1 => ft1.FileMatchesAny(file.Filename));
 
             if (ft != null)
             {
@@ -57,36 +46,16 @@ namespace ZiPreview
             }
             else
             {
-                // check to see if an associated link file exists
-                ft = _files.Find(ft1 => ft1.ImageMatchesLink(file.Filename));
-
-                if (ft != null)
-                {
-                    ft.ImageFilename = file.Filename;
-                }
-                else
-                {
-                    FileSet f = new FileSet();
-                    f.ImageFilename = file.Filename;
-                    f.Volume = file.Volume;
-                    _files.Add(f);
-                }
+                FileSet f = new FileSet();
+                f.ImageFilename = file.Filename;
+                f.Volume = file.Volume;
+                _files.Add(f);
             }
         }
         private static void AddVideoFile(FileVolume file)
         {
             // check to see if it already exists
-            FileSet ft = _files.Find(ft1 => ft1.SameVideo(file.Filename));
-
-            if (ft == null)
-            {
-                // check to see if an associated video file exists
-                ft = _files.Find(ft1 => ft1.VideoMatchesImage(file.Filename));
-            }
-            else
-            {
-                return;
-            }
+            FileSet ft = _files.Find(ft1 => ft1.FileMatchesAny(file.Filename));
 
             if (ft != null)
             {
@@ -104,17 +73,7 @@ namespace ZiPreview
         private static void AddLinkFile(FileVolume file)
         {
             // check to see if it already exists
-            FileSet ft = _files.Find(ft1 => ft1.SameLink(file.Filename));
-
-            if (ft == null)
-            {
-                // check to see if an associated image file exists
-                ft = _files.Find(ft1 => ft1.LinkMatchesImage(file.Filename));
-            }
-            else
-            {
-                return;
-            }
+            FileSet ft = _files.Find(ft1 => ft1.FileMatchesAny(file.Filename));
 
             if (ft != null)
             {
@@ -146,34 +105,39 @@ namespace ZiPreview
             {
                 if (file.HasVideo && !file.HasImage)
                 {
-                    // get duration of media
-                    var wmp = new WMPLib.WindowsMediaPlayer();
-                    var media = wmp.newMedia(file.VideoFilename);
-                    double duration = media.duration;
-
-                    // get preview image from middle
-                    int d = (int)(duration / 2);
-                    string dss = (d / 60).ToString() + ":" + (d % 60).ToString();
-                    string dsf = (d / 60).ToString() + ":" + ((d + 1) % 60).ToString();
-
-                    // video file name less extension plus "-1.jpg"
-                    string fie = Path.GetDirectoryName(file.VideoFilename) + "\\" +
-                        Path.GetFileNameWithoutExtension(file.VideoFilename);
-
-                    string args = "-y -ss " + dss + " -to " + dsf + " -i " + 
-                        file.VideoFilename + " -frames 1 " + fie + "-%d.jpg";
-
-                    Utilities.RunCommandSync("ffmpeg", args);
-                   
-                    if (File.Exists(fie + "-1.jpg"))
+                    if (VeracryptManager.IsMountedVolume(file.VideoFilename))
                     {
-                        file.ImageFilename = fie + "-1.jpg";
-                        frmZiPreview.GuiUpdateIf.RefreshGridRowTS(file);
-                        Logger.Info("Created image for: " + file.VideoFilename);
-                    }
-                    else
-                    {
-                        Logger.Error("*** Failed to create image for: " + file.VideoFilename);
+                        // get duration of media
+                        var wmp = new WMPLib.WindowsMediaPlayer();
+                        var media = wmp.newMedia(file.VideoFilename);
+                        double duration = media.duration;
+
+                        // get preview image from middle
+                        int d = (int)(duration / 2);
+                        string dss = (d / 60).ToString() + ":" + (d % 60).ToString();
+                        string dsf = (d / 60).ToString() + ":" + ((d + 1) % 60).ToString();
+
+                        // video file name less extension plus "-1.jpg"
+                        string fie = Path.GetDirectoryName(file.VideoFilename) + "\\" +
+                            Path.GetFileNameWithoutExtension(file.VideoFilename);
+
+                        string args = "-y -ss " + dss + " -to " + dsf + " -i " +
+                            file.VideoFilename + " -frames 1 " + fie + "-%d.jpg";
+
+                        Utilities.RunCommandSync("ffmpeg", args);
+
+                        if (File.Exists(fie + "-1.jpg"))
+                        {
+                            Utilities.MoveFile(file.ImageFilename = fie + "-1.jpg",
+                                                file.ImageFilename = fie + ".jpg");
+                            file.ImageFilename = fie + ".jpg";
+                            frmZiPreview.GuiUpdateIf.RefreshGridRowTS(file);
+                            Logger.Info("Created image for: " + file.VideoFilename);
+                        }
+                        else
+                        {
+                            Logger.Error("*** Failed to create image for: " + file.VideoFilename);
+                        }
                     }
                 }
             }
@@ -193,51 +157,47 @@ namespace ZiPreview
             string ifn = "";
             string lfn = "";
 
-            if (Constants.TestMode)
+            // link and image should only need 250kb max
+            DriveVolume drive = Utilities
+                .FindDriveWithFreeSpace(VeracryptManager.GetDrives(), 250000);
+
+            if (drive == null)
             {
-                ifn = Constants.TestDir + "\\file" + fn + ".jpg";
-                lfn = Constants.TestDir + "\\file" + fn + ".lnk";
+                MessageBox.Show("Insufficient disk space",
+                    Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return false;
             }
-            else
-            {
-                // link and image should only need 250kb max
-                DriveVolume drive = Utilities
-                    .FindDriveWithFreeSpace(VeracryptManager.GetDrives(), 250000);
 
-                if (drive == null)
-                {
-                    MessageBox.Show("Insufficient disk space",
-                        Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                    return false;
-                }
+            if (!Utilities.MakeDirectory(Constants.FilesTargetPath))
+                return false;
 
-                if (!Utilities.MakeDirectory(Constants.FilesTargetPath))
-                    return false;
-
-                ifn = drive.Drive + Constants.FilesTargetPath + "\\file" + fn + ".jpg";
-                lfn = drive.Drive + Constants.FilesTargetPath + "\\file" + fn + ".lnk";
-            }
+            ifn = drive.Drive + Constants.FilesTargetPath + "\\file" + fn + ".jpg";
+            lfn = drive.Drive + Constants.FilesTargetPath + "\\file" + fn + ".lnk";
 
             // save link
-            StreamWriter sw = new StreamWriter(lfn);
-            sw.WriteLine(link);
-            sw.Close();
-            Logger.Info("Saved link \"" + link + "\" to file: " + lfn);
+            if (VeracryptManager.IsMountedVolume(lfn) 
+                && VeracryptManager.IsMountedVolume(ifn))
+            {
+                StreamWriter sw = new StreamWriter(lfn);
+                sw.WriteLine(link);
+                sw.Close();
+                Logger.Info("Saved link \"" + link + "\" to file: " + lfn);
 
-            // save image
-            bitmap.Save(ifn, ImageFormat.Jpeg);
-            Logger.Info("Saved image to file: " + ifn);
+                // save image
+                bitmap.Save(ifn, ImageFormat.Jpeg);
+                Logger.Info("Saved image to file: " + ifn);
 
-            // create file structure and add to list
-            FileSet file = new FileSet();
-            file.ImageFilename = ifn;
-            file.LinkFilename = lfn;
-            _files.Add(file);
+                // create file structure and add to list
+                FileSet file = new FileSet();
+                file.ImageFilename = ifn;
+                file.LinkFilename = lfn;
+                _files.Add(file);
 
-            // add to gui
-            frmZiPreview.GuiUpdateIf.AddFileToGridTS(file);
-
-            return true;
+                // add to gui
+                frmZiPreview.GuiUpdateIf.AddFileToGridTS(file);
+                return true;
+            }
+            else return false;
         }
 
         public static void DeleteFile(FileSet file, bool image, bool video, bool link)
@@ -276,13 +236,13 @@ namespace ZiPreview
 
             foreach (DriveVolume drive in drives)
             {
-                string[] files = {};
+                string[] files = { };
 
                 for (int i = 0; i < 10; ++i)
                 {
                     try
                     {
-                        files = Directory.GetFiles(drive.Drive + Constants.FilesPath, 
+                        files = Directory.GetFiles(drive.Drive + Constants.FilesPath,
                             "*.*", SearchOption.AllDirectories);
                         break;
                     }
@@ -293,9 +253,8 @@ namespace ZiPreview
 
                 foreach (string file in files)
                 {
-                    string s = Path.GetDirectoryName(file).Substring(2) + "\\" + Path.GetFileName(file)
-                                    + fileList.Count.ToString("0000000");
-                    fileList.Add(s, new FileVolume(file, drive.Volume) );
+                    string s = Path.GetFileName(file) + fileList.Count.ToString("0000000");
+                    fileList.Add(s, new FileVolume(file, drive.Volume));
                 }
             }
 
@@ -303,6 +262,13 @@ namespace ZiPreview
             foreach (KeyValuePair<string, FileVolume> kvp in fileList)
                 AddFile(kvp.Value);
 
+            ReadProperties(drives);
+
+            return _files.Count > 0;
+        }
+
+        public static void ReadProperties(List<DriveVolume> drives)
+        { 
             // read the properties
             foreach (DriveVolume drive in drives)
             {
@@ -328,7 +294,6 @@ namespace ZiPreview
                     }
                 }
             }
-            return _files.Count > 0;
         }
 
         public static void WriteProperties()
@@ -336,15 +301,16 @@ namespace ZiPreview
             foreach (VeracryptVolume vol in VeracryptManager.Volumes)
             {
                 string fn = vol.Drive + Constants.PropertiesFile;
-                StreamWriter sw = new StreamWriter(fn);
-
-                foreach (FileSet fs in _files)
+                if (VeracryptManager.IsMountedVolume(fn))
                 {
-                    if (fs.DriveMatches(vol.Drive))
-                        fs.WriteProperties(sw);
+                    StreamWriter sw = new StreamWriter(fn);
+                    foreach (FileSet fs in _files)
+                    {
+                        if (fs.DriveMatches(vol.Drive))
+                            fs.WriteProperties(sw);
+                    }
+                   sw.Close();
                 }
-
-                sw.Close();
             }
         }
     }

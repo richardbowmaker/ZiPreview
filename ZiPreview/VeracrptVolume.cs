@@ -5,12 +5,24 @@ namespace ZiPreview
 {
     public class VeracryptVolume
     {
+        public string Filename;
+        public string Drive;
+        public bool IsMounted;
+        public bool IsSelected;
+        public DateTime CreatedDate;
+        public DateTime AccessedDate;
+        public DateTime ModifiedDate;
+
+
         public VeracryptVolume(string file, bool isSelected)
         {
             Filename = file;
             Drive = "";
             IsMounted = false;
             IsSelected = isSelected;
+            CreatedDate = DateTime.Now;
+            AccessedDate = DateTime.Now;
+            ModifiedDate = DateTime.Now;
         }
 
         public override string ToString()
@@ -24,11 +36,6 @@ namespace ZiPreview
             }
             else return Filename;
         }
-
-        public string Filename;
-        public string Drive;
-        public bool IsMounted;
-        public bool IsSelected;
 
         public bool MountVolume(string drive)
         {
@@ -59,6 +66,12 @@ namespace ZiPreview
 
                 // ensure that the files directory exists
                 Utilities.MakeDirectory(drive + Constants.FilesTargetPath);
+
+                // capture the volume dates
+                CreatedDate = File.GetCreationTime(Filename);
+                AccessedDate = File.GetLastAccessTime(Filename);
+                ModifiedDate = File.GetLastWriteTime(Filename);
+
                 return true;
             }
             else
@@ -80,6 +93,11 @@ namespace ZiPreview
                     Logger.Info("Unmounted Veracrypt volume: " + Drive + ", " + Filename);
                     IsMounted = false;
                     Drive = "";
+
+                    // update volume dates
+                    File.SetCreationTime(Filename, CreatedDate);
+                    File.SetLastWriteTime(Filename, ModifiedDate.AddMinutes(1));
+                    File.SetLastAccessTime(Filename, AccessedDate.AddMinutes(1));
                 }
                 else
                 {

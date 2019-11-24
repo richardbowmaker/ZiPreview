@@ -181,6 +181,7 @@ namespace ZiPreview
 
             // create the capture folder
             _obsCaptureDir = drive + Constants.ObsCapturePath;
+            if (!VeracryptManager.IsMountedVolume(_obsCaptureDir)) return;
             if (!Utilities.MakeDirectory(_obsCaptureDir)) return;
             Logger.Info("Capturing to folder: " + _obsCaptureDir);
 
@@ -355,12 +356,15 @@ namespace ZiPreview
             string dest = Path.GetDirectoryName(_file.LinkFilename) + "\\" +
                 Path.GetFileNameWithoutExtension(_file.LinkFilename) + ".mp4";
 
-            if (Utilities.MoveFile(src, dest))
+            if (VeracryptManager.IsMountedVolume(dest))
             {
-                _file.VideoFilename = dest;
-                return true;
+                if (Utilities.MoveFile(src, dest))
+                {
+                    _file.VideoFilename = dest;
+                    return true;
+                }
             }
-            else return false;
+            return false;
         }
 
         private string GetNewestFileInDirectory(string dir, string searchPattern)

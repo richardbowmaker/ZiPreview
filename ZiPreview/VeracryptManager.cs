@@ -51,40 +51,6 @@ namespace ZiPreview
             MountSelectedVolumes();
         }
 
-        public static bool FindAllVolumes()
-        {
-            _volumes = new List<VeracryptVolume>();
-
-            DriveInfo[] dis = DriveInfo.GetDrives();
-            List<string> volFiles = new List<string>();
-
-            foreach (DriveInfo di in dis)
-            {
-                DirectoryInfo root = di.RootDirectory;
-                String path = root.FullName;
-
-                foreach (string sp in Constants.ScanPaths)
-                {
-                    if (Directory.Exists(path + sp))
-                    {
-                        var files = Directory.EnumerateFiles(path + sp, "*.hc", SearchOption.AllDirectories);
-                        volFiles.AddRange(files);
-                    }
-                }
-            }
-
-            // quit if no hc files found
-            if (volFiles.Count == 0) return false;
-
-            volFiles.Sort();
-            foreach (string volFile in volFiles)
-            {
-                VeracryptVolume vol = new VeracryptVolume(volFile, false);
-                _volumes.Add(vol);
-            }
-            return true;
-        }
-
         public static bool MountSelectedVolumes()
         {
             foreach (VeracryptVolume vol in _volumes)
@@ -97,7 +63,7 @@ namespace ZiPreview
                         Logger.Error("Veracrypt mount, run out of drive letters");
                         return false;
                     }
-                    vol.MountVolume(drive);
+                    if (!vol.MountVolume(drive)) return false;
                 }
             }
             return true;
@@ -137,9 +103,24 @@ namespace ZiPreview
             {
                 if (vol.IsMounted)
                     drives.Add(new DriveVolume(vol.Drive, vol.Filename + " [Veracrypt]"));
- 
             }
             return drives;
+        }
+
+        public static bool IsMountedVolume(string file)
+        {
+            int n = file.IndexOf(":");
+            if (n == -1) return false;
+            string drive = file.Substring(0, n + 2);
+            n = _volumes.FindIndex(v => v.Drive.CompareTo(drive) == 0);
+
+            if (n == -1)
+            {
+                MessageBox.Show("About to write file to non-mounted drive " + file,
+                    Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            else return true;
         }
     }
 }

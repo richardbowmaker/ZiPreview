@@ -4,6 +4,7 @@
 *.hc
 *.vhd
 *.exe
+unmount.bat
 TestData
 TestData - Copy
 ObsCapture

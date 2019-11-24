@@ -80,7 +80,7 @@ namespace ZiPreview
             Close();
             Hide();
             Cursor.Current = Cursors.WaitCursor;
-            FileManager.DeleteFile(_file, chkImage.Checked, chkVideo.Checked, chkLink.Checked);
+            FileSetManager.DeleteFile(_file, chkImage.Checked, chkVideo.Checked, chkLink.Checked);
             Cursor.Current = Cursors.Default;
         }
 

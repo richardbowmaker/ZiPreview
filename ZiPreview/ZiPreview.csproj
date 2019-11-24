@@ -84,7 +84,7 @@
       <DependentUpon>CopyFiles.cs</DependentUpon>
     </Compile>
     <Compile Include="CPicture.cs" />
-    <Compile Include="FileManager.cs" />
+    <Compile Include="FileSetManager.cs" />
     <Compile Include="FileSet.cs" />
     <Compile Include="frmZiPreview.cs">
       <SubType>Form</SubType>

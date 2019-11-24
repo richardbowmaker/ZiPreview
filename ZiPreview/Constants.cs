@@ -8,8 +8,6 @@ namespace ZiPreview
 {
     class Constants
     {
-        public const bool TestMode = false;
-
         public static string WorkingFolder { get; set; }
         public const string Title = "ZiPreview";
 
@@ -25,37 +23,14 @@ namespace ZiPreview
 
         public static string UnmountFile { get { return WorkingFolder + @"\\unmount.bat"; } }
 
-        public static List<string> ScanPaths
-        {
-            get
-            {
-                if (TestMode)
-                    return new List<string>() { "Encrypted", "EncryptedTest" };
-                else
-                    return new List<string>() { "Encrypted" };
-            }
-        }
-
         public static string TestDestFolder1 { get { return WorkingFolder + @"\CopyFolder1"; } }
         public static string TestDestFolder2 { get { return WorkingFolder + @"\CopyFolder2"; } }
 
-        public static string Browser
-        {
-            get
-            {
-                if (TestMode) return @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe";
-                //else return WorkingFolder + @"\Tor Browser\Browser\firefox.exe";
-                else return WorkingFolder + @"\Tor Browser\Tor - Shortcut.lnk";
-            }
-        }
-
+        public static string Browser {  get { return WorkingFolder + @"\Tor Browser\Tor - Shortcut.lnk"; ; } }
+        
         public static string VeracryptExe
         {
             get => @"C:\Program Files\VeraCrypt\VeraCrypt.exe";
-        }
-        public static string VeracryptFormatExe
-        {
-            get => @"C:\Program Files\VeraCrypt\VeraCrypt Format.exe";
         }
 
         private static string _password = "";

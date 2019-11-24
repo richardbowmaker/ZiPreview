@@ -45,7 +45,7 @@ namespace ZiPreview
 
                 if (ctext_.Length > 0)
                 {
-                    FileManager.SaveLinkImage(ctext_, bm);
+                    FileSetManager.SaveLinkImage(ctext_, bm);
                 }
             }
         }

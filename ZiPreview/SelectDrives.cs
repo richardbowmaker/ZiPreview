@@ -9,11 +9,8 @@ namespace ZiPreview
     {
         private static bool _ok = false;
         private static string _filter = "";
-        private static string _folder = "";
+        private static string _folder = @"";
         private static string _password = "";
-        //private static string _filter = "*.hc";
-        //private static string _folder = @"D:\_Ricks\c#\ZiPreview\EncryptedTest";
-        //private static string _password = "dummypassword";
 
         public static bool Run()
         {
@@ -103,7 +100,7 @@ namespace ZiPreview
             Cursor.Current = Cursors.WaitCursor;
 
             // write out the properties and clear them
-            FileManager.WriteProperties();
+            FileSetManager.WriteProperties();
 
             // mount volumes and redisplay
             VeracryptManager.SetVolumes(vols);

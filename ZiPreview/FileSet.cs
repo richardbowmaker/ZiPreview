@@ -111,65 +111,22 @@ namespace ZiPreview
             Selected = !Selected;
         }
 
-        public bool SameImage(string ifile)
+        public bool FileMatchesAny(string file)
         {
-            // test for the same image possible on a different volume
-            if (!HasImage) return false;
-            string if1 = ifile.Substring(3); // remove drive letter
-            string if2 = ImageFilename.Substring(3);
-            return if1.CompareTo(if2) == 0;
-        }
-
-        public bool SameVideo(string vfile)
-        {
-            // test for the same image possible on a different volume
-            if (!HasVideo) return false;
-            string vf1 = vfile.Substring(3); // remove drive letter
-            string vf2 = VideoFilename.Substring(3);
-            return vf1.CompareTo(vf2) == 0;
-        }
-
-        public bool SameLink(string lfile)
-        {
-            // test for the same image possible on a different volume
-            if (!HasLink) return false;
-            string lf1 = lfile.Substring(3); // remove drive letter
-            string lf2 = LinkFilename.Substring(3);
-            return lf1.CompareTo(lf2) == 0;
-        }
-
-        public bool ImageMatchesVideo(string ifile)
-        {
-            if (!HasVideo) return false;
-            string ife = Path.GetDirectoryName(ifile) + "\\" + Path.GetFileNameWithoutExtension(ifile);
-            string vfe = Path.GetDirectoryName(VideoFilename) + "\\" + Path.GetFileNameWithoutExtension(VideoFilename);
-            return ife.CompareTo(vfe + "-1") == 0;
-        }
-
-        public bool VideoMatchesImage(string vfile)
-        {
-            if (!HasImage) return false;
-            string vfe = Path.GetDirectoryName(vfile) + "\\" + Path.GetFileNameWithoutExtension(vfile);
-            string ife = Path.GetDirectoryName(ImageFilename) + "\\" + Path.GetFileNameWithoutExtension(ImageFilename);
-            if (ife.CompareTo(vfe + "-1") == 0) return true;
-            if (ife.CompareTo(vfe) == 0) return true;
+            if (FilesMatch(file, ImageFilename)) return true;
+            if (FilesMatch(file, VideoFilename)) return true;
+            if (FilesMatch(file, LinkFilename)) return true;
             return false;
         }
 
-        public bool LinkMatchesImage(string lfile)
+        public bool FilesMatch(string f1, string f2)
         {
-            if (!HasImage) return false;
-            string lfe = Path.GetDirectoryName(lfile) + "\\" + Path.GetFileNameWithoutExtension(lfile);
-            string ife = Path.GetDirectoryName(ImageFilename) + "\\" + Path.GetFileNameWithoutExtension(ImageFilename);
-            return ife.CompareTo(lfe) == 0;
-        }
-
-        public bool ImageMatchesLink(string ifile)
-        {
-            if (!HasLink) return false;
-            string ife = Path.GetDirectoryName(ifile) + "\\" + Path.GetFileNameWithoutExtension(ifile);
-            string lfe = Path.GetDirectoryName(LinkFilename) + "\\" + Path.GetFileNameWithoutExtension(LinkFilename);
-            return ife.CompareTo(lfe) == 0;
+            if (f1.Length == 0 || f2.Length == 0) return false;
+            string fe1 = FilenameNoDriveAndExtension(f1);
+            string fe2 = FilenameNoDriveAndExtension(f2);
+            if (fe1.EndsWith("-1")) fe1 = fe1.Substring(0, fe1.Length - 2);
+            if (fe2.EndsWith("-1")) fe2 = fe2.Substring(0, fe2.Length - 2);
+            return fe1.CompareTo(fe2) == 0;
         }
 
         // move files to a different volume, drive letter
@@ -183,17 +140,26 @@ namespace ZiPreview
             if (HasImage)
             {
                 idest = drive + ImageFilename.Substring(3);
-                ok = Utilities.CopyFile(ImageFilename, idest);
+                if (VeracryptManager.IsMountedVolume(idest))
+                    ok = Utilities.MoveFile(ImageFilename, idest);
+                else
+                    ok = false;
             }
             if (ok && HasLink)
             {
                 ldest = drive + LinkFilename.Substring(3);
-                ok = Utilities.MoveFile(LinkFilename, ldest);
+                if (VeracryptManager.IsMountedVolume(ldest))
+                    ok = Utilities.MoveFile(LinkFilename, ldest);
+                else
+                    ok = false;
             }
             if (ok && HasVideo)
             {
                 vdest = drive + VideoFilename.Substring(3);
-                ok = Utilities.MoveFile(VideoFilename, vdest);
+                if (VeracryptManager.IsMountedVolume(vdest))
+                    ok = Utilities.MoveFile(VideoFilename, vdest);
+                else
+                    ok = false;
             }
 
             if (ok)
@@ -246,7 +212,6 @@ namespace ZiPreview
             if (n != -1) fne = fne.Substring(n + 1);
             return fne;
         }
-
 
         /// ///////////////////////////////////////////////////
         /// Properties

@@ -121,6 +121,10 @@ namespace ZiPreview
 
         private static void Trace(string text, LoggerLevel level)
         {
+            if (_listBox.Items.Count > 1000)
+            {
+                for (int i = 0; i < 100; ++i) _listBox.Items.RemoveAt(0);
+            }
             _listBox.Items.Add(new LoggerItem(text, level));
             MakeLastLineVisible();
         }

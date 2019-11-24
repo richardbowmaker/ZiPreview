@@ -165,12 +165,12 @@ namespace ZiPreview
             Cursor.Current = Cursors.WaitCursor;
 
             // populate th grid
-            FileManager.PopulateFiles(VeracryptManager.GetDrives());
+            FileSetManager.PopulateFiles(VeracryptManager.GetDrives());
             gridFiles.Rows.Clear();
             LoadGrid();
             PopulateImageGridTS();
             Logger.Info("Files: " + gridFiles.Rows.Count.ToString());
-            FileManager.CreateImages();
+            FileSetManager.CreateImages();
 
             // generate unmount script
             List<string> script = VeracryptManager.GenerateUnmountScript();
@@ -312,7 +312,7 @@ namespace ZiPreview
         private void LoadGrid()
         {
             _images.Initialise();
-            List<FileSet> files = FileManager.GetFiles();
+            List<FileSet> files = FileSetManager.GetFiles();
 
             foreach (FileSet file in files)
             {
@@ -350,7 +350,7 @@ namespace ZiPreview
 
         private void Dismount()
         {
-            FileManager.WriteProperties();
+            FileSetManager.WriteProperties();
             VeracryptManager.UnmountVolumes();
         }
 
@@ -502,6 +502,7 @@ namespace ZiPreview
         {
             file.ToggleSelected();
             file.Row.Cells["colSelected"].Value = file.SelectedS;
+            RefreshGridRowTS(file);
         }
 
         private void CaptureVideo(FileSet file)
@@ -527,9 +528,9 @@ namespace ZiPreview
 
         private void GridFiles_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            string col = gridFiles.Columns[e.ColumnIndex].Name;
-            gridFiles.Sort(new FileSetComparer(col));
-            gridFiles.Rows[0].Selected = true;
+            //string col = gridFiles.Columns[e.ColumnIndex].Name;
+            //gridFiles.Sort(new FileSetComparer(col));
+            //gridFiles.Rows[0].Selected = true;
         }
 
         public void PopulateImageGridTS()
@@ -613,7 +614,7 @@ namespace ZiPreview
 
             if (VeracryptManager.HasMountedVolumes)
             {
-                FileManager.WriteProperties();
+                FileSetManager.WriteProperties();
 
                 DialogResult res = MessageBox.Show("Do you want to unmount the volumes ?",
                 Constants.Title,
@@ -677,10 +678,6 @@ namespace ZiPreview
                 toolsCaptureMenu.Text = "Abort capture";
             else
                 toolsCaptureMenu.Text = "Capture video ...";
-        }
-
-        private void ToolsTestHarnessMenu_Click(object sender, EventArgs e)
-        {
         }
 
         private void ViewMoreImagesMenu_Click(object sender, EventArgs e)
@@ -810,5 +807,10 @@ namespace ZiPreview
             gridFiles.FirstDisplayedScrollingRowIndex = r;
             gridFiles.Rows[r].Selected = true;
         }
+
+        private void ToolsTestHarnessMenu_Click(object sender, EventArgs e)
+        {
+        }
     }
+
 }
