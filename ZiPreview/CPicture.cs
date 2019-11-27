@@ -64,6 +64,11 @@ namespace ZiPreview
 
             _nScale = 0; 
         }
+
+        public void Uninitialise()
+        {
+            _picBox.ImageLocation = "";
+        }
         public void LoadBitmap(Bitmap bitmap)
         {
             _picBox.SizeMode = PictureBoxSizeMode.Zoom;

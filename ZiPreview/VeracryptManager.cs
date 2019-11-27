@@ -20,7 +20,7 @@ namespace ZiPreview
             set => _nextFreeDrive = value.Substring(0, 1).ToUpper() + "\\";
         }
 
-        public static void SetVolumes(List<VeracryptVolume> volumes)
+        public static bool SetVolumes(List<VeracryptVolume> volumes)
         {
             // unmount volumes that are not present in the new list of volumes
             foreach (VeracryptVolume vol in _volumes)
@@ -48,7 +48,7 @@ namespace ZiPreview
             volumes.Sort((v1, v2) => v1.Filename.CompareTo(v2.Filename));
             _volumes = volumes;
 
-            MountSelectedVolumes();
+            return MountSelectedVolumes();
         }
 
         public static bool MountSelectedVolumes()
@@ -109,18 +109,28 @@ namespace ZiPreview
 
         public static bool IsMountedVolume(string file)
         {
-            int n = file.IndexOf(":");
-            if (n == -1) return false;
-            string drive = file.Substring(0, n + 2);
-            n = _volumes.FindIndex(v => v.Drive.CompareTo(drive) == 0);
+            string drive = Utilities.GetDrive(file);
+            if (drive.Length == 0) return false;
+            
+            int n = _volumes.FindIndex(v => v.Drive.CompareTo(drive) == 0);
+            bool ok = false;
+            if (n != -1) ok = _volumes[n].IsMounted;
+            if (!ok) MessageBox.Show("About to write file to non-mounted drive " + file,
+                        Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
-            if (n == -1)
+            return ok;
+        }
+
+        public static void SetVolumeDirty(string file)
+        {
+            string drive = Utilities.GetDrive(file);
+            if (drive.Length == 0) return;
+            int n = _volumes.FindIndex(v => v.Drive.CompareTo(drive) == 0);
+            if (n != -1)
             {
-                MessageBox.Show("About to write file to non-mounted drive " + file,
-                    Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
+                _volumes[n].IsDirty = true;
+                Logger.Info("Volume dirty: " + _volumes[n].ToString());
             }
-            else return true;
         }
     }
 }

@@ -103,7 +103,7 @@ namespace ZiPreview
             _clipIx = (_clipIx + 1) % _clips.Count();
         }
 
-        public void PreviewCancel()
+        public void PreviewStop()
         {
             _timer.Enabled = false;
             _player.Ctlcontrols.stop();

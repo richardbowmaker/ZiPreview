@@ -52,6 +52,7 @@ namespace ZiPreview
                 _files.Add(f);
             }
         }
+
         private static void AddVideoFile(FileVolume file)
         {
             // check to see if it already exists
@@ -131,7 +132,7 @@ namespace ZiPreview
                             Utilities.MoveFile(file.ImageFilename = fie + "-1.jpg",
                                                 file.ImageFilename = fie + ".jpg");
                             file.ImageFilename = fie + ".jpg";
-                            frmZiPreview.GuiUpdateIf.RefreshGridRowTS(file);
+                            ZipPreview.ZiPreview.RefreshGridRowTS(file);
                             Logger.Info("Created image for: " + file.VideoFilename);
                         }
                         else
@@ -193,8 +194,12 @@ namespace ZiPreview
                 file.LinkFilename = lfn;
                 _files.Add(file);
 
+                // set volumes dirty
+                VeracryptManager.SetVolumeDirty(lfn);
+                VeracryptManager.SetVolumeDirty(ifn);
+
                 // add to gui
-                frmZiPreview.GuiUpdateIf.AddFileToGridTS(file);
+                ZipPreview.ZiPreview.AddFileToGridTS(file);
                 return true;
             }
             else return false;
@@ -220,13 +225,13 @@ namespace ZiPreview
 
             if (file.HasImage || file.HasVideo || file.HasLink)
             {
-                frmZiPreview.GuiUpdateIf.RefreshGridRowTS(file);
+                ZipPreview.ZiPreview.RefreshGridRowTS(file);
             }
             else
             {
                 int i = _files.FindIndex(delegate (FileSet f) { return f == file; });
                 if (i != -1) _files.RemoveAt(i);
-                frmZiPreview.GuiUpdateIf.RemoveGridRowTS(file);
+                ZipPreview.ZiPreview.RemoveGridRowTS(file);
             }
         }
 
@@ -242,7 +247,7 @@ namespace ZiPreview
                 {
                     try
                     {
-                        files = Directory.GetFiles(drive.Drive + Constants.FilesPath,
+                        files = Directory.GetFiles(drive.Drive + Constants.FilesTargetPath,
                             "*.*", SearchOption.AllDirectories);
                         break;
                     }
@@ -259,11 +264,14 @@ namespace ZiPreview
             }
 
             _files.Clear();
+
             foreach (KeyValuePair<string, FileVolume> kvp in fileList)
                 AddFile(kvp.Value);
 
             ReadProperties(drives);
-
+            _ascending = true;
+            _field = SortFieldT.None;
+            SortFiles(SortFieldT.Filename);
             return _files.Count > 0;
         }
 
@@ -274,7 +282,7 @@ namespace ZiPreview
             {
                 // read the properties file
                 string fn = drive.Drive + Constants.PropertiesFile;
-                Utilities.CreateFileIfNotExist(fn);
+                Utilities.CreateFileIfDoesntExist(fn);
                 string[] lines = File.ReadAllLines(fn);
 
                 // for each property
@@ -300,17 +308,81 @@ namespace ZiPreview
         {
             foreach (VeracryptVolume vol in VeracryptManager.Volumes)
             {
-                string fn = vol.Drive + Constants.PropertiesFile;
-                if (VeracryptManager.IsMountedVolume(fn))
+                if (vol.IsMounted)
                 {
-                    StreamWriter sw = new StreamWriter(fn);
-                    foreach (FileSet fs in _files)
+                    string fn = vol.Drive + Constants.PropertiesFile;
+                    if (VeracryptManager.IsMountedVolume(fn))
                     {
-                        if (fs.DriveMatches(vol.Drive))
-                            fs.WriteProperties(sw);
+                        StreamWriter sw = new StreamWriter(fn);
+                        foreach (FileSet fs in _files)
+                        {
+                            if (fs.DriveMatches(vol.Drive))
+                                fs.WriteProperties(sw);
+                        }
+                        sw.Close();
                     }
-                   sw.Close();
                 }
+            }
+        }
+
+        public enum SortFieldT
+        {
+            None,
+            Filename,
+            LastDate,
+            Times,
+            Selected,
+            Type
+        }
+
+        // sorting
+        private static bool _ascending = true;
+        private static SortFieldT _field = SortFieldT.None;
+
+        public static void SortFiles(SortFieldT field)
+        {
+            if (field == _field)
+            {
+                _ascending = !_ascending;
+            }
+            else
+            {
+                _field = field;
+                _ascending = true;
+            }
+            _files.Sort((f1, f2) => CompareFiles(f1, f2));
+        }
+
+        public static int CompareFiles(FileSet f1, FileSet f2)
+        {
+            string s1 ="", s2 ="";
+
+            switch (_field)
+            {
+                case SortFieldT.Filename: s1 = f1.FilenameNoPathAndExt; s2 = f2.FilenameNoPathAndExt; break;
+                case SortFieldT.Selected: s1 = f1.SelectedS; s2 = f2.SelectedS; break;
+                case SortFieldT.Times: s1 = f1.TimesI.ToString("D5"); s2 = f2.TimesI.ToString("D5"); break;
+                case SortFieldT.Type: s1 = f1.TypeS; s2 = f2.TypeS; break;
+                case SortFieldT.LastDate:
+                    s1 = f1.LastDate;
+                    if (s1.Length == 10) s1 =
+                            s1.Substring(6, 4) + s1.Substring(3, 2) + s1.Substring(0, 2);
+                    else s1 = "00000000";
+                    s2 = f2.LastDate;
+                    if (s2.Length == 10) s2 = 
+                            s2.Substring(6, 4) + s2.Substring(3, 2) + s2.Substring(0, 2);
+                    else s2 = "00000000";
+                    break;
+            }
+
+            // secondary sort field is filename in ascending order always
+            if (_ascending)
+            {
+                return (s1 + f1.FilenameNoPathAndExt).CompareTo(s2 + f2.FilenameNoPathAndExt);
+            }
+            else
+            {
+                return (s2 + f1.FilenameNoPathAndExt).CompareTo(s1 + f2.FilenameNoPathAndExt);
             }
         }
     }

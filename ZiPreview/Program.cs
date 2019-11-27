@@ -16,7 +16,7 @@ namespace ZiPreview
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new frmZiPreview());
+            Application.Run(new ZipPreview());
         }
     }
 }

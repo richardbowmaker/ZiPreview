@@ -1,6 +1,6 @@
 ﻿namespace ZiPreview
 {
-    partial class frmZiPreview
+    partial class ZipPreview
     {
         /// <summary>
         /// Required designer variable.
@@ -53,10 +53,11 @@
             this.toolsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsCaptureMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsCopyFilesMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolsTestHarnessMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsSaveLogMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsClearLogMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolsVolumePropertiesMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsRunTestsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolsTestHarnessMenu = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitVertical)).BeginInit();
             this.splitVertical.Panel1.SuspendLayout();
             this.splitVertical.Panel2.SuspendLayout();
@@ -126,8 +127,6 @@
             this.gridFiles.CellValueNeeded += new System.Windows.Forms.DataGridViewCellValueEventHandler(this.GridFiles_CellValueNeeded);
             this.gridFiles.ColumnHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.GridFiles_ColumnHeaderMouseClick);
             this.gridFiles.SelectionChanged += new System.EventHandler(this.GridFiles_SelectionChanged);
-            this.gridFiles.KeyDown += new System.Windows.Forms.KeyEventHandler(this.GridFiles_KeyDown);
-            this.gridFiles.KeyUp += new System.Windows.Forms.KeyEventHandler(this.GridFiles_KeyUp);
             // 
             // listTrace
             // 
@@ -199,7 +198,7 @@
             this.fileSelectMenu.Name = "fileSelectMenu";
             this.fileSelectMenu.Size = new System.Drawing.Size(149, 26);
             this.fileSelectMenu.Text = "Select ...";
-            this.fileSelectMenu.Click += new System.EventHandler(this.fileSelectMenu_Click);
+            this.fileSelectMenu.Click += new System.EventHandler(this.FileSelectMenu_Click);
             // 
             // fileDeleteMenu
             // 
@@ -269,14 +268,14 @@
             this.viewLinkMenu.Name = "viewLinkMenu";
             this.viewLinkMenu.Size = new System.Drawing.Size(272, 26);
             this.viewLinkMenu.Text = "Goto link (F4)";
-            this.viewLinkMenu.Click += new System.EventHandler(this.viewLinkMenu_Click);
+            this.viewLinkMenu.Click += new System.EventHandler(this.ViewLinkMenu_Click);
             // 
             // viewRandomPageMenu
             // 
             this.viewRandomPageMenu.Name = "viewRandomPageMenu";
             this.viewRandomPageMenu.Size = new System.Drawing.Size(272, 26);
             this.viewRandomPageMenu.Text = "Random page (F3)";
-            this.viewRandomPageMenu.Click += new System.EventHandler(this.viewRandomPageMenu_Click);
+            this.viewRandomPageMenu.Click += new System.EventHandler(this.ViewRandomPageMenu_Click);
             // 
             // toolsMenu
             // 
@@ -285,6 +284,7 @@
             this.toolsCopyFilesMenu,
             this.toolsSaveLogMenu,
             this.toolsClearLogMenu,
+            this.toolsVolumePropertiesMenu,
             this.toolsRunTestsMenu,
             this.toolsTestHarnessMenu});
             this.toolsMenu.Name = "toolsMenu";
@@ -306,13 +306,6 @@
             this.toolsCopyFilesMenu.Text = "Copy Files ... / Abort";
             this.toolsCopyFilesMenu.Click += new System.EventHandler(this.ToolsCopyFilesMenu_Click);
             // 
-            // toolsTestHarnessMenu
-            // 
-            this.toolsTestHarnessMenu.Name = "toolsTestHarnessMenu";
-            this.toolsTestHarnessMenu.Size = new System.Drawing.Size(227, 26);
-            this.toolsTestHarnessMenu.Text = "Test Harness";
-            this.toolsTestHarnessMenu.Click += new System.EventHandler(this.ToolsTestHarnessMenu_Click);
-            // 
             // toolsSaveLogMenu
             // 
             this.toolsSaveLogMenu.Name = "toolsSaveLogMenu";
@@ -327,14 +320,28 @@
             this.toolsClearLogMenu.Text = "Clear log";
             this.toolsClearLogMenu.Click += new System.EventHandler(this.ToolsClearLogMenu_Click);
             // 
+            // toolsVolumePropertiesMenu
+            // 
+            this.toolsVolumePropertiesMenu.Name = "toolsVolumePropertiesMenu";
+            this.toolsVolumePropertiesMenu.Size = new System.Drawing.Size(227, 26);
+            this.toolsVolumePropertiesMenu.Text = "Volume Properties";
+            this.toolsVolumePropertiesMenu.Click += new System.EventHandler(this.ToolsVolumePropertiesMenu_Click);
+            // 
             // toolsRunTestsMenu
             // 
             this.toolsRunTestsMenu.Name = "toolsRunTestsMenu";
             this.toolsRunTestsMenu.Size = new System.Drawing.Size(227, 26);
             this.toolsRunTestsMenu.Text = "Run Tests";
-            this.toolsRunTestsMenu.Click += new System.EventHandler(this.toolsRunTestsMenu_Click);
+            this.toolsRunTestsMenu.Click += new System.EventHandler(this.ToolsRunTestsMenu_Click);
             // 
-            // frmZiPreview
+            // toolsTestHarnessMenu
+            // 
+            this.toolsTestHarnessMenu.Name = "toolsTestHarnessMenu";
+            this.toolsTestHarnessMenu.Size = new System.Drawing.Size(227, 26);
+            this.toolsTestHarnessMenu.Text = "Test Harness";
+            this.toolsTestHarnessMenu.Click += new System.EventHandler(this.ToolsTestHarnessMenu_Click);
+            // 
+            // ZipPreview
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -342,10 +349,12 @@
             this.Controls.Add(this.splitVertical);
             this.Controls.Add(this.menuStrip1);
             this.Margin = new System.Windows.Forms.Padding(4);
-            this.Name = "frmZiPreview";
-            this.Text = "Form1";
+            this.Name = "ZipPreview";
+            this.Text = "ZiPreview";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmZiPreview_FormClosing);
-            this.Load += new System.EventHandler(this.Form1_Load);
+            this.Load += new System.EventHandler(this.ZiPreview_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ZipPreview_KeyDown);
             this.splitVertical.Panel1.ResumeLayout(false);
             this.splitVertical.Panel2.ResumeLayout(false);
             this.splitVertical.Panel2.PerformLayout();
@@ -395,6 +404,7 @@
         private System.Windows.Forms.ToolStripMenuItem viewLinkMenu;
         private System.Windows.Forms.ToolStripMenuItem toolsRunTestsMenu;
         private System.Windows.Forms.ToolStripMenuItem viewRandomPageMenu;
+        private System.Windows.Forms.ToolStripMenuItem toolsVolumePropertiesMenu;
     }
 }
 

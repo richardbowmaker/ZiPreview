@@ -64,8 +64,9 @@ namespace ZiPreview
                 {
                     if (process.WaitForExit(timeout))
                     {
+                        int ec = process.ExitCode;
                         process.Close();
-                        return true;
+                        return ec == 0;
                     }
                     process.Close();
                 }
@@ -108,6 +109,12 @@ namespace ZiPreview
 
         static public bool MoveFile(string src, string dest)
         {
+            if (src.CompareTo(dest) == 0)
+            {
+                Logger.Error("Attempt to move file to same name: " + src);
+                return true;
+            }
+
             // no nonsense move file
             DeleteFile(dest);
             try
@@ -224,13 +231,31 @@ namespace ZiPreview
             return true;
         }
 
-        public static void CreateFileIfNotExist(string file)
+        public static void CreateFileIfDoesntExist(string file)
         {
             if (!File.Exists(file))
             {
-                File.Create(file);
-                Logger.Info("Created file: " + file);
+                try
+                {
+                    File.Create(file);
+                    Logger.Info("Created file: " + file);
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    Logger.Error("Could not create file: " + file);
+                }
             }
+        }
+
+        public static string GetDrive(string file)
+        {
+            int n = file.IndexOf(":");
+            if (n == -1)
+            {
+                Logger.Error("No drive for file: " + file);
+                return "";
+            }
+            else return file.Substring(0, n + 2);
         }
     }
 }

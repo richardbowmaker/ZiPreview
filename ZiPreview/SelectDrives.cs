@@ -32,6 +32,7 @@ namespace ZiPreview
             txtFolder.Text = _folder;
             txtFilter.Text = _filter;
             txtPassword.Text = _password;
+            _ok = true;
 
             // populate the check box list with the current
             // list of options held by the Veracrypt manager
@@ -75,7 +76,6 @@ namespace ZiPreview
 
         private void butCancel_Click(object sender, EventArgs e)
         {
-            _ok = false;
             Close();
         }
 
@@ -84,7 +84,6 @@ namespace ZiPreview
             _folder = txtFolder.Text;
             _filter = txtFilter.Text;
             _password = txtPassword.Text;
-            _ok = true;
 
             List<VeracryptVolume> vols = new List<VeracryptVolume>();
             for (int i = 0; i < chkFiles.Items.Count; ++i)
@@ -103,9 +102,10 @@ namespace ZiPreview
             FileSetManager.WriteProperties();
 
             // mount volumes and redisplay
-            VeracryptManager.SetVolumes(vols);
-
-            frmZiPreview.GuiUpdateIf.PopulateGrid();
+            if (VeracryptManager.SetVolumes(vols))
+                ZipPreview.ZiPreview.PopulateGrid();
+            else
+                _ok = false;
 
             Cursor.Current = Cursors.Default;
             Close();

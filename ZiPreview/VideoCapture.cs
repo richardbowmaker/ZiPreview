@@ -80,9 +80,7 @@ namespace ZiPreview
 
         private StateT _state;
 
-        public VideoCapture()
-        {
-        }
+        public VideoCapture() { }
 
         public bool Initialise(Form form)
         {
@@ -174,7 +172,7 @@ namespace ZiPreview
                 if (!file.MoveFilesToVolume(d.Drive)) return;
 
                 // update the grid display
-                frmZiPreview.GuiUpdateIf.RefreshGridRowTS(file);
+                ZipPreview.ZiPreview.RefreshGridRowTS(file);
 
                 drive = d.Drive;
             }
@@ -189,11 +187,14 @@ namespace ZiPreview
 
             if (_obs.IsConnected)
             {
+                _obs.SetVolume("Audio Output Capture", 0.9f);
                 _obs.SetRecordingFolder(_obsCaptureDir);
                 _file = file;
 
                 // prompt user to start playing the video
                 if (!VideoCapturePrompt.Run(file.Link)) return;
+
+                SetAudioRecordingLevel(10);
 
                 // start the browser
                 _browser = Utilities.LaunchBrowser(file);
@@ -314,7 +315,7 @@ namespace ZiPreview
                             if (MoveCaptureFile())
                             {
                                 _state = StateT.RecordingComplete;
-                                frmZiPreview.GuiUpdateIf.RefreshGridRowTS(_file);
+                                ZipPreview.ZiPreview.RefreshGridRowTS(_file);
                                 Logger.Info("Video captured: " + _file.VideoFilename);
                             }
                             else
@@ -329,6 +330,7 @@ namespace ZiPreview
                         if (secb && ((int)secs) % 5 == 0)
                         {
                             UnmuteAudio();
+                            SetAudioRecordingLevel(30);
                             SoundEnded();
                         }
                     }
@@ -338,6 +340,7 @@ namespace ZiPreview
                         if (secb && ((int)secs) % 5 == 0)
                         {
                             UnmuteAudio();
+                            SetAudioRecordingLevel(30);
                             SoundError();
                         }
                     }
@@ -361,6 +364,7 @@ namespace ZiPreview
                 if (Utilities.MoveFile(src, dest))
                 {
                     _file.VideoFilename = dest;
+                    VeracryptManager.SetVolumeDirty(dest);
                     return true;
                 }
             }
@@ -414,7 +418,13 @@ namespace ZiPreview
                                 }
                                 break;
                             case StateT.Countdown:
-                                _browser.Kill();
+                                try
+                                {
+                                    _browser.Kill();
+                                }
+                                catch (Exception)
+                                {
+                                }
                                 break;
                             case StateT.RecordingComplete:
                             case StateT.VideoStopped:
@@ -442,6 +452,17 @@ namespace ZiPreview
         {
             SendMessageW(_hwin, WM_APPCOMMAND, _hwin, (IntPtr)APPCOMMAND_VOLUME_DOWN);
             SendMessageW(_hwin, WM_APPCOMMAND, _hwin, (IntPtr)APPCOMMAND_VOLUME_UP);
+        }
+        public void SetAudioRecordingLevel(int percent)
+        {
+            // sets master pc volume to about 10%
+            SendMessageW(_hwin, WM_APPCOMMAND, _hwin, (IntPtr)APPCOMMAND_VOLUME_MUTE);
+
+            for (int i = 0; i < 50; ++i)
+                SendMessageW(_hwin, WM_APPCOMMAND, _hwin, (IntPtr)APPCOMMAND_VOLUME_DOWN);
+            
+            for (int i = 0; i < percent / 2; ++i)
+                SendMessageW(_hwin, WM_APPCOMMAND, _hwin, (IntPtr)APPCOMMAND_VOLUME_UP);
         }
 
         private byte[] CaptureRegion(Rectangle region)

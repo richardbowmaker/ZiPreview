@@ -76,7 +76,7 @@ namespace ZiPreview
 
         private void ButDelete_Click(object sender, EventArgs e)
         {
-            if (_preview != null) _preview.PreviewCancel();
+            if (_preview != null) _preview.PreviewStop();
             Close();
             Hide();
             Cursor.Current = Cursors.WaitCursor;
@@ -103,7 +103,7 @@ namespace ZiPreview
         {
             if (_preview != null)
             {
-                _preview.PreviewCancel();
+                _preview.PreviewStop();
                 _preview = null;
                 _player = null;
             }

@@ -4,6 +4,7 @@
 *.hc
 *.vhd
 *.exe
+_*.txt
 unmount.bat
 TestData
 TestData - Copy

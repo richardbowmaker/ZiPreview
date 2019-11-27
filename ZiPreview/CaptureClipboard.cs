@@ -11,9 +11,6 @@ namespace ZiPreview
 
         public static void TimerEvent()
         {
-            //IDataObject ido = Clipboard.GetDataObject();
-            //string[] fs = ido.GetFormats();
-
             // on first pass capture what is already in the clipboard
             if (ctext_ == null)
             {
@@ -40,8 +37,7 @@ namespace ZiPreview
             if (Clipboard.ContainsImage())
             {
                 Bitmap bm = (Bitmap)Clipboard.GetData("Bitmap");
-                bm.Save(Constants.TestDir + "\\capture.jpg", ImageFormat.Jpeg);
-                Clipboard.SetText(ctext_, TextDataFormat.Text);
+                Clipboard.SetText("123", TextDataFormat.Text);
 
                 if (ctext_.Length > 0)
                 {

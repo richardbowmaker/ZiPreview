@@ -8,7 +8,7 @@ using System.Drawing;
 
 namespace ZiPreview
 {
-    interface ImagesViewerData
+    interface IImagesViewerData
     {
         int GetNoOfImages();
         int GetNoOfRows();
@@ -24,7 +24,7 @@ namespace ZiPreview
         private int _kBorder = 5;
 
         private Panel _panel;
-        private ImagesViewerData _data;
+        private IImagesViewerData _data;
         private int _top;
         private int _noOfCells;
         private AxWMPLib.AxWindowsMediaPlayer _player;
@@ -35,7 +35,7 @@ namespace ZiPreview
         private int _playing;
         VideoPreview _preview;
 
-        public ImagesViewer(Panel panel, ImagesViewerData data)
+        public ImagesViewer(Panel panel, IImagesViewerData data)
         {
             _panel = panel;
             _data = data;
@@ -49,6 +49,9 @@ namespace ZiPreview
             _timer.Tick += new System.EventHandler(this.TickEvent);
 
             _player = new AxWMPLib.AxWindowsMediaPlayer();
+            _player.DoubleClickEvent += Player_DoubleClickEvent;
+            _player.ClickEvent += Player_ClickEvent;
+            _player.KeyPressEvent += _player_KeyPressEvent;
 
             // to set uimode player give player a temporary parent
             _panel.Controls.Add(_player);
@@ -76,13 +79,9 @@ namespace ZiPreview
                     PictureBox box = new PictureBox();
                     p.Controls.Add(box);
 
-                    box.Click += new System.EventHandler(Panel_Click);
-                    box.DoubleClick += new System.EventHandler(Panel_DoubleClick);
+                    box.Click += new System.EventHandler(PictureBox_Click);
+                    box.DoubleClick += new System.EventHandler(PictureBox_DoubleClick);
                     box.Tag = c + r * _data.GetNoOfCols();
-
-                    _player.ClickEvent += _player_ClickEvent;
-                    _player.DoubleClickEvent += _player_DoubleClickEvent;
-                    _player.KeyPressEvent += _player_KeyPressEvent;
                 }
             }
 
@@ -92,6 +91,22 @@ namespace ZiPreview
             _panel.Resize += new System.EventHandler(PanelResize);
             _selected = -1;
             _playing = -1;
+        }
+
+        public void Uninitialise()
+        {
+            _preview.PreviewStop();
+
+            for (int r = 0; r < _data.GetNoOfRows(); ++r)
+            {
+                for (int c = 0; c < _data.GetNoOfCols(); ++c)
+                {
+                    int n = r * _data.GetNoOfCols() + c;
+                    PictureBox box = (PictureBox)_panel.Controls[n].Controls[0];
+                    box.ImageLocation = "";
+                }
+            }
+            _panel.Controls.Clear();
         }
 
         public int Top {  get { return _top; } }
@@ -122,10 +137,12 @@ namespace ZiPreview
                     if (_top + n < _data.GetNoOfImages())
                     {
                         box.ImageLocation = _data.GetThumbNail(_top + n);
+                        box.Refresh();
                     }
                     else
                     {
                         box.ImageLocation = "";
+                        Refresh();
                     }
                 }
             }
@@ -216,9 +233,9 @@ namespace ZiPreview
         {
             if (_playing != -1)
             {
-                _preview.PreviewCancel();
+                _preview.PreviewStop();
                 _player.Visible = false;
-                Panel p = (Panel)_panel.Controls[_selected - _top];
+                Panel p = (Panel)_panel.Controls[_selected - _top]; //@ selected = 14 top = 0
                 PictureBox box = (PictureBox)p.Controls[0];
                 box.Visible = true;
                 p.Controls.Remove(_player);
@@ -227,7 +244,7 @@ namespace ZiPreview
             }
         }
 
-        private void Panel_Click(object sender, EventArgs e)
+        private void PictureBox_Click(object sender, EventArgs e)
         {
             PictureBox box = (PictureBox)sender;
             if (box != null)
@@ -235,9 +252,9 @@ namespace ZiPreview
                 int n = (int)box.Tag;
                 _data.ImageSelected(_top + n);
             }
-
         }
-        private void Panel_DoubleClick(object sender, EventArgs e)
+
+        private void PictureBox_DoubleClick(object sender, EventArgs e)
         {
             PictureBox box = (PictureBox)sender;
             if (box != null)
@@ -247,21 +264,19 @@ namespace ZiPreview
             }
         }
 
-        private void _player_ClickEvent(object sender, AxWMPLib._WMPOCXEvents_ClickEvent e)
-        {
-            _data.ImageSelected(_selected);
-        }
-
-        private void _player_DoubleClickEvent(object sender, AxWMPLib._WMPOCXEvents_DoubleClickEvent e)
+        private void Player_DoubleClickEvent(object sender, AxWMPLib._WMPOCXEvents_DoubleClickEvent e)
         {
             _data.ImagePlay(_selected);
+        }
+        private void Player_ClickEvent(object sender, AxWMPLib._WMPOCXEvents_ClickEvent e)
+        {
+            //_data.ImagePlay(_selected);
         }
 
         private void _player_KeyPressEvent(object sender, AxWMPLib._WMPOCXEvents_KeyPressEvent e)
         {
-            _data.ImagePlay(_selected);
+            //_data.ImagePlay(_selected);
         }
-
     }
 
 }

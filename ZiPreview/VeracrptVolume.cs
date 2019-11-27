@@ -9,10 +9,7 @@ namespace ZiPreview
         public string Drive;
         public bool IsMounted;
         public bool IsSelected;
-        public DateTime CreatedDate;
-        public DateTime AccessedDate;
-        public DateTime ModifiedDate;
-
+        public bool IsDirty;
 
         public VeracryptVolume(string file, bool isSelected)
         {
@@ -20,9 +17,7 @@ namespace ZiPreview
             Drive = "";
             IsMounted = false;
             IsSelected = isSelected;
-            CreatedDate = DateTime.Now;
-            AccessedDate = DateTime.Now;
-            ModifiedDate = DateTime.Now;
+            IsDirty = false;
         }
 
         public override string ToString()
@@ -54,9 +49,9 @@ namespace ZiPreview
             }
 
             // mount:
-            //      "C:\Program Files\VeraCrypt\VeraCrypt.exe" /q /a /hash sha512 /v VolAccounts.hc /l x /p password
+            //      "C:\Program Files\VeraCrypt\VeraCrypt.exe" /q /a /nowaitdlg y /hash sha512 /v VolAccounts.hc /l x /p password
             string cmd = Constants.VeracryptExe;
-            string args = "/q /a /hash sha512" + " /v \"" + Filename + "\" /l " + drive.Substring(0, 1).ToLower() + " /p " + Constants.Password;
+            string args = "/q /a /nowaitdlg y /hash sha512" + " /v \"" + Filename + "\" /l " + drive.Substring(0, 1).ToLower() + " /p " + Constants.Password;
 
             if (Utilities.RunCommandSync(cmd, args, 60000))
             {
@@ -67,11 +62,7 @@ namespace ZiPreview
                 // ensure that the files directory exists
                 Utilities.MakeDirectory(drive + Constants.FilesTargetPath);
 
-                // capture the volume dates
-                CreatedDate = File.GetCreationTime(Filename);
-                AccessedDate = File.GetLastAccessTime(Filename);
-                ModifiedDate = File.GetLastWriteTime(Filename);
-
+                IsDirty = false;
                 return true;
             }
             else
@@ -86,7 +77,7 @@ namespace ZiPreview
             if (IsMounted)
             {
                 string cmd = Constants.VeracryptExe;
-                string args = "/q /d " + Drive.Substring(0, 1).ToLower();
+                string args = "/q /nowaitdlg y /force /d " + Drive.Substring(0, 1).ToLower();
 
                 if (Utilities.RunCommandSync(cmd, args, 10000))
                 {
@@ -94,10 +85,18 @@ namespace ZiPreview
                     IsMounted = false;
                     Drive = "";
 
-                    // update volume dates
-                    File.SetCreationTime(Filename, CreatedDate);
-                    File.SetLastWriteTime(Filename, ModifiedDate.AddMinutes(1));
-                    File.SetLastAccessTime(Filename, AccessedDate.AddMinutes(1));
+                    // if increment timestamps by one minute to force
+                    // file synch to backup the volume
+                    DateTime dt = File.GetCreationTime(Filename);
+                    if (IsDirty)
+                    {
+                        dt = dt.AddMinutes(1);
+                        IsDirty = false;
+                        Logger.Info("Volume dirty, file dates incremented: " + ToString());
+                    }
+                    File.SetCreationTime(Filename, dt);
+                    File.SetLastWriteTime(Filename, dt);
+                    File.SetLastAccessTime(Filename, dt);
                 }
                 else
                 {

@@ -60,6 +60,8 @@ namespace ZiPreview
             }
         }
 
+        public string FilenameNoPathAndExt { get { return Path.GetFileNameWithoutExtension(Filename); } }
+
         public string Link
         {
             get
@@ -349,59 +351,6 @@ namespace ZiPreview
             Logger.Assert(fs.GetProperty("p2"), "457", "PropertyTests 8");
             Logger.Assert(fs.SetProperty("p1", "88"), "88", "PropertyTests 9");
             Logger.Assert(fs.GetProperty("p1"), "88", "PropertyTests 10");
-        }
-    }
-
-    class FileSetComparer : System.Collections.IComparer
-    {
-        private static bool _ascending = true;
-        private static string _col = "";
-
-        public FileSetComparer(string col)
-        {
-            if (col.CompareTo(_col) == 0)
-            {
-                _ascending = !_ascending;
-            }
-            else
-            {
-                _ascending = true;
-            }
-            _col = col;
-        }
-
-        public int Compare(object o1, object o2)
-        {
-            FileSet f1;
-            FileSet f2;
-
-            if (_ascending)
-            {
-                f1 = (FileSet)((DataGridViewRow)o1).Tag;
-                f2 = (FileSet)((DataGridViewRow)o2).Tag;
-            }
-            else
-            {
-                f2 = (FileSet)((DataGridViewRow)o1).Tag;
-                f1 = (FileSet)((DataGridViewRow)o2).Tag;
-            }
-
-            switch (_col)
-            {
-                case "colFilename": return f1.Filename.CompareTo(f2.Filename);
-                case "colSelected": return f1.Selected.CompareTo(f2.Selected);
-                case "colType": return f1.TypeS.CompareTo(f2.TypeS);
-                case "colTimes": return f1.TimesI.CompareTo(f2.TimesI);
-                case "colDate":
-                    string d1 = f1.LastDate;
-                    string d2 = f2.LastDate;
-                    if (d1.Length == 0) return -1;
-                    if (d2.Length == 0) return +1;
-                    // dd/mm/yyyy
-                    return (d1.Substring(6, 4) + d1.Substring(3, 2) + d1.Substring(0, 2))
-                                .CompareTo(d2.Substring(6, 4) + d2.Substring(3, 2) + d2.Substring(0, 2));
-            }
-            return 0;
         }
     }
 }
