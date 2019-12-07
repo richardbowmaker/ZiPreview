@@ -37,7 +37,7 @@ namespace ZiPreview
             if (Clipboard.ContainsImage())
             {
                 Bitmap bm = (Bitmap)Clipboard.GetData("Bitmap");
-                Clipboard.SetText("123", TextDataFormat.Text);
+                Clipboard.Clear();
 
                 if (ctext_.Length > 0)
                 {
@@ -46,7 +46,4 @@ namespace ZiPreview
             }
         }
     }
-
-
-
 }

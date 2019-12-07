@@ -35,13 +35,15 @@
             this.chkMuteDuring = new System.Windows.Forms.CheckBox();
             this.chkUnmuteAfter = new System.Windows.Forms.CheckBox();
             this.chkDoNotShow = new System.Windows.Forms.CheckBox();
+            this.chkLaunchBrowser = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // butOK
             // 
-            this.butOK.Location = new System.Drawing.Point(11, 271);
+            this.butOK.Location = new System.Drawing.Point(15, 327);
+            this.butOK.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.butOK.Name = "butOK";
-            this.butOK.Size = new System.Drawing.Size(75, 23);
+            this.butOK.Size = new System.Drawing.Size(100, 28);
             this.butOK.TabIndex = 0;
             this.butOK.Text = "OK";
             this.butOK.UseVisualStyleBackColor = true;
@@ -49,9 +51,10 @@
             // 
             // butCancel
             // 
-            this.butCancel.Location = new System.Drawing.Point(364, 271);
+            this.butCancel.Location = new System.Drawing.Point(477, 327);
+            this.butCancel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.butCancel.Name = "butCancel";
-            this.butCancel.Size = new System.Drawing.Size(75, 23);
+            this.butCancel.Size = new System.Drawing.Size(100, 28);
             this.butCancel.TabIndex = 1;
             this.butCancel.Text = "Cancel";
             this.butCancel.UseVisualStyleBackColor = true;
@@ -60,9 +63,10 @@
             // lblURL
             // 
             this.lblURL.AutoSize = true;
-            this.lblURL.Location = new System.Drawing.Point(13, 13);
+            this.lblURL.Location = new System.Drawing.Point(17, 16);
+            this.lblURL.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblURL.Name = "lblURL";
-            this.lblURL.Size = new System.Drawing.Size(29, 13);
+            this.lblURL.Size = new System.Drawing.Size(36, 17);
             this.lblURL.TabIndex = 2;
             this.lblURL.Text = "URL";
             // 
@@ -70,11 +74,12 @@
             // 
             this.textInstructions.BackColor = System.Drawing.SystemColors.Control;
             this.textInstructions.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textInstructions.Location = new System.Drawing.Point(11, 47);
+            this.textInstructions.Location = new System.Drawing.Point(15, 58);
+            this.textInstructions.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.textInstructions.Multiline = true;
             this.textInstructions.Name = "textInstructions";
             this.textInstructions.ReadOnly = true;
-            this.textInstructions.Size = new System.Drawing.Size(428, 126);
+            this.textInstructions.Size = new System.Drawing.Size(571, 155);
             this.textInstructions.TabIndex = 3;
             // 
             // chkMuteDuring
@@ -82,9 +87,10 @@
             this.chkMuteDuring.AutoSize = true;
             this.chkMuteDuring.Checked = true;
             this.chkMuteDuring.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkMuteDuring.Location = new System.Drawing.Point(11, 191);
+            this.chkMuteDuring.Location = new System.Drawing.Point(15, 235);
+            this.chkMuteDuring.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.chkMuteDuring.Name = "chkMuteDuring";
-            this.chkMuteDuring.Size = new System.Drawing.Size(158, 17);
+            this.chkMuteDuring.Size = new System.Drawing.Size(208, 21);
             this.chkMuteDuring.TabIndex = 4;
             this.chkMuteDuring.Text = "Mute audio during recording";
             this.chkMuteDuring.UseVisualStyleBackColor = true;
@@ -94,9 +100,10 @@
             this.chkUnmuteAfter.AutoSize = true;
             this.chkUnmuteAfter.Checked = true;
             this.chkUnmuteAfter.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkUnmuteAfter.Location = new System.Drawing.Point(11, 214);
+            this.chkUnmuteAfter.Location = new System.Drawing.Point(15, 263);
+            this.chkUnmuteAfter.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.chkUnmuteAfter.Name = "chkUnmuteAfter";
-            this.chkUnmuteAfter.Size = new System.Drawing.Size(219, 17);
+            this.chkUnmuteAfter.Size = new System.Drawing.Size(290, 21);
             this.chkUnmuteAfter.TabIndex = 5;
             this.chkUnmuteAfter.Text = "Unmute audio after recording is complete";
             this.chkUnmuteAfter.UseVisualStyleBackColor = true;
@@ -104,19 +111,33 @@
             // chkDoNotShow
             // 
             this.chkDoNotShow.AutoSize = true;
-            this.chkDoNotShow.Location = new System.Drawing.Point(11, 237);
+            this.chkDoNotShow.Location = new System.Drawing.Point(404, 263);
+            this.chkDoNotShow.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.chkDoNotShow.Name = "chkDoNotShow";
-            this.chkDoNotShow.Size = new System.Drawing.Size(134, 17);
+            this.chkDoNotShow.Size = new System.Drawing.Size(173, 21);
             this.chkDoNotShow.TabIndex = 6;
             this.chkDoNotShow.Text = "Do not show this again";
             this.chkDoNotShow.UseVisualStyleBackColor = true;
             this.chkDoNotShow.CheckedChanged += new System.EventHandler(this.ChkDoNotShow_CheckedChanged);
             // 
+            // chkLaunchBrowser
+            // 
+            this.chkLaunchBrowser.AutoSize = true;
+            this.chkLaunchBrowser.Checked = true;
+            this.chkLaunchBrowser.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkLaunchBrowser.Location = new System.Drawing.Point(15, 291);
+            this.chkLaunchBrowser.Name = "chkLaunchBrowser";
+            this.chkLaunchBrowser.Size = new System.Drawing.Size(132, 21);
+            this.chkLaunchBrowser.TabIndex = 7;
+            this.chkLaunchBrowser.Text = "Launch Browser";
+            this.chkLaunchBrowser.UseVisualStyleBackColor = true;
+            // 
             // VideoCapturePrompt
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(451, 306);
+            this.ClientSize = new System.Drawing.Size(601, 368);
+            this.Controls.Add(this.chkLaunchBrowser);
             this.Controls.Add(this.chkDoNotShow);
             this.Controls.Add(this.chkUnmuteAfter);
             this.Controls.Add(this.chkMuteDuring);
@@ -124,6 +145,7 @@
             this.Controls.Add(this.lblURL);
             this.Controls.Add(this.butCancel);
             this.Controls.Add(this.butOK);
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "VideoCapturePrompt";
@@ -144,5 +166,6 @@
         private System.Windows.Forms.CheckBox chkMuteDuring;
         private System.Windows.Forms.CheckBox chkUnmuteAfter;
         private System.Windows.Forms.CheckBox chkDoNotShow;
+        private System.Windows.Forms.CheckBox chkLaunchBrowser;
     }
 }

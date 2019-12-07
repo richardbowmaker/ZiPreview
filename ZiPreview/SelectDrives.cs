@@ -103,7 +103,11 @@ namespace ZiPreview
 
             // mount volumes and redisplay
             if (VeracryptManager.SetVolumes(vols))
+            {
                 ZipPreview.ZiPreview.PopulateGrid();
+                Logger.Info("Total free space " +
+                    Utilities.BytesToString(VeracryptManager.GetTotalFreeSpace()));
+            }
             else
                 _ok = false;
 

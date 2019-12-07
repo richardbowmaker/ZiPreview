@@ -199,18 +199,6 @@ namespace ZiPreview
             return null;
         }
 
-        // check each drive in turn and return the first one that has the required
-        // no. of free bytes
-        public static DriveVolume FindDriveWithFreeSpace(List<DriveVolume> drives, long rqd)
-        {
-            foreach (DriveVolume d in drives)
-            {
-                long? fs = GetDriveFreeSpace(d.Drive);
-                if (fs.HasValue && fs > rqd) return d;
-            }
-            return null;
-        }
-
         public static bool MakeDirectory(string path)
         {
             // if the directory doesn't already exists it creates it
@@ -256,6 +244,25 @@ namespace ZiPreview
                 return "";
             }
             else return file.Substring(0, n + 2);
+        }
+
+        public static string BytesToString(long bs)
+        {
+            string s = "";
+
+            long kbs = bs / 1024;
+            long mbs = kbs / 1024;
+            long gbs = mbs / 1024;
+
+            if (gbs > 0) s = gbs.ToString() + "." + ((mbs % 1024) / 102).ToString() + "GB";
+            else if (mbs > 0) s = mbs.ToString() + "." + ((kbs % 1024) / 102).ToString() + "MB";
+            else if (kbs > 0) s = kbs.ToString() + "." + ((bs % 1024) / 102).ToString() + "kb";
+            else s = bs.ToString() + " bytes";
+
+            s += " (" + bs.ToString("#,##0") + ")";
+
+            return s;
+
         }
     }
 }

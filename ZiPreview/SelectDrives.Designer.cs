@@ -72,12 +72,12 @@
             this.chkFiles.FormattingEnabled = true;
             this.chkFiles.Location = new System.Drawing.Point(31, 108);
             this.chkFiles.Name = "chkFiles";
-            this.chkFiles.Size = new System.Drawing.Size(573, 378);
+            this.chkFiles.Size = new System.Drawing.Size(810, 378);
             this.chkFiles.TabIndex = 3;
             // 
             // butOk
             // 
-            this.butOk.Location = new System.Drawing.Point(637, 458);
+            this.butOk.Location = new System.Drawing.Point(31, 565);
             this.butOk.Name = "butOk";
             this.butOk.Size = new System.Drawing.Size(89, 28);
             this.butOk.TabIndex = 4;
@@ -87,7 +87,7 @@
             // 
             // butCancel
             // 
-            this.butCancel.Location = new System.Drawing.Point(888, 463);
+            this.butCancel.Location = new System.Drawing.Point(884, 565);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(89, 28);
             this.butCancel.TabIndex = 5;
@@ -98,7 +98,7 @@
             // txtPassword
             // 
             this.txtPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtPassword.Location = new System.Drawing.Point(637, 390);
+            this.txtPassword.Location = new System.Drawing.Point(31, 502);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.Size = new System.Drawing.Size(339, 30);
             this.txtPassword.TabIndex = 7;
@@ -106,7 +106,7 @@
             // 
             // butFind
             // 
-            this.butFind.Location = new System.Drawing.Point(641, 119);
+            this.butFind.Location = new System.Drawing.Point(862, 108);
             this.butFind.Name = "butFind";
             this.butFind.Size = new System.Drawing.Size(75, 39);
             this.butFind.TabIndex = 8;
@@ -116,7 +116,7 @@
             // 
             // butSelectAll
             // 
-            this.butSelectAll.Location = new System.Drawing.Point(641, 186);
+            this.butSelectAll.Location = new System.Drawing.Point(862, 181);
             this.butSelectAll.Name = "butSelectAll";
             this.butSelectAll.Size = new System.Drawing.Size(114, 37);
             this.butSelectAll.TabIndex = 9;
@@ -126,7 +126,7 @@
             // 
             // butDeselectAll
             // 
-            this.butDeselectAll.Location = new System.Drawing.Point(641, 250);
+            this.butDeselectAll.Location = new System.Drawing.Point(862, 249);
             this.butDeselectAll.Name = "butDeselectAll";
             this.butDeselectAll.Size = new System.Drawing.Size(111, 37);
             this.butDeselectAll.TabIndex = 10;
@@ -138,7 +138,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1006, 503);
+            this.ClientSize = new System.Drawing.Size(1006, 605);
             this.Controls.Add(this.butDeselectAll);
             this.Controls.Add(this.butSelectAll);
             this.Controls.Add(this.butFind);

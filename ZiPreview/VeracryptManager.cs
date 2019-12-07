@@ -86,7 +86,7 @@ namespace ZiPreview
             _volumes.ForEach(v =>
             {
                 if (v.IsMounted) script.Add
-                ("\"" + Constants.VeracryptExe + "\" /q /d " + v.Drive.Substring(0, 1).ToLower());
+                ("\"" + Constants.VeracryptExe + "\" /nowaitdlg y /force /q /d " + v.Drive.Substring(0, 1).ToLower());
             });
             return script;
         }
@@ -130,6 +130,78 @@ namespace ZiPreview
             {
                 _volumes[n].IsDirty = true;
                 Logger.Info("Volume dirty: " + _volumes[n].ToString());
+            }
+        }
+
+        public static long GetTotalFreeSpace()
+        {
+            long fs = 0; ;
+            foreach (VeracryptVolume v in _volumes)
+            {
+                long? n = v.FreeSpace;
+                if (n.HasValue) fs += n.Value;
+            }
+            return fs;
+        }
+
+        // check each drive in turn and return the first one that has the required
+        // no. of free bytes
+        public static VeracryptVolume FindDriveWithFreeSpace(long rqd)
+        {
+            foreach (VeracryptVolume v in _volumes)
+            {
+                long? fs = v.FreeSpace;
+                if (fs.HasValue && fs > rqd) return v;
+            }
+            return null;
+        }
+
+        public static void MoveFilesToCreateSpace()
+        {
+            List<FileSet> files = FileSetManager.GetFiles();
+
+            foreach (VeracryptVolume vol in _volumes)
+            {
+                if (!vol.IsMounted) continue;
+                long? fs = vol.FreeSpace;
+                if (fs == null) continue;
+
+                while (fs < 200_000_000)
+                {
+                    // find a file set to move
+                    int n = files.FindLastIndex(f =>
+                        f.DriveMatches(vol.Drive) && f.HasVideo);
+
+                    if (n == -1)
+                    {
+                        Logger.Error("No file found in volume: " + vol.Drive);
+                        continue;
+                    }
+
+                    FileSet file = files[n];
+                    VeracryptVolume volnew = VeracryptManager.
+                        FindDriveWithFreeSpace(200_000_000 + file.GetSize());
+
+                    if (volnew != null)
+                    {
+                        if (volnew.Drive.CompareTo(vol.Drive) == 0)
+                        {
+                            Logger.Error("move to same drive " + file.Filename);
+                        }
+                        else
+                        {
+                            Logger.Info("Move files " + file.Filename + " to drive " + volnew.Drive);
+                            file.MoveFilesToVolume(volnew.Drive);
+                        }
+                    }
+                    else
+                    {
+                        Logger.Error("no more available space");
+                    }
+
+                    fs = vol.FreeSpace;
+                    if (fs == null) continue;
+                }
             }
         }
     }

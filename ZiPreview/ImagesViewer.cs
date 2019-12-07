@@ -142,7 +142,7 @@ namespace ZiPreview
                     else
                     {
                         box.ImageLocation = "";
-                        Refresh();
+                        box.Refresh();
                     }
                 }
             }

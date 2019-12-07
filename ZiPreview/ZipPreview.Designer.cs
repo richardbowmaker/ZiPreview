@@ -41,6 +41,7 @@
             this.fileMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.fileSelectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.fileDeleteMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.fileClearSelectedMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.fileExitMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.viewMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.viewMoreImagesMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -58,6 +59,7 @@
             this.toolsVolumePropertiesMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsRunTestsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsTestHarnessMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewLinkToClipboardMenu = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitVertical)).BeginInit();
             this.splitVertical.Panel1.SuspendLayout();
             this.splitVertical.Panel2.SuspendLayout();
@@ -188,6 +190,7 @@
             this.fileMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileSelectMenu,
             this.fileDeleteMenu,
+            this.fileClearSelectedMenu,
             this.fileExitMenu});
             this.fileMenu.Name = "fileMenu";
             this.fileMenu.Size = new System.Drawing.Size(46, 24);
@@ -196,21 +199,28 @@
             // fileSelectMenu
             // 
             this.fileSelectMenu.Name = "fileSelectMenu";
-            this.fileSelectMenu.Size = new System.Drawing.Size(149, 26);
+            this.fileSelectMenu.Size = new System.Drawing.Size(185, 26);
             this.fileSelectMenu.Text = "Select ...";
             this.fileSelectMenu.Click += new System.EventHandler(this.FileSelectMenu_Click);
             // 
             // fileDeleteMenu
             // 
             this.fileDeleteMenu.Name = "fileDeleteMenu";
-            this.fileDeleteMenu.Size = new System.Drawing.Size(149, 26);
+            this.fileDeleteMenu.Size = new System.Drawing.Size(185, 26);
             this.fileDeleteMenu.Text = "Delete ...";
             this.fileDeleteMenu.Click += new System.EventHandler(this.FileDeleteMenu_Click);
+            // 
+            // fileClearSelectedMenu
+            // 
+            this.fileClearSelectedMenu.Name = "fileClearSelectedMenu";
+            this.fileClearSelectedMenu.Size = new System.Drawing.Size(185, 26);
+            this.fileClearSelectedMenu.Text = "Clear selected";
+            this.fileClearSelectedMenu.Click += new System.EventHandler(this.FileClearSelectedMenu_Click);
             // 
             // fileExitMenu
             // 
             this.fileExitMenu.Name = "fileExitMenu";
-            this.fileExitMenu.Size = new System.Drawing.Size(149, 26);
+            this.fileExitMenu.Size = new System.Drawing.Size(185, 26);
             this.fileExitMenu.Text = "E&xit";
             this.fileExitMenu.Click += new System.EventHandler(this.FileExitMenu_Click);
             // 
@@ -223,7 +233,8 @@
             this.viewNextSelectedMenu,
             this.viewPreviousSelectedMenu,
             this.viewLinkMenu,
-            this.viewRandomPageMenu});
+            this.viewRandomPageMenu,
+            this.viewLinkToClipboardMenu});
             this.viewMenu.Name = "viewMenu";
             this.viewMenu.Size = new System.Drawing.Size(55, 24);
             this.viewMenu.Text = "View";
@@ -341,6 +352,13 @@
             this.toolsTestHarnessMenu.Text = "Test Harness";
             this.toolsTestHarnessMenu.Click += new System.EventHandler(this.ToolsTestHarnessMenu_Click);
             // 
+            // viewLinkToClipboardMenu
+            // 
+            this.viewLinkToClipboardMenu.Name = "viewLinkToClipboardMenu";
+            this.viewLinkToClipboardMenu.Size = new System.Drawing.Size(272, 26);
+            this.viewLinkToClipboardMenu.Text = "Link to clipboard (F12)";
+            this.viewLinkToClipboardMenu.Click += new System.EventHandler(this.ViewLinkToClipboardMenu_Click);
+            // 
             // ZipPreview
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -405,6 +423,8 @@
         private System.Windows.Forms.ToolStripMenuItem toolsRunTestsMenu;
         private System.Windows.Forms.ToolStripMenuItem viewRandomPageMenu;
         private System.Windows.Forms.ToolStripMenuItem toolsVolumePropertiesMenu;
+        private System.Windows.Forms.ToolStripMenuItem fileClearSelectedMenu;
+        private System.Windows.Forms.ToolStripMenuItem viewLinkToClipboardMenu;
     }
 }
 

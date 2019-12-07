@@ -37,7 +37,6 @@ namespace ZiPreview
 
         private void ZiPreview_Load(object sender, EventArgs e)
         {
-
             string cd = Directory.GetCurrentDirectory();
 
             Logger.TheListBox = listTrace;
@@ -497,6 +496,7 @@ namespace ZiPreview
                         case Keys.F5: IncNoOfImages(file); return true;
                         case Keys.F6: DecNoOfImages(file); return true;
                         case Keys.F7: CaptureVideo(file); return true;
+                        case Keys.F12: CopyLinkToClipboard(file); return true;
 
                         case Keys.Delete: DeleteSelected(); return true;
                     }
@@ -663,6 +663,12 @@ namespace ZiPreview
             RefreshGridRowTS(file);
         }
 
+        private void CopyLinkToClipboard(FileSet file)
+        {
+            if (file.HasLink)
+                Clipboard.SetText(file.Link, TextDataFormat.Text);
+        }
+
         private void CaptureVideo(FileSet file)
         {
             // file must have a link
@@ -748,6 +754,11 @@ namespace ZiPreview
             VeracryptManager.UnmountVolumes();
         }
 
+        private void ClearSelected()
+        {
+            FileSetManager.GetFiles().ForEach(f => f.Selected = false);
+            gridFiles.Refresh();
+        }
 
         #endregion
 
@@ -765,7 +776,10 @@ namespace ZiPreview
         {
             DeleteSelected();
         }
-
+        private void FileClearSelectedMenu_Click(object sender, EventArgs e)
+        {
+            ClearSelected();
+        }
 
         private void FileExitMenu_Click(object sender, EventArgs e)
         {
@@ -810,6 +824,12 @@ namespace ZiPreview
         private void ViewRandomPageMenu_Click(object sender, EventArgs e)
         {
             RandomPage();
+        }
+
+        private void ViewLinkToClipboardMenu_Click(object sender, EventArgs e)
+        {
+            var rows = gridFiles.SelectedRows;
+            if (rows.Count == 1) CopyLinkToClipboard((FileSet)rows[0].Tag);
         }
 
         private void ToolsMenu_DropDownOpening(object sender, EventArgs e)
@@ -880,7 +900,6 @@ namespace ZiPreview
         {
             e.Cancel = !CanClose();
         }
-
     }
 
 }

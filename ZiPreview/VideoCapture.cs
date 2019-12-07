@@ -155,26 +155,26 @@ namespace ZiPreview
             {
                 // scan all mounted volumes looking for one that has a least
                 // 500 MB free for video capture
-                DriveVolume d = Utilities
-                    .FindDriveWithFreeSpace(VeracryptManager.GetDrives(), Constants.MinimumCaptureSpace);
+                VeracryptVolume vol = VeracryptManager.
+                    FindDriveWithFreeSpace(Constants.MinimumCaptureSpace);
 
-                if (d == null)
+                if (vol == null)
                 {
                     MessageBox.Show("No volumes have sufficient diskspace", Constants.Title,
                         MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     return;
                 }
 
-                Logger.Info("Sufficient space found on another drive: " + d.Drive);
+                Logger.Info("Sufficient space found on another drive: " + vol.Drive);
 
                 // the image/link files will need to be moved to the same volume
                 // as the video capture volume
-                if (!file.MoveFilesToVolume(d.Drive)) return;
+                if (!file.MoveFilesToVolume(vol.Drive)) return;
 
                 // update the grid display
                 ZipPreview.ZiPreview.RefreshGridRowTS(file);
 
-                drive = d.Drive;
+                drive = vol.Drive;
             }
 
             // create the capture folder
@@ -197,7 +197,7 @@ namespace ZiPreview
                 SetAudioRecordingLevel(10);
 
                 // start the browser
-                _browser = Utilities.LaunchBrowser(file);
+                LaunchBrowser(file);
 
                 // start timer state machine running
                 EnableHotKeys(true);
@@ -209,7 +209,7 @@ namespace ZiPreview
             }
             else
             {
-                MessageBox.Show("OBS is not running", Constants.Title, 
+                MessageBox.Show("OBS is not running", Constants.Title,
                     MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
@@ -220,7 +220,7 @@ namespace ZiPreview
             if (_state == StateT.Recording)
             {
                 _obs.ToggleRecording();
-                _browser.Kill();
+                KillBrowser();
             }
             _state = StateT.Stopped;
         }
@@ -234,7 +234,7 @@ namespace ZiPreview
             // check for timeout
             if (secs > _kCaptureTimeout)
             {
-                _browser.Kill();
+                KillBrowser();
                 _state = StateT.CaptureError;
             }
 
@@ -296,7 +296,7 @@ namespace ZiPreview
                                 try
                                 {
                                     // exception occurs if browser was already open
-                                    _browser.Kill();
+                                    KillBrowser();
                                 }
                                 catch (InvalidOperationException)
                                 {
@@ -409,7 +409,7 @@ namespace ZiPreview
                         {
                             case StateT.Recording:
                                 _obs.ToggleRecording();
-                                _browser.Kill();
+                                KillBrowser();
                                 string fn = GetNewestFileInDirectory(_obsCaptureDir, "*.mp4");
                                 if (fn.Length > 0)
                                 {
@@ -420,7 +420,7 @@ namespace ZiPreview
                             case StateT.Countdown:
                                 try
                                 {
-                                    _browser.Kill();
+                                    KillBrowser();
                                 }
                                 catch (Exception)
                                 {
@@ -460,7 +460,7 @@ namespace ZiPreview
 
             for (int i = 0; i < 50; ++i)
                 SendMessageW(_hwin, WM_APPCOMMAND, _hwin, (IntPtr)APPCOMMAND_VOLUME_DOWN);
-            
+
             for (int i = 0; i < percent / 2; ++i)
                 SendMessageW(_hwin, WM_APPCOMMAND, _hwin, (IntPtr)APPCOMMAND_VOLUME_UP);
         }
@@ -488,6 +488,22 @@ namespace ZiPreview
             captureBitmap.UnlockBits(bitmapData);
 
             return bs;
+        }
+
+        private void LaunchBrowser(FileSet file)
+        {
+            if (VideoCapturePrompt.LaunchBrowser)
+                _browser = Utilities.LaunchBrowser(file);
+            else
+                Clipboard.SetText(file.Link, TextDataFormat.Text);
+        }
+
+        private void KillBrowser()
+        {
+            if (VideoCapturePrompt.LaunchBrowser)
+                _browser.Kill();
+            else
+                Clipboard.Clear();
         }
 
         private void SoundBeep()

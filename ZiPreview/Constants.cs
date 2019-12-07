@@ -42,7 +42,8 @@ namespace ZiPreview
         }
 
         // minimum disk space required for OBS capture
-        public static long MinimumCaptureSpace = 500L * 1000000L; // 500 MB
+        public static long MinimumCaptureSpace = 500_000_000L; // 500MB
+        public static long MinimumLinkSpace = 250_000L; // 250kb
 
         public static string BeepWav { get { return WorkingFolder + @"\Executable\beep.wav"; } }
         public static string BongWav { get { return WorkingFolder + @"\Executable\bong.wav"; } }

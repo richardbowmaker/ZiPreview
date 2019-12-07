@@ -9,7 +9,19 @@ namespace ZiPreview
         public string Drive;
         public bool IsMounted;
         public bool IsSelected;
-        public bool IsDirty;
+        private bool isDirty;
+        public bool IsDirty
+        {
+            get { return isDirty; }
+            set 
+            { 
+                isDirty = value; 
+                if (isDirty)
+                {
+                    int nn = 0;
+                }
+            }
+        }
 
         public VeracryptVolume(string file, bool isSelected)
         {
@@ -25,11 +37,28 @@ namespace ZiPreview
             if (IsMounted)
             {
                 long? fs = Utilities.GetDriveFreeSpace(Drive);
-                string fss = "";
-                if (fs.HasValue) fss = String.Format("{0:n0}", fs.Value);
-                return Filename + ", " + Drive + ", " + fss + " bytes";
+                if (fs.HasValue)
+                    return Filename + ", " + Drive + ", " +
+                        Utilities.BytesToString(fs.Value) +
+                        (IsDirty ? "*" : "");
+                else
+                    return Filename + ", " + Drive;
             }
             else return Filename;
+        }
+
+        public long? FreeSpace
+        {
+            get
+            {
+                long? fs = null;
+                if (IsMounted)
+                {
+                    DriveInfo drive = new DriveInfo(Drive);
+                    if (drive.IsReady) fs = drive.TotalFreeSpace;
+                }
+                return fs;
+            }
         }
 
         public bool MountVolume(string drive)

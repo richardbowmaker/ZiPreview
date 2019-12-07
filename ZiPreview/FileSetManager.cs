@@ -159,10 +159,10 @@ namespace ZiPreview
             string lfn = "";
 
             // link and image should only need 250kb max
-            DriveVolume drive = Utilities
-                .FindDriveWithFreeSpace(VeracryptManager.GetDrives(), 250000);
+            VeracryptVolume vol = VeracryptManager.
+                FindDriveWithFreeSpace(Constants.MinimumLinkSpace);
 
-            if (drive == null)
+            if (vol == null)
             {
                 MessageBox.Show("Insufficient disk space",
                     Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
@@ -172,8 +172,8 @@ namespace ZiPreview
             if (!Utilities.MakeDirectory(Constants.FilesTargetPath))
                 return false;
 
-            ifn = drive.Drive + Constants.FilesTargetPath + "\\file" + fn + ".jpg";
-            lfn = drive.Drive + Constants.FilesTargetPath + "\\file" + fn + ".lnk";
+            ifn = vol.Drive + Constants.FilesTargetPath + "\\file" + fn + ".jpg";
+            lfn = vol.Drive + Constants.FilesTargetPath + "\\file" + fn + ".lnk";
 
             // save link
             if (VeracryptManager.IsMountedVolume(lfn) 
@@ -297,7 +297,7 @@ namespace ZiPreview
                         {
                             // save the property
                             if (fs.MatchesAny(fields[0]))
-                                fs.SetProperty(fields[1], fields[2]);
+                                fs.LoadProperty(fields[1], fields[2]);
                         }
                     }
                 }

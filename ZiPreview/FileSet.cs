@@ -10,21 +10,33 @@ namespace ZiPreview
         public string ImageFilename { get; set; }
         public string VideoFilename { get; set; }
         public string LinkFilename { get; set; }
-        public string Volume { get; set; }
-        public string LastDate { get { return GetProperty("lasttime"); } }
-        public string Times { get { return GetProperty("times"); } }
-        public bool Selected { get; set; }
+        public string Volume { get; set; } // filename of the veracrypt file
+        public string LastDate 
+        { 
+            get { return GetProperty("lasttime"); } 
+            set { SetProperty("lasttime", value); }
+        }
+        public string Times 
+        { 
+            get { return GetProperty("times"); } 
+            set { SetProperty("times", value); }
+        }
+        public bool Selected
+        { 
+            get { return GetProperty("selected").CompareTo("X") == 0; }
+            set { SetProperty("selected", value ? "X" : ""); }
+        }
 
         public List<Property> Properties { get; set; }
     
         public FileSet()
         {
+            Properties = new List<Property>();
             ImageFilename = "";
             VideoFilename = "";
             LinkFilename = "";
             Volume = "";
             Selected = false;
-            Properties = new List<Property>();
         }
 
         public DataGridViewRow Row { get; set; }
@@ -92,26 +104,11 @@ namespace ZiPreview
             }
         }
 
-        public string SelectedS
-        {
-            get
-            {
-                if (Selected) return "X"; else return "";
-            }
-        }
+        public string SelectedS { get { return GetProperty("selected"); } }
 
-        public int TimesI
-        {
-            get
-            {
-                if (Times.Length == 0) return 0; else return Int32.Parse(Times);
-            }
-        }
+        public int TimesI { get { return Times.Length == 0 ? 0 : Int32.Parse(Times);  } }
 
-        public void ToggleSelected()
-        {
-            Selected = !Selected;
-        }
+        public void ToggleSelected() { Selected = !Selected; }
 
         public bool FileMatchesAny(string file)
         {
@@ -166,8 +163,11 @@ namespace ZiPreview
 
             if (ok)
             {
+                VeracryptManager.SetVolumeDirty(drive);
+                VeracryptManager.SetVolumeDirty(ImageFilename);
+
                 // files copied ok, update the class attributes
-                // and delee theoriginal files
+                // and delete theoriginal files
                 Utilities.DeleteFile(ImageFilename);
                 ImageFilename = idest;
                 Utilities.DeleteFile(LinkFilename);
@@ -254,9 +254,29 @@ namespace ZiPreview
 
         public string SetProperty(string key, string value)
         {
+            if (value.Length == 0)
+            {
+                // remove property if set to null
+                int n = Properties.FindIndex(p => p.Equals(key));
+                if (n != -1)
+                {
+                    Properties.RemoveAt(n);
+                    VeracryptManager.SetVolumeDirty(Filename);
+                }
+                return "";
+            }
+            else
+            {
+                Property p = CreateProperty(key);
+                p.Value = value;
+                VeracryptManager.SetVolumeDirty(Filename);
+                return value;
+            }
+        }
+        public void LoadProperty(string key, string value)
+        {
             Property p = CreateProperty(key);
             p.Value = value;
-            return value;
         }
 
         public string GetProperty(string key)
@@ -336,6 +356,27 @@ namespace ZiPreview
                 return drive.ToLower().CompareTo(fn.Substring(0, n + 2).ToLower()) == 0;
             }
             else return false;
+        }
+
+        public long GetSize()
+        {
+            long size = 0;
+            if (HasImage)
+            {
+                FileInfo fi = new FileInfo(ImageFilename);
+                size += fi.Length;
+            }
+            if (HasVideo)
+            {
+                FileInfo fi = new FileInfo(VideoFilename);
+                size += fi.Length;
+            }
+            if (HasLink)
+            {
+                FileInfo fi = new FileInfo(LinkFilename);
+                size += fi.Length;
+            }
+            return size;
         }
 
         public static void PropertyTests()
