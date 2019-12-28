@@ -81,6 +81,13 @@ namespace ZiPreview
 
         private void butOk_Click(object sender, EventArgs e)
         {
+            Ok();
+        }
+
+        private void Ok()
+        {
+            if (!butOk.Enabled) return;
+
             _folder = txtFolder.Text;
             _filter = txtFilter.Text;
             _password = txtPassword.Text;
@@ -104,7 +111,7 @@ namespace ZiPreview
             // mount volumes and redisplay
             if (VeracryptManager.SetVolumes(vols))
             {
-                ZipPreview.ZiPreview.PopulateGrid();
+                ZipPreview.GUI.PopulateGrid();
                 Logger.Info("Total free space " +
                     Utilities.BytesToString(VeracryptManager.GetTotalFreeSpace()));
             }
@@ -117,6 +124,13 @@ namespace ZiPreview
 
         private void butFind_Click(object sender, EventArgs e)
         {
+            FindFiles();
+        }
+
+        private void FindFiles()
+        {
+            if (!butFind.Enabled) return;
+
             Cursor.Current = Cursors.WaitCursor;
 
             chkFiles.Items.Clear();
@@ -155,6 +169,7 @@ namespace ZiPreview
             Cursor.Current = Cursors.Default;
 
             UpdateGUI();
+            txtPassword.Focus();
         }
 
         private void butSelectAll_Click(object sender, EventArgs e)
@@ -167,6 +182,17 @@ namespace ZiPreview
         {
             for (int i = 0; i < chkFiles.Items.Count; ++i)
                 chkFiles.SetItemCheckState(i, CheckState.Unchecked);
+        }
+
+        private void txtFilter_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 13)
+                FindFiles();
+        }
+
+        private void txtPassword_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 13) Ok();
         }
     }
 }

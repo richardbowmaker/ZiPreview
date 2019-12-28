@@ -4,6 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+// audio adjustment
+//  https://superuser.com/questions/323119/how-can-i-normalize-audio-using-ffmpeg
+
+
+
 namespace ZiPreview
 {
     class Constants
@@ -20,12 +25,13 @@ namespace ZiPreview
         public const string FilesTargetPath = @"Files\All";
         public static string PropertiesFile = @"\PropertyCache.txt";
 
-        public static string UnmountFile { get { return WorkingFolder + @"\\unmount.bat"; } }
+        public static string UnmountFile { get { return WorkingFolder + @"\unmount.bat"; } }
 
         public static string Browser {  get { return WorkingFolder + @"\Tor Browser\Tor - Shortcut.lnk";} }
  //       public static string Browser {  get { return @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"; } }
         
         public static string VeracryptExe { get { return @"C:\Program Files\VeraCrypt\VeraCrypt.exe"; } }
+        public static string FfmpegExe { get { return WorkingFolder + @"\ffmpeg.exe"; } }
 
         private static string _password = "";
         public static string Password

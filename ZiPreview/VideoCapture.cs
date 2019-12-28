@@ -172,7 +172,7 @@ namespace ZiPreview
                 if (!file.MoveFilesToVolume(vol.Drive)) return;
 
                 // update the grid display
-                ZipPreview.ZiPreview.RefreshGridRowTS(file);
+                ZipPreview.GUI.RefreshGridRowTS(file);
 
                 drive = vol.Drive;
             }
@@ -315,7 +315,7 @@ namespace ZiPreview
                             if (MoveCaptureFile())
                             {
                                 _state = StateT.RecordingComplete;
-                                ZipPreview.ZiPreview.RefreshGridRowTS(_file);
+                                ZipPreview.GUI.RefreshGridRowTS(_file);
                                 Logger.Info("Video captured: " + _file.VideoFilename);
                             }
                             else
@@ -365,6 +365,11 @@ namespace ZiPreview
                 {
                     _file.VideoFilename = dest;
                     VeracryptManager.SetVolumeDirty(dest);
+                    FileInfo fi = new FileInfo(dest);
+                    Logger.Info("Captured file size " +
+                        Utilities.BytesToString(fi.Length));
+                    Logger.Info("Total free space " +
+                        Utilities.BytesToString(VeracryptManager.GetTotalFreeSpace()));
                     return true;
                 }
             }
@@ -405,6 +410,7 @@ namespace ZiPreview
                     break;
                 case _kStopHotkeyId:
                     {
+                        Logger.Info("Cancelled video capture");
                         switch (_state)
                         {
                             case StateT.Recording:

@@ -125,14 +125,18 @@ namespace ZiPreview
                         string args = "-y -ss " + dss + " -to " + dsf + " -i " +
                             file.VideoFilename + " -frames 1 " + fie + "-%d.jpg";
 
-                        Utilities.RunCommandSync("ffmpeg", args);
+                        // ffmpeg -y -ss 0:10 -to 0:11 -i <filename> -frames 1 <filename no ext>-%d.jpg
+                        Utilities.RunCommandSync(
+                            Constants.FfmpegExe,
+                            Constants.WorkingFolder, 
+                            args);
 
                         if (File.Exists(fie + "-1.jpg"))
                         {
                             Utilities.MoveFile(file.ImageFilename = fie + "-1.jpg",
                                                 file.ImageFilename = fie + ".jpg");
                             file.ImageFilename = fie + ".jpg";
-                            ZipPreview.ZiPreview.RefreshGridRowTS(file);
+                            ZipPreview.GUI.RefreshGridRowTS(file);
                             Logger.Info("Created image for: " + file.VideoFilename);
                         }
                         else
@@ -199,7 +203,7 @@ namespace ZiPreview
                 VeracryptManager.SetVolumeDirty(ifn);
 
                 // add to gui
-                ZipPreview.ZiPreview.AddFileToGridTS(file);
+                ZipPreview.GUI.AddFileToGridTS(file);
                 return true;
             }
             else return false;
@@ -225,13 +229,13 @@ namespace ZiPreview
 
             if (file.HasImage || file.HasVideo || file.HasLink)
             {
-                ZipPreview.ZiPreview.RefreshGridRowTS(file);
+                ZipPreview.GUI.RefreshGridRowTS(file);
             }
             else
             {
                 int i = _files.FindIndex(delegate (FileSet f) { return f == file; });
                 if (i != -1) _files.RemoveAt(i);
-                ZipPreview.ZiPreview.RemoveGridRowTS(file);
+                ZipPreview.GUI.RemoveGridRowTS(file);
             }
         }
 
@@ -290,14 +294,15 @@ namespace ZiPreview
                 {
                     // parse the property, file;key;value
                     string[] fields = line.Split(';');
-                    if (fields.Length == 3)
+                    if (fields.Length > 2 && fields.Length % 2 == 1)
                     {
                         // find the file set the property belongs to
                         foreach (FileSet fs in _files)
                         {
                             // save the property
-                            if (fs.MatchesAny(fields[0]))
-                                fs.LoadProperty(fields[1], fields[2]);
+                            if (fs.MatchesAnyFilename(fields[0]))
+                                for (int i = 1; i < fields.Length; i += 2)
+                                    fs.LoadProperty(fields[i], fields[i+1]);
                         }
                     }
                 }

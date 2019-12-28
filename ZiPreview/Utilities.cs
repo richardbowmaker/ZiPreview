@@ -1,63 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace ZiPreview
 {
     class Utilities
     {
-        // runs a script file 
-        // - cmd is the command to run, e.g. diskpart or ps
-        // - filename is the scriptfile that command invokes
-        // - script is the list of commands in the script file
-        // this method creates the script file 'filename' and writes the script to it
-        // before invoking it with the command 'cmd'
-        // note the cmd should include the placeholder <file> for the position of script filename parameter;
-        //  e.g diskpart <file> /s will be expanded eventually to cmd /C diskpart scriptfilename /s
-        static public bool RunScript(string cmd, string filename, List<string> script)
-        {
-            StreamWriter sFile = new StreamWriter(filename);
-            foreach (string l in script)
-            {
-                sFile.WriteLine(l);
-            }
-            sFile.Close();
-
-            // replace filename placeholder in command
-            int n = cmd.IndexOf("<file>");
-            if (n != -1)
-            {
-                cmd = cmd.Substring(0, n) + filename + cmd.Substring(n + 6);
-            }
-
-            // run script
-            bool ok = true;
-            try
-            {
-                ok = RunCommandSync("cmd.exe", "/C " + cmd);
-            }
-            catch (Exception)
-            {
-                ok = false;
-            }
-            return ok;
-        }
 
         // runs a command line and waits for it to finish
-        static public bool RunCommandSync(string cmd, string args, int timeout = 30000)
+        static public bool RunCommandSync(
+            string cmd,
+            string wdir,
+            string args,
+            int timeout = 30000)
         {
             try
             {
-                Process process = new System.Diagnostics.Process();
-                ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
-                startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-                startInfo.UseShellExecute = true;
-                startInfo.FileName = cmd;
-                startInfo.Arguments = args;
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = cmd,
+                    WorkingDirectory = wdir,
+                    Arguments = args,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Normal
+                };
+
+                Process process = new Process();
                 process.StartInfo = startInfo;
 
                 if (process.Start())
@@ -66,14 +36,24 @@ namespace ZiPreview
                     {
                         int ec = process.ExitCode;
                         process.Close();
-                        return ec == 0;
+
+                        if (ec == 0)
+                            return true;
+                        else
+                        {
+                            Logger.Error("Process failed: " + cmd + " " + args);
+                            Logger.Error("error code: " + ec.ToString());
+                            return false;
+                        }
                     }
                     process.Close();
                 }
                 return false;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Logger.Error("Process exception: " + cmd + " " + args);
+                Logger.Error("message: " + e.Message);
                 return false;
             }
         }
@@ -90,6 +70,11 @@ namespace ZiPreview
                 Logger.Error("Launch browser but no link specified");
                 return null;
             }
+        }
+        static public Process LaunchBrowser()
+        {
+            Logger.Info("Launching browser: " + Constants.Browser);
+            return Process.Start(Constants.Browser);
         }
 
         static public bool DeleteFile(string fn)
@@ -262,7 +247,15 @@ namespace ZiPreview
             s += " (" + bs.ToString("#,##0") + ")";
 
             return s;
+        }
 
+        public static string FilenameNoDriveAndExtension(string file)
+        {
+            string fne = Path.GetDirectoryName(file) + "\\" +
+                         Path.GetFileNameWithoutExtension(file);
+            int n = fne.IndexOf(":");
+            if (n != -1) fne = fne.Substring(n + 1);
+            return fne;
         }
     }
 }

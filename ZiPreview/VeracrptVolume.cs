@@ -9,19 +9,7 @@ namespace ZiPreview
         public string Drive;
         public bool IsMounted;
         public bool IsSelected;
-        private bool isDirty;
-        public bool IsDirty
-        {
-            get { return isDirty; }
-            set 
-            { 
-                isDirty = value; 
-                if (isDirty)
-                {
-                    int nn = 0;
-                }
-            }
-        }
+        public bool IsDirty;
 
         public VeracryptVolume(string file, bool isSelected)
         {
@@ -81,8 +69,9 @@ namespace ZiPreview
             //      "C:\Program Files\VeraCrypt\VeraCrypt.exe" /q /a /nowaitdlg y /hash sha512 /v VolAccounts.hc /l x /p password
             string cmd = Constants.VeracryptExe;
             string args = "/q /a /nowaitdlg y /hash sha512" + " /v \"" + Filename + "\" /l " + drive.Substring(0, 1).ToLower() + " /p " + Constants.Password;
+            string wdir = Constants.WorkingFolder;
 
-            if (Utilities.RunCommandSync(cmd, args, 60000))
+            if (Utilities.RunCommandSync(cmd, wdir, args, 60000))
             {
                 Logger.Info("Mounted Veracrypt volume \"" + Filename + "\" as " + drive);
                 IsMounted = true;
@@ -108,7 +97,7 @@ namespace ZiPreview
                 string cmd = Constants.VeracryptExe;
                 string args = "/q /nowaitdlg y /force /d " + Drive.Substring(0, 1).ToLower();
 
-                if (Utilities.RunCommandSync(cmd, args, 10000))
+                if (Utilities.RunCommandSync(cmd, Constants.WorkingFolder, args, 10000))
                 {
                     Logger.Info("Unmounted Veracrypt volume: " + Drive + ", " + Filename);
                     IsMounted = false;

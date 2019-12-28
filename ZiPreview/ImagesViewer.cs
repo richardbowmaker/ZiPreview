@@ -31,9 +31,25 @@ namespace ZiPreview
         private Timer _timer;
         private const int kTimerInterval = 1500;     // 500 milliseconds
         private int _selected;
-
+        private bool _previewOn;
         private int _playing;
         VideoPreview _preview;
+
+        public bool PreviewOn 
+        { 
+            get { return _previewOn; }
+            set 
+            {
+                _previewOn = value;
+                if (value)
+                {
+                    if (_selected != -1)
+                        StartPlay(_selected);
+                }
+                else
+                    StopPlay();
+            }
+        }
 
         public ImagesViewer(Panel panel, IImagesViewerData data)
         {
@@ -44,7 +60,7 @@ namespace ZiPreview
 
             // setup timer to control playback of clips
             _timer = new Timer();
-            _timer.Interval = 250;
+            _timer.Interval = 1000;
             _timer.Enabled = false;
             _timer.Tick += new System.EventHandler(this.TickEvent);
 
@@ -60,6 +76,9 @@ namespace ZiPreview
             _player.Visible = false;
 
             _preview = new VideoPreview(_player);
+            _selected = -1;
+            _playing = -1;
+            PreviewOn = true;
         }
 
         public void Initialise()
@@ -204,7 +223,7 @@ namespace ZiPreview
         {
             _timer.Enabled = false;
 
-            if (_selected != -1)
+            if (_selected != -1 && PreviewOn)
             {
                 _player.Tag = _selected;
                 StartPlay(_selected);
@@ -235,7 +254,7 @@ namespace ZiPreview
             {
                 _preview.PreviewStop();
                 _player.Visible = false;
-                Panel p = (Panel)_panel.Controls[_selected - _top]; //@ selected = 14 top = 0
+                Panel p = (Panel)_panel.Controls[_selected - _top]; 
                 PictureBox box = (PictureBox)p.Controls[0];
                 box.Visible = true;
                 p.Controls.Remove(_player);

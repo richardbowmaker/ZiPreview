@@ -157,8 +157,8 @@ namespace ZiPreview
             _srcFolders = null;
             _thread = null;
 
-            ZipPreview.ZiPreview.UpdateProgressTS(0, 0);
-            ZipPreview.ZiPreview.SetStatusLabelTS("");
+            ZipPreview.GUI.UpdateProgressTS(0, 0);
+            ZipPreview.GUI.SetStatusLabelTS("");
         }
 
         public static bool Stop()
@@ -192,8 +192,8 @@ namespace ZiPreview
 
         private static void UpdateProgress()
         {
-            ZipPreview.ZiPreview.UpdateProgressTS(_filesCopied + _filesExisting, _totalFiles);
-            ZipPreview.ZiPreview.SetStatusLabelTS(
+            ZipPreview.GUI.UpdateProgressTS(_filesCopied + _filesExisting, _totalFiles);
+            ZipPreview.GUI.SetStatusLabelTS(
                 String.Format("{0:#,##0} of {1:#,##0} files processed, {2:#,##0} bytes", 
                     _filesCopied + _filesExisting, _totalFiles, _bytesCopied));
         }

@@ -26,6 +26,16 @@ namespace ZiPreview
             get { return GetProperty("selected").CompareTo("X") == 0; }
             set { SetProperty("selected", value ? "X" : ""); }
         }
+        public string VolumeDb
+        {
+            get { return GetProperty("volume"); }
+            set { SetProperty("volume", value); }
+        }
+        public string Duration
+        {
+            get { return GetProperty("duration"); }
+            set { SetProperty("duration", value); }
+        }
 
         public List<Property> Properties { get; set; }
     
@@ -121,8 +131,8 @@ namespace ZiPreview
         public bool FilesMatch(string f1, string f2)
         {
             if (f1.Length == 0 || f2.Length == 0) return false;
-            string fe1 = FilenameNoDriveAndExtension(f1);
-            string fe2 = FilenameNoDriveAndExtension(f2);
+            string fe1 = Utilities.FilenameNoDriveAndExtension(f1);
+            string fe2 = Utilities.FilenameNoDriveAndExtension(f2);
             if (fe1.EndsWith("-1")) fe1 = fe1.Substring(0, fe1.Length - 2);
             if (fe2.EndsWith("-1")) fe2 = fe2.Substring(0, fe2.Length - 2);
             return fe1.CompareTo(fe2) == 0;
@@ -189,30 +199,21 @@ namespace ZiPreview
 
         // matches the filename less extension and drive against
         // any of the image/link/video
-        public bool MatchesAny(string file)
+        public bool MatchesAnyFilename(string file)
         {
-            string fne = FilenameNoDriveAndExtension(file);
+            string fne = Utilities.FilenameNoDriveAndExtension(file);
             if (fne.EndsWith("-1")) fne = fne.Substring(0, fne.Length - 2);
 
             if (HasImage)
             {
-                string f = FilenameNoDriveAndExtension(ImageFilename);
+                string f = Utilities.FilenameNoDriveAndExtension(ImageFilename);
                 if (f.EndsWith("-1")) f = f.Substring(0, f.Length - 2);
                 return (String.Compare(fne, f, true) == 0);
             }
-            if (HasVideo) return (String.Compare(fne, FilenameNoDriveAndExtension(VideoFilename), true) == 0);
-            if (HasLink) return (String.Compare(fne, FilenameNoDriveAndExtension(LinkFilename), true) == 0);
+            if (HasVideo) return (String.Compare(fne, Utilities.FilenameNoDriveAndExtension(VideoFilename), true) == 0);
+            if (HasLink) return (String.Compare(fne, Utilities.FilenameNoDriveAndExtension(LinkFilename), true) == 0);
 
             return false;
-        }
-
-        private string FilenameNoDriveAndExtension(string file)
-        {
-            string fne = Path.GetDirectoryName(file) + "\\" +
-                         Path.GetFileNameWithoutExtension(file);
-            int n = fne.IndexOf(":");
-            if (n != -1) fne = fne.Substring(n + 1);
-            return fne;
         }
 
         /// ///////////////////////////////////////////////////
@@ -334,15 +335,17 @@ namespace ZiPreview
 
         public void WriteProperties(StreamWriter sw)
         {
+            if (Properties.Count == 0) return;
+            string fn = Utilities.FilenameNoDriveAndExtension(Filename);
+            // remove trailing -1 if it is image filename
+            if (fn.EndsWith("-1")) fn = fn.Substring(0, fn.Length - 2);
+            sw.Write(fn);
             foreach (Property p in Properties)
             {
-                string fn = FilenameNoDriveAndExtension(Filename);
-
-                // remove trailing -1 if it is image filename
-                if (fn.EndsWith("-1")) fn = fn.Substring(0, fn.Length - 2);
-
-                sw.WriteLine(fn + ";" + p.Key + ";" + p.Value);
+                string v = p.Value.Trim();
+                if (v.Length > 0) sw.Write(";" + p.Key + ";" + v);
             }
+            sw.WriteLine("");
         }
 
         // drive letter including colon

@@ -66,11 +66,11 @@ namespace ZiPreview
         private void butFolder2_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog dlg = new FolderBrowserDialog();
-            if (_folder1.Length > 0) dlg.SelectedPath = _folder1;
+            if (_folder2.Length > 0) dlg.SelectedPath = _folder2;
             if (dlg.ShowDialog() == DialogResult.OK)
             {
-                _folder1 = dlg.SelectedPath;
-                txtFolder1.Text = dlg.SelectedPath;
+                _folder2 = dlg.SelectedPath;
+                txtFolder2.Text = dlg.SelectedPath;
             }
             UpdateGUI();
         }
@@ -262,6 +262,11 @@ namespace ZiPreview
             KeyValuePair<string, string> kvp =
                 (KeyValuePair<string, string>)lstVolumes.SelectedItem;
             return kvp.Value;
+        }
+
+        private void txtFilter_TextChanged(object sender, EventArgs e)
+        {
+            UpdateGUI();
         }
     }
 }

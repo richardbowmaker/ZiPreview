@@ -98,11 +98,21 @@ namespace ZiPreview
             _imagePanel.Hide();
 
             // set thread safe callback
-            ZiPreview = this;
+            GUI = this;
 
             InitialiseGrid();
 
             _initialised = true;
+        }
+
+        private void Timer__Tick(object sender, EventArgs e)
+        {
+            CaptureClipboard.TimerEvent();
+        }
+
+        private void FrmZiPreview_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            e.Cancel = !CanClose();
         }
 
         #region IImagesViewerData
@@ -145,7 +155,7 @@ namespace ZiPreview
         //-----------------------------------------------------
 
         // global reference to GUI interface
-        public static IGuiUpdate ZiPreview { set; get; }
+        public static IGuiUpdate GUI { set; get; }
 
         private delegate void VoidFileT(FileSet file);
         private delegate void VoidString(string str);
@@ -243,13 +253,14 @@ namespace ZiPreview
 
         public void PopulateGrid()
         {
-            PopulateGridX();
+            PopulateGrid_();
         }
 
         private void GridFiles_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            string col = gridFiles.Columns[e.ColumnIndex].Name;
+            if (gridFiles.Rows.Count == 0) return;
 
+            string col = gridFiles.Columns[e.ColumnIndex].Name;
             FileSetManager.SortFieldT f = FileSetManager.SortFieldT.Filename;
 
             switch (e.ColumnIndex)
@@ -296,44 +307,60 @@ namespace ZiPreview
             gridFiles.AllowUserToAddRows = false;
             gridFiles.AllowUserToDeleteRows = false;
 
+            DataGridViewTextBoxColumn col;
+            col = new DataGridViewTextBoxColumn()
             {
-                DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
-                col.Width = 170;
-                col.HeaderText = "Filename";
-                col.Name = "colFilename";
-                gridFiles.Columns.Add(col);
-            }
+                Width = 170,
+                HeaderText = "Filename",
+                Name = "colFilename"
+            };
+            gridFiles.Columns.Add(col);
+            col = new DataGridViewTextBoxColumn()
             {
-                DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
-                col.Width = 15;
-                col.HeaderText = "";
-                col.Name = "colSelected";
-                gridFiles.Columns.Add(col);
-            }
+                Width = 15,
+                HeaderText = "",
+                Name = "colSelected"
+            };
+            gridFiles.Columns.Add(col);
+            col = new DataGridViewTextBoxColumn()
             {
-                DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
-                col.Width = 40;
-                col.HeaderText = "Type";
-                col.Name = "colType";
-                gridFiles.Columns.Add(col);
-            }
+                Width = 40,
+                HeaderText = "Type",
+                Name = "colType"
+            };
+            gridFiles.Columns.Add(col);
+            col = new DataGridViewTextBoxColumn()
             {
-                DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
-                col.Width = 80;
-                col.HeaderText = "Date";
-                col.Name = "colDate";
-                gridFiles.Columns.Add(col);
-            }
+                Width = 80,
+                HeaderText = "Date",
+                Name = "colDate"
+            };
+            gridFiles.Columns.Add(col);
+            col = new DataGridViewTextBoxColumn()
             {
-                DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
-                col.Width = 80;
-                col.HeaderText = "Time";
-                col.Name = "colTimes";
-                gridFiles.Columns.Add(col);
-            }
+                Width = 40,
+                HeaderText = "Times",
+                Name = "colTimes"
+            };
+            gridFiles.Columns.Add(col);
+            col = new DataGridViewTextBoxColumn()
+            {
+                Width = 70,
+                HeaderText = "Volume",
+                Name = "colVolume"
+            };
+            gridFiles.Columns.Add(col);
+            col = new DataGridViewTextBoxColumn()
+            {
+                Width = 60,
+                HeaderText = "Duration",
+                Name = "colDuration"
+            };
+            gridFiles.Columns.Add(col);
+
         }
 
-        public void PopulateGridX()
+        public void PopulateGrid_()
         {
             _images.StopPlay();
             Cursor.Current = Cursors.WaitCursor;
@@ -443,6 +470,8 @@ namespace ZiPreview
                     case 2: e.Value = file.TypeS; break;
                     case 3: e.Value = file.LastDate; break;
                     case 4: e.Value = file.Times; break;
+                    case 5: e.Value = file.VolumeDb; break;
+                    case 6: e.Value = file.Duration; break;
                 }
             }
         }
@@ -476,18 +505,22 @@ namespace ZiPreview
 
                         case Keys.Right:
                         case Keys.Space:
+                            NextFile(file); return true;
+
+                        case Keys.Left:
+                            PreviousFile(file); return true;
+
                         case Keys.Z:
                         case Keys.V:
                         case Keys.X:
                         case Keys.C:
-                            NextFile(file); return true;
+                            PageDown(file); return true;
 
                         case Keys.Q:
                         case Keys.W:
                         case Keys.E:
                         case Keys.R:
-                        case Keys.Left:
-                            PreviousFile(file); return true;
+                            PageUp(file); return true;
 
                         case Keys.F1: NextSelectedFile(file); return true;
                         case Keys.F2: PreviousSelectedFile(file); return true;
@@ -496,6 +529,7 @@ namespace ZiPreview
                         case Keys.F5: IncNoOfImages(file); return true;
                         case Keys.F6: DecNoOfImages(file); return true;
                         case Keys.F7: CaptureVideo(file); return true;
+                        case Keys.F11: TogglePreview(); return true;
                         case Keys.F12: CopyLinkToClipboard(file); return true;
 
                         case Keys.Delete: DeleteSelected(); return true;
@@ -547,6 +581,7 @@ namespace ZiPreview
             _images.Uninitialise();
             _videoCapture.Uninitialise();
             _image.Uninitialise();
+            Clipboard.Clear();
             return true;
         }
 
@@ -668,6 +703,11 @@ namespace ZiPreview
             if (file.HasLink)
                 Clipboard.SetText(file.Link, TextDataFormat.Text);
         }
+        private void CopyFilenameToClipboard(FileSet file)
+        {
+            if (file.Filename.Length > 0)
+                Clipboard.SetText(file.Filename, TextDataFormat.Text);
+        }
 
         private void CaptureVideo(FileSet file)
         {
@@ -716,6 +756,9 @@ namespace ZiPreview
                 psi.UseShellExecute = true;
                 psi.WindowStyle = ProcessWindowStyle.Maximized;
                 Process.Start(psi);
+
+                if (file.VolumeDb.Length == 0 || file.Duration.Length == 0)
+                    VideoAnalyser.SetVideoProperties(file);
             }
             else if (file.HasLink)
             {
@@ -760,6 +803,11 @@ namespace ZiPreview
             gridFiles.Refresh();
         }
 
+        private void TogglePreview()
+        {
+            _images.PreviewOn = !_images.PreviewOn;
+        }
+
         #endregion
 
         #region Menu Handlers
@@ -784,6 +832,14 @@ namespace ZiPreview
         private void FileExitMenu_Click(object sender, EventArgs e)
         {
             Close();
+        }
+
+        private void ViewMenu_DropDownOpening(object sender, EventArgs e)
+        {
+            if (_images.PreviewOn)
+                viewPreviewMenu.Text = "Preview off (F11)";
+            else
+                viewPreviewMenu.Text = "Preview on (F11)";
         }
 
         private void ViewMoreImagesMenu_Click(object sender, EventArgs e)
@@ -830,6 +886,17 @@ namespace ZiPreview
         {
             var rows = gridFiles.SelectedRows;
             if (rows.Count == 1) CopyLinkToClipboard((FileSet)rows[0].Tag);
+        }
+
+        private void ViewFilenameToClipboardMenu_Click(object sender, EventArgs e)
+        {
+            var rows = gridFiles.SelectedRows;
+            if (rows.Count == 1) CopyFilenameToClipboard((FileSet)rows[0].Tag);
+        }
+
+        private void ViewPreviewMenu_Click(object sender, EventArgs e)
+        {
+            TogglePreview();
         }
 
         private void ToolsMenu_DropDownOpening(object sender, EventArgs e)
@@ -885,21 +952,24 @@ namespace ZiPreview
             FileSet.PropertyTests();
         }
 
+        private void ToolsLaunchBrowserMenu_Click(object sender, EventArgs e)
+        {
+            Utilities.LaunchBrowser();
+        }
+
+        private void ToolsVideoPropertiesMenu_Click(object sender, EventArgs e)
+        {
+            DataGridViewSelectedRowCollection rs = gridFiles.SelectedRows;
+            if (rs.Count == 1)
+            {
+                VideoAnalyser.SetVideoProperties((FileSet)rs[0].Tag);
+            }
+        }
+
         private void ToolsTestHarnessMenu_Click(object sender, EventArgs e)
         {
         }
-
         #endregion
 
-        private void Timer__Tick(object sender, EventArgs e)
-        {
-            CaptureClipboard.TimerEvent();
-        }
-
-        private void FrmZiPreview_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            e.Cancel = !CanClose();
-        }
     }
-
 }

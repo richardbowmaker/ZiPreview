@@ -19,6 +19,7 @@ namespace ZiPreview
         private bool        _random;
         private string      _file;
         private int         _noOfClips;
+        private double      _duration;
 
         public VideoPreview(AxWMPLib.AxWindowsMediaPlayer player)
         {
@@ -35,39 +36,44 @@ namespace ZiPreview
         public void Preview(string file, int noOfClips, bool random)
         {
             _random = random;
-			_file = file;
+            _file = file;
             _clipIx = 0;
             _noOfClips = noOfClips;
 
-            _timer.Interval = 500;
-            _timer.Enabled = true;
+            // get duration of media
+            var wmp = new WMPLib.WindowsMediaPlayer();
+            var media = wmp.newMedia(_file);
+            _duration = media.duration;
+
+            if (_duration > 0.0)
+            {
+                _timer.Interval = 50;
+                _timer.Enabled = true;
+            }
         }
  
-        private List<int> CalculateClips(double duration, int noOfClips, bool random)
+        private List<int> CalculateClips(int noOfClips, bool random)
         {
             List<int> clips = new List<int>();
 
-            if (duration > 0.0)
+            // set up array of preview points, add a bit of random variation
+            // around each point
+            Random rnd = new Random();
+            double step = _duration / (double)noOfClips;
+
+            for (double i = 0; i < noOfClips; ++i)
             {
-                // set up array of preview points, add a bit of random variation
-                // around each point
-                Random rnd = new Random();
-                double step = duration / (double)noOfClips;
+                double clip;
 
-                for (double i = 0; i < noOfClips; ++i)
+                if (random)
                 {
-                    double clip;
-
-                    if (random)
-                    {
-                        clip = (i + (rnd.NextDouble() * 0.7)) * step;
-                    }
-                    else
-                    {
-                        clip = i * step;
-                    }
-                    clips.Add((int)clip);
+                    clip = (i + (rnd.NextDouble() * 0.7)) * step;
                 }
+                else
+                {
+                    clip = i * step;
+                }
+                clips.Add((int)clip);
             }
             return clips;
         }
@@ -76,19 +82,13 @@ namespace ZiPreview
         {
 			if (_clipIx == 0)
 			{
-                // get duration of media
-                var wmp = new WMPLib.WindowsMediaPlayer();
-                var media = wmp.newMedia(_file);
-                double duration = media.duration;
-
-                _clips = CalculateClips(duration, _noOfClips, _random);
+                _clips = CalculateClips(_noOfClips, _random);
 
                 if (_clips.Count() == 0)
                 {
                     _timer.Enabled = false;
                     return;
                 }
-
                 _player.uiMode = "none";
                 _player.URL = _file;
 				_player.settings.mute = true;
@@ -113,6 +113,7 @@ namespace ZiPreview
 
 		public void TickEvent(object sender, EventArgs e)
         {
+            _timer.Interval = 500;
             NextClip();
         }
     }

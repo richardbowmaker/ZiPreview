@@ -139,7 +139,8 @@ namespace ZiPreview
             foreach (VeracryptVolume v in _volumes)
             {
                 long? n = v.FreeSpace;
-                if (n.HasValue) fs += n.Value;
+                if (n.HasValue) 
+                    fs += n.Value - Constants.MinimumCaptureSpace;
             }
             return fs;
         }

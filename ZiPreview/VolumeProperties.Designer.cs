@@ -98,6 +98,7 @@
             this.txtFilter.Name = "txtFilter";
             this.txtFilter.Size = new System.Drawing.Size(192, 22);
             this.txtFilter.TabIndex = 5;
+            this.txtFilter.TextChanged += new System.EventHandler(this.txtFilter_TextChanged);
             // 
             // butFind
             // 

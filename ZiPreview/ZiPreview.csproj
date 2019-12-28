@@ -86,6 +86,12 @@
     <Compile Include="CPicture.cs" />
     <Compile Include="FileSetManager.cs" />
     <Compile Include="FileSet.cs" />
+    <Compile Include="VideoAnalyser.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="VideoAnalyser.Designer.cs">
+      <DependentUpon>VideoAnalyser.cs</DependentUpon>
+    </Compile>
     <Compile Include="ZipPreview.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -137,6 +143,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CopyFiles.resx">
       <DependentUpon>CopyFiles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="VideoAnalyser.resx">
+      <DependentUpon>VideoAnalyser.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ZipPreview.resx">
       <DependentUpon>ZipPreview.cs</DependentUpon>

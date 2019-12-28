@@ -65,6 +65,7 @@
             this.txtFilter.Size = new System.Drawing.Size(222, 22);
             this.txtFilter.TabIndex = 2;
             this.txtFilter.TextChanged += new System.EventHandler(this.txtFilter_TextChanged);
+            this.txtFilter.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFilter_KeyPress);
             // 
             // chkFiles
             // 
@@ -103,6 +104,7 @@
             this.txtPassword.Size = new System.Drawing.Size(339, 30);
             this.txtPassword.TabIndex = 7;
             this.txtPassword.TextChanged += new System.EventHandler(this.txtPassword_TextChanged);
+            this.txtPassword.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtPassword_KeyPress);
             // 
             // butFind
             // 
