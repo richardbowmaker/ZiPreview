@@ -3,12 +3,18 @@ using System.Windows.Forms;
 using System.Threading;
 using System.IO;
 
+// ffmpeg commands
+// get volume level: ffmpeg -i f3.mp4 -af "volumedetect" -vn -sn -dn -f null NUL
+// adjust volume level: ffmpeg -i test.mp4 -af "volume=10dB" -c:v copy -c:a aac -b:a 192k testout.mp4
+// compress video: ffmpeg -i firstvid.mp4 firstvidout.mp4
 
 namespace ZiPreview
 {
     public partial class VideoAnalyser : Form
     {
         private static FileSet _file;
+        private System.Windows.Forms.Timer _timer;
+
         public static void Run(FileSet file)
         {
             VideoAnalyser frm = new VideoAnalyser();
@@ -21,11 +27,200 @@ namespace ZiPreview
             InitializeComponent();
         }
 
-        private void VideoAnalyserX_Load(object sender, EventArgs e)
+        private void VideoAnalyser_Load(object sender, EventArgs e)
         {
-            Text = Constants.Title + " - Video Analyser - " + _file.Filename;
+            Text = Constants.Title + " - Video Processor - " + _file.FilenameNoPathAndExt;
 
+            _timer = new System.Windows.Forms.Timer();
+            _timer.Enabled = true;
+            _timer.Interval = 1000;
+            _timer.Tick += TimerTick;
 
+            //@ temp
+            //_file.VolumeDb = "";
+
+            UpdateGui();
+
+            // get the sound level and duration
+            if (_file.VolumeDb.Length == 0)
+                SetVideoProperties(_file);
+            else
+                SetVolumeLevels();
+        }
+
+        private void UpdateGui()
+        {
+            if (_file.VolumeDb.Length == 0)
+            {
+                lblVolumes.Text = "Getting volume levels ...";
+                volUpDown.Enabled = false;
+                chkAdjustVolume.Enabled = false;
+            }
+            else
+            {
+                lblVolumes.Text = "Volume levels dB";
+                volUpDown.Enabled = true;
+                chkAdjustVolume.Enabled = true;
+            }
+
+            if (chkRemoveAudio.Checked)
+            {
+                volUpDown.Enabled = false;
+                chkAdjustVolume.Checked = false;
+                chkAdjustVolume.Enabled = false;
+            }
+
+            butOK.Enabled =
+                chkAdjustVolume.Checked ||
+                chkCompress.Checked ||
+                chkNewImage.Checked ||
+                chkRemoveAudio.Checked;
+        }
+
+        private void TimerTick(object sender, EventArgs e)
+        {
+            if (_file.VolumeDb.Length > 0)
+            {
+                _timer.Enabled = false;
+                SetVolumeLevels();
+                UpdateGui();
+            }
+        }
+
+        private void SetVolumeLevels()
+        {
+            string[] vs = _file.VolumeDb.Replace("  ", " ").Split(' ');
+            if (vs.Length == 2)
+            {
+                txtVolAverage.Text = vs[0].Trim();
+                txtVolPeak.Text = vs[1].Trim();
+                float maxv = (float)Convert.ToDouble(vs[0]);
+
+                if (maxv >= -10.0 && maxv <= 10.0)
+                    volUpDown.Value = (decimal)(-maxv);
+                else
+                    volUpDown.Value = (decimal)0.0;
+            }
+            else
+            {
+                // error
+                _file.VolumeDb = "";
+            }
+        }
+
+        private void butOK_Click(object sender, EventArgs e)
+        {
+            // kick of processing thread
+            Thread thread = new Thread(() => DoProcessVideo(
+                chkCompress.Checked,
+                chkNewImage.Checked,
+                chkRemoveAudio.Checked,
+                chkAdjustVolume.Checked,
+                (float)volUpDown.Value,
+                _file));
+            thread.Start();
+            Close();
+        }
+        private void chkNewImage_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateGui();
+        }
+
+        private void chkAdjustVolume_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateGui();
+        }
+
+        private void chkCompress_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateGui();
+        }
+
+        private void chkRemoveAudio_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateGui();
+        }
+
+        private void butCancel_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+        /// <summary>
+        /// processing functions
+        /// </summary>
+        /// <param name="file"></param>
+
+        private static void DoProcessVideo(
+            bool compress,
+            bool newImage,
+            bool removeAudio,
+            bool adjustVol,
+            float volInc,
+            FileSet file)
+        {
+            if (removeAudio)
+            {
+                Logger.Info("Removing audio track from " + file.VideoFilename);
+
+                // ffmpeg -i file.mp4 -map 0:0 -map 0:2 -acodec copy -vcodec copy new_file.mp4 
+                string fin = file.VideoFilename;
+                string fout = Path.GetDirectoryName(fin) + "\\" +
+                    Path.GetFileNameWithoutExtension(fin) + "_temp" +
+                    Path.GetExtension(fin);
+                string cmd = Constants.FfmpegExe;
+                string args = "-i \"" + fin + "\" " +
+                    " -map 0:0 -acodec copy -vcodec copy " +
+                    "\"" + fout + "\"";
+                string wdir = Path.GetDirectoryName(fin);
+
+                if (Utilities.RunCommandSync(cmd, wdir, args, 1000000))
+                {
+                    // switch temp file
+                    Utilities.MoveFile(fout, fin);
+                    file.VolumeDb = "";
+                    ZipPreview.GUI.RefreshGridRowTS(file);
+                }
+            }
+
+            if (adjustVol)
+            {
+                Logger.Info("Adjusting audio track for " + file.VideoFilename);
+
+                // ffmpeg -i f.mp4 -af "volume=10dB" -c:v copy -c:a aac -b:a 192k f_temp.mp4
+                string fin = file.VideoFilename;
+                string fout = Path.GetDirectoryName(fin) + "\\" +
+                    Path.GetFileNameWithoutExtension(fin) + "_temp" +
+                    Path.GetExtension(fin);
+                string cmd = Constants.FfmpegExe;
+                string args = "-i \"" + fin + "\" " +
+                    "-af \"volume=" + volInc.ToString("0.0") + "dB\" " +
+                    "-c:v copy -c:a aac -b:a 192k " +
+                    "\"" + fout + "\"";
+                string wdir = Path.GetDirectoryName(fin);
+
+                if (Utilities.RunCommandSync(cmd, wdir, args, 1000000))
+                {
+                    // switch temp file
+                    Utilities.MoveFile(fout, fin);
+
+                    // re-populate the volume levels
+                    GetVolumeLevels(file);
+                    ZipPreview.GUI.RefreshGridRowTS(file);
+                }
+            }
+
+            if (compress)
+            {
+
+            }
+
+            if (newImage)
+            {
+                Logger.Info("Generating new image for " + file.VideoFilename);
+
+                FileSetManager.NewImage(file, true);
+                ZipPreview.GUI.RefreshImageTS(file);
+            }
         }
 
         public static void SetVideoProperties(FileSet file)
@@ -37,14 +232,15 @@ namespace ZiPreview
         public static void SetVideoProperties_(FileSet file)
         {
             if (!file.HasVideo) return;
-            Logger.Info("Calculating video properties for " + file.VideoFilename);
-            GetMaxVolume(file);
+            GetVolumeLevels(file);
             GetDuration(file);
             ZipPreview.GUI.RefreshGridRowTS(file);
         }
 
         private static void GetDuration(FileSet file)
         {
+            Logger.Info("Calculating video duration for " + file.VideoFilename);
+
             // get duration of media
             var wmp = new WMPLib.WindowsMediaPlayer();
             var media = wmp.newMedia(file.VideoFilename);
@@ -53,11 +249,13 @@ namespace ZiPreview
                 (d / 60).ToString() + ":" + (d % 60).ToString("00");
         }
 
-        private static void GetMaxVolume(FileSet file)
+        private static void GetVolumeLevels(FileSet file)
         {
+            Logger.Info("Calculating volume levels for " + file.VideoFilename);
+
             // ffmpeg -i f3.mp4 -af "volumedetect" -vn -sn -dn -f null NUL
-            string fbat = Constants.WorkingFolder + @"\ffmpeg.bat";
-            string fout = Constants.WorkingFolder + @"\ffmpeg.txt";
+            string fbat = Constants.WorkingFolder + @"\" + file.FilenameNoPathAndExt + ".bat";
+            string fout = Constants.WorkingFolder + @"\" + file.FilenameNoPathAndExt + ".txt";
             string cmd = Constants.FfmpegExe;
             string args = "-i \"" + file.VideoFilename + "\" -af " +
                 "\"volumedetect\" -vn -sn -dn -f null NULL" +
@@ -70,7 +268,7 @@ namespace ZiPreview
             sw.WriteLine(cmd + " " + args);
             sw.Close();
 
-            if (Utilities.RunCommandSync(fbat, wdir, "", 60000))
+            if (Utilities.RunCommandSync(fbat, wdir, "", 200000))
             {
                 StreamReader sr = new StreamReader(fout);
                 string vdata = sr.ReadToEnd();

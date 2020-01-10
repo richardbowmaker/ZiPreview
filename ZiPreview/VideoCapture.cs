@@ -8,7 +8,6 @@ using System.Media;
 using System.Linq;
 using System.IO;
 using System.Diagnostics;
-using System.Collections.Generic;
 
 namespace ZiPreview
 {
@@ -27,17 +26,7 @@ namespace ZiPreview
 
     class VideoCapture
     {
-        // Win32 imports
-        private const int APPCOMMAND_VOLUME_MUTE = 0x80000;
-        private const int APPCOMMAND_VOLUME_UP = 0xA0000;
-        private const int APPCOMMAND_VOLUME_DOWN = 0x90000;
-        private const int WM_APPCOMMAND = 0x319;
-
-        [DllImport("user32.dll")]
-        public static extern IntPtr SendMessageW(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
-
         // other constants
-
         private const float _kCaptureTimeout = 60.0f * 60.0f; // 1 hour timeout
 
         private Timer _timer;
@@ -52,7 +41,6 @@ namespace ZiPreview
         private const int _kStartHotkeyId = 0;
         private const int _kStopHotkeyId = 1;
 
-        private IntPtr _hwin;
         private FileSet _file;
 
         private OBSWebsocket _obs;
@@ -82,10 +70,8 @@ namespace ZiPreview
 
         public VideoCapture() { }
 
-        public bool Initialise(Form form)
+        public bool Initialise()
         {
-            _hwin = form.Handle;
-
             // timer the drives the video capture process
             _timer = new Timer();
             _timer.Enabled = false;
@@ -122,9 +108,9 @@ namespace ZiPreview
         {
             if (enable)
             {
-                _startHotKey = new HotKeyRegister(_hwin, _kStartHotkeyId, KeyModifiers.Control, Keys.F8);
+                _startHotKey = new HotKeyRegister(Constants.Hwin, _kStartHotkeyId, KeyModifiers.Control, Keys.F8);
                 _startHotKey.HotKeyPressed += HotKeyPressed;
-                _stopHotKey = new HotKeyRegister(_hwin, _kStopHotkeyId, KeyModifiers.Control, Keys.F9);
+                _stopHotKey = new HotKeyRegister(Constants.Hwin, _kStopHotkeyId, KeyModifiers.Control, Keys.F9);
                 _stopHotKey.HotKeyPressed += HotKeyPressed;
             }
             else
@@ -194,14 +180,14 @@ namespace ZiPreview
                 // prompt user to start playing the video
                 if (!VideoCapturePrompt.Run(file.Link)) return;
 
-                SetAudioRecordingLevel(10);
+                Utilities.SetAudioLevel(10);
 
                 // start the browser
                 LaunchBrowser(file);
 
                 // start timer state machine running
                 EnableHotKeys(true);
-                UnmuteAudio();
+                Utilities.UnmuteAudio();
                 _ticks = 0;
                 _state = StateT.WaitForStartKey;
                 _timer.Enabled = true;
@@ -252,8 +238,10 @@ namespace ZiPreview
                         }
                         else if (secs == 6.0f)
                         {
-                            if (VideoCapturePrompt.Mute) MuteAudio();
-                            else UnmuteAudio();
+                            if (VideoCapturePrompt.Mute) 
+                                Utilities.MuteAudio();
+                            else 
+                                Utilities.UnmuteAudio();
                             _captureLastChanged = secs;
                             _state = StateT.Recording;
                             _obs.ToggleRecording();
@@ -329,8 +317,8 @@ namespace ZiPreview
                     {
                         if (secb && ((int)secs) % 5 == 0)
                         {
-                            UnmuteAudio();
-                            SetAudioRecordingLevel(30);
+                            Utilities.UnmuteAudio();
+                            Utilities.SetAudioLevel(30);
                             SoundEnded();
                         }
                     }
@@ -339,8 +327,8 @@ namespace ZiPreview
                     {
                         if (secb && ((int)secs) % 5 == 0)
                         {
-                            UnmuteAudio();
-                            SetAudioRecordingLevel(30);
+                            Utilities.UnmuteAudio();
+                            Utilities.SetAudioLevel(30);
                             SoundError();
                         }
                     }
@@ -440,35 +428,13 @@ namespace ZiPreview
                         }
                         EnableHotKeys(false);
                         _state = StateT.Stopped;
-                        if (!VideoCapturePrompt.Unmute) MuteAudio();
+                        if (!VideoCapturePrompt.Unmute) 
+                            Utilities.MuteAudio();
                         _timer.Enabled = false;
                         _obs.Disconnect();
                     }
                     break;
             }
-        }
-
-        private void MuteAudio()
-        {
-            UnmuteAudio();
-            SendMessageW(_hwin, WM_APPCOMMAND, _hwin, (IntPtr)APPCOMMAND_VOLUME_MUTE);
-        }
-
-        private void UnmuteAudio()
-        {
-            SendMessageW(_hwin, WM_APPCOMMAND, _hwin, (IntPtr)APPCOMMAND_VOLUME_DOWN);
-            SendMessageW(_hwin, WM_APPCOMMAND, _hwin, (IntPtr)APPCOMMAND_VOLUME_UP);
-        }
-        public void SetAudioRecordingLevel(int percent)
-        {
-            // sets master pc volume to about 10%
-            SendMessageW(_hwin, WM_APPCOMMAND, _hwin, (IntPtr)APPCOMMAND_VOLUME_MUTE);
-
-            for (int i = 0; i < 50; ++i)
-                SendMessageW(_hwin, WM_APPCOMMAND, _hwin, (IntPtr)APPCOMMAND_VOLUME_DOWN);
-
-            for (int i = 0; i < percent / 2; ++i)
-                SendMessageW(_hwin, WM_APPCOMMAND, _hwin, (IntPtr)APPCOMMAND_VOLUME_UP);
         }
 
         private byte[] CaptureRegion(Rectangle region)

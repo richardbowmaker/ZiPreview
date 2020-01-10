@@ -263,6 +263,18 @@ namespace ZiPreview
             }
         }
 
+        public void RefreshImage(int n)
+        {
+            int i = n - _top;
+            if (i >= 0 && i < _noOfCells)
+            {
+                Panel p = (Panel)_panel.Controls[i];
+                PictureBox box = (PictureBox)p.Controls[0];
+                box.ImageLocation = _data.GetThumbNail(n);
+                box.Refresh();
+            }
+        }
+
         private void PictureBox_Click(object sender, EventArgs e)
         {
             PictureBox box = (PictureBox)sender;

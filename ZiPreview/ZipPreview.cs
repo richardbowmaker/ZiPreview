@@ -12,6 +12,7 @@ namespace ZiPreview
     {
         void AddFileToGridTS(FileSet file);
         void RefreshGridRowTS(FileSet file);
+        void RefreshImageTS(FileSet file);
         void RemoveGridRowTS(FileSet file);
         void UpdateProgressTS(int value, int max);
         void SetStatusLabelTS(string text);
@@ -41,6 +42,7 @@ namespace ZiPreview
 
             Logger.TheListBox = listTrace;
             Logger.Level = Logger.LoggerLevel.Info;
+            Constants.Hwin = Handle;
 
             _rnd = new Random();
 
@@ -70,7 +72,7 @@ namespace ZiPreview
 
             // prep the video capture
             _videoCapture = new VideoCapture();
-            if (!_videoCapture.Initialise(this))
+            if (!_videoCapture.Initialise())
             {
                 Close();
                 return;
@@ -174,6 +176,19 @@ namespace ZiPreview
             else
             {
                 gridFiles.Refresh();
+            }
+        }
+
+        public void RefreshImageTS(FileSet file)
+        {
+            if (InvokeRequired)
+            {
+                VoidFileT action = new VoidFileT(RefreshImageTS);
+                Invoke(action, new object[] { file });
+            }
+            else
+            {
+                _images.RefreshImage(file.Row.Index);
             }
         }
 
@@ -752,13 +767,13 @@ namespace ZiPreview
                 file.SetDateStamp("lasttime");
                 RefreshGridRowTS(file);
 
+                // set volume level
+                Utilities.SetAudioLevel(50);
+
                 ProcessStartInfo psi = new ProcessStartInfo(file.VideoFilename);
                 psi.UseShellExecute = true;
                 psi.WindowStyle = ProcessWindowStyle.Maximized;
                 Process.Start(psi);
-
-                if (file.VolumeDb.Length == 0 || file.Duration.Length == 0)
-                    VideoAnalyser.SetVideoProperties(file);
             }
             else if (file.HasLink)
             {
@@ -808,6 +823,23 @@ namespace ZiPreview
             _images.PreviewOn = !_images.PreviewOn;
         }
 
+        private void ImportFile()
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Filter = "All files (*.*)|*.*";
+            if (dlg.ShowDialog() == DialogResult.OK)
+                FileSetManager.New(dlg.FileName);
+        }
+
+        private void ProcessVideo(FileSet file)
+        {
+            if (file.HasVideo)
+                VideoAnalyser.Run(file);
+            else
+                MessageBox.Show("No video file", Constants.Title, 
+                    MessageBoxButtons.OK, MessageBoxIcon.Hand);
+        }
+
         #endregion
 
         #region Menu Handlers
@@ -820,13 +852,20 @@ namespace ZiPreview
                 Close();
             }
         }
+
         private void FileDeleteMenu_Click(object sender, EventArgs e)
         {
             DeleteSelected();
         }
+
         private void FileClearSelectedMenu_Click(object sender, EventArgs e)
         {
             ClearSelected();
+        }
+
+        private void FileImportMenu_Click(object sender, EventArgs e)
+        {
+            ImportFile();
         }
 
         private void FileExitMenu_Click(object sender, EventArgs e)
@@ -957,19 +996,21 @@ namespace ZiPreview
             Utilities.LaunchBrowser();
         }
 
-        private void ToolsVideoPropertiesMenu_Click(object sender, EventArgs e)
+        private void ToolsProcessVideoMenu_Click(object sender, EventArgs e)
         {
             DataGridViewSelectedRowCollection rs = gridFiles.SelectedRows;
             if (rs.Count == 1)
             {
-                VideoAnalyser.SetVideoProperties((FileSet)rs[0].Tag);
+                ProcessVideo((FileSet)rs[0].Tag);
             }
         }
 
         private void ToolsTestHarnessMenu_Click(object sender, EventArgs e)
         {
         }
+
         #endregion
 
+  
     }
 }

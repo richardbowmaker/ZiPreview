@@ -16,77 +16,77 @@ namespace ZiPreview
             return _files;
         }
 
-        public static void AddFile(FileVolume file)
+        public static FileSet AddFile(FileVolume file)
         {
             switch (Path.GetExtension(file.Filename).ToLower())
             {
                 case ".jpg":
-                    AddImageFile(file);
-                    break;
-
+                    return AddImageFile(file);
                 case ".mp4":
                 case ".avi":
-                    AddVideoFile(file);
-                    break;
-
+                    return AddVideoFile(file);
                 case ".lnk":
-                    AddLinkFile(file);
-                    break;
+                    return AddLinkFile(file);
+                default:
+                    return null;
             }
         }
 
-        private static void AddImageFile(FileVolume file)
+        private static FileSet AddImageFile(FileVolume file)
         {
             // check to see if it already exists
-            FileSet ft = _files.Find(ft1 => ft1.FileMatchesAny(file.Filename));
+            FileSet fs = _files.Find(ft1 => ft1.FileMatchesAny(file.Filename));
 
-            if (ft != null)
+            if (fs != null)
             {
-                ft.ImageFilename = file.Filename;
+                fs.ImageFilename = file.Filename;
             }
             else
             {
-                FileSet f = new FileSet();
-                f.ImageFilename = file.Filename;
-                f.Volume = file.Volume;
-                _files.Add(f);
+                fs = new FileSet();
+                fs.ImageFilename = file.Filename;
+                fs.Volume = file.Volume;
+                _files.Add(fs);
             }
+            return fs;
         }
 
-        private static void AddVideoFile(FileVolume file)
+        private static FileSet AddVideoFile(FileVolume file)
         {
             // check to see if it already exists
-            FileSet ft = _files.Find(ft1 => ft1.FileMatchesAny(file.Filename));
+            FileSet fs = _files.Find(ft1 => ft1.FileMatchesAny(file.Filename));
 
-            if (ft != null)
+            if (fs != null)
             {
-                ft.VideoFilename = file.Filename;
+                fs.VideoFilename = file.Filename;
             }
             else
             {
-                FileSet f = new FileSet();
-                f.VideoFilename = file.Filename;
-                f.Volume = file.Volume;
-                _files.Add(f);
+                fs = new FileSet();
+                fs.VideoFilename = file.Filename;
+                fs.Volume = file.Volume;
+                _files.Add(fs);
             }
+            return fs;
         }
 
-        private static void AddLinkFile(FileVolume file)
+        private static FileSet AddLinkFile(FileVolume file)
         {
             // check to see if it already exists
-            FileSet ft = _files.Find(ft1 => ft1.FileMatchesAny(file.Filename));
+            FileSet fs = _files.Find(ft1 => ft1.FileMatchesAny(file.Filename));
 
-            if (ft != null)
+            if (fs != null)
             {
-                ft.LinkFilename = file.Filename;
+                fs.LinkFilename = file.Filename;
             }
             else
             {
-                FileSet f = new FileSet();
-                f.LinkFilename = file.Filename;
-                f.Volume = file.Volume;
-                _files.Add(f);
+                fs = new FileSet();
+                fs.LinkFilename = file.Filename;
+                fs.Volume = file.Volume;
+                _files.Add(fs);
             }
+            return fs;
         }
 
         public static void AddFiles(List<FileVolume> files)
@@ -99,6 +99,32 @@ namespace ZiPreview
             _files.Clear();
         }
 
+        public static void New(string file)
+        {
+            // find a drive with sufficient free space
+            FileInfo fi = new FileInfo(file);
+            VeracryptVolume vol = VeracryptManager
+                .FindDriveWithFreeSpace(fi.Length + Constants.MinimumCaptureSpace);
+            if (vol == null)
+            {
+                MessageBox.Show("No volumes have sufficient diskspace", Constants.Title,
+                    MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+            Logger.Info("Sufficient space found on drive: " + vol.Drive);
+
+            // move file to volume
+            string fn = vol.Drive + Constants.FilesTargetPath + "\\" +
+                Utilities.NewFilename() + Path.GetExtension(file);
+            if (!Utilities.MoveFile(file, fn)) return;
+
+            // add to file set manager
+            FileVolume fv = new FileVolume(fn, vol.Filename);
+            FileSet fs = AddFile(fv);
+            if (fs != null)
+                ZipPreview.GUI.AddFileToGridTS(fs);
+        }
+
         // creates an image preview for videos that have no image
         public static void CreateImages()
         {
@@ -108,43 +134,55 @@ namespace ZiPreview
                 {
                     if (VeracryptManager.IsMountedVolume(file.VideoFilename))
                     {
-                        // get duration of media
-                        var wmp = new WMPLib.WindowsMediaPlayer();
-                        var media = wmp.newMedia(file.VideoFilename);
-                        double duration = media.duration;
-
-                        // get preview image from middle
-                        int d = (int)(duration / 2);
-                        string dss = (d / 60).ToString() + ":" + (d % 60).ToString();
-                        string dsf = (d / 60).ToString() + ":" + ((d + 1) % 60).ToString();
-
-                        // video file name less extension plus "-1.jpg"
-                        string fie = Path.GetDirectoryName(file.VideoFilename) + "\\" +
-                            Path.GetFileNameWithoutExtension(file.VideoFilename);
-
-                        string args = "-y -ss " + dss + " -to " + dsf + " -i " +
-                            file.VideoFilename + " -frames 1 " + fie + "-%d.jpg";
-
-                        // ffmpeg -y -ss 0:10 -to 0:11 -i <filename> -frames 1 <filename no ext>-%d.jpg
-                        Utilities.RunCommandSync(
-                            Constants.FfmpegExe,
-                            Constants.WorkingFolder, 
-                            args);
-
-                        if (File.Exists(fie + "-1.jpg"))
-                        {
-                            Utilities.MoveFile(file.ImageFilename = fie + "-1.jpg",
-                                                file.ImageFilename = fie + ".jpg");
-                            file.ImageFilename = fie + ".jpg";
-                            ZipPreview.GUI.RefreshGridRowTS(file);
-                            Logger.Info("Created image for: " + file.VideoFilename);
-                        }
-                        else
-                        {
-                            Logger.Error("*** Failed to create image for: " + file.VideoFilename);
-                        }
+                        NewImage(file, false);
                     }
                 }
+            }
+        }
+
+        public static void NewImage(FileSet file, bool rand)
+        {
+            // get duration of media
+            var wmp = new WMPLib.WindowsMediaPlayer();
+            var media = wmp.newMedia(file.VideoFilename);
+            int duration = (int)media.duration;
+
+            // calculate position in file, halfway or random
+            int d = (int)(duration / 2);
+            if (rand)
+            {
+                Random r = new Random();
+                d = r.Next(0, duration);
+            }
+
+            // get preview image from middle
+            string dss = (d / 60).ToString() + ":" + (d % 60).ToString();
+            string dsf = (d / 60).ToString() + ":" + ((d + 1) % 60).ToString();
+
+            // video file name less extension plus "-1.jpg"
+            string fie = Path.GetDirectoryName(file.VideoFilename) + "\\" +
+                Path.GetFileNameWithoutExtension(file.VideoFilename);
+
+            string args = "-y -ss " + dss + " -to " + dsf + " -i " +
+                file.VideoFilename + " -frames 1 " + fie + "-%d.jpg";
+
+            // ffmpeg -y -ss 0:10 -to 0:11 -i <filename> -frames 1 <filename no ext>-%d.jpg
+            Utilities.RunCommandSync(
+                Constants.FfmpegExe,
+                Constants.WorkingFolder,
+                args);
+
+            if (File.Exists(fie + "-1.jpg"))
+            {
+                Utilities.MoveFile(file.ImageFilename = fie + "-1.jpg",
+                                    file.ImageFilename = fie + ".jpg");
+                file.ImageFilename = fie + ".jpg";
+                ZipPreview.GUI.RefreshGridRowTS(file);
+                Logger.Info("Created image for: " + file.VideoFilename);
+            }
+            else
+            {
+                Logger.Error("*** Failed to create image for: " + file.VideoFilename);
             }
         }
 
@@ -158,7 +196,7 @@ namespace ZiPreview
             // create unqiue filename
             // check for folder already exists
 
-            string fn = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string fn = Utilities.NewFilename(); 
             string ifn = "";
             string lfn = "";
 

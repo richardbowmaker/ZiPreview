@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Diagnostics;
-using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace ZiPreview
 {
@@ -15,6 +15,9 @@ namespace ZiPreview
             string args,
             int timeout = 30000)
         {
+            Logger.Info("Executing " + cmd + " " + args);
+            Logger.Info("in working directory " + wdir + ", " + "timeout " + timeout.ToString());
+
             try
             {
                 ProcessStartInfo startInfo = new ProcessStartInfo
@@ -38,7 +41,10 @@ namespace ZiPreview
                         process.Close();
 
                         if (ec == 0)
+                        {
+                            Logger.Info("prcoess completed OK");
                             return true;
+                        }
                         else
                         {
                             Logger.Error("Process failed: " + cmd + " " + args);
@@ -86,8 +92,9 @@ namespace ZiPreview
                 Logger.Info("Deleted file: " + fn);
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Logger.Error("Exception occurred when deleting file: " + fn + ", " + e.Message);
                 return false;
             }
         }
@@ -108,9 +115,9 @@ namespace ZiPreview
                 Logger.Info("Moved file " + src + " to " + dest);
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Logger.Error("Error moving file " + src + " to " + dest);
+                Logger.Error("Error moving file " + src + " to " + dest + ", " + e.Message);
                 return false;
             }
         }
@@ -125,9 +132,9 @@ namespace ZiPreview
                 Logger.Info("Copied file " + src + " to " + dest);
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Logger.Error("Error copying file " + src + " to " + dest);
+                Logger.Error("Error copying file " + src + " to " + dest + ", " + e.Message);
                 return false;
             }
         }
@@ -256,6 +263,43 @@ namespace ZiPreview
             int n = fne.IndexOf(":");
             if (n != -1) fne = fne.Substring(n + 1);
             return fne;
+        }
+
+        // Win32 imports
+        private const int APPCOMMAND_VOLUME_MUTE = 0x80000;
+        private const int APPCOMMAND_VOLUME_UP = 0xA0000;
+        private const int APPCOMMAND_VOLUME_DOWN = 0x90000;
+        private const int WM_APPCOMMAND = 0x319;
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr SendMessageW(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+
+        public static void MuteAudio()
+        {
+            UnmuteAudio();
+            SendMessageW(Constants.Hwin, WM_APPCOMMAND, Constants.Hwin, (IntPtr)APPCOMMAND_VOLUME_MUTE);
+        }
+
+        public static void UnmuteAudio()
+        {
+            SendMessageW(Constants.Hwin, WM_APPCOMMAND, Constants.Hwin, (IntPtr)APPCOMMAND_VOLUME_DOWN);
+            SendMessageW(Constants.Hwin, WM_APPCOMMAND, Constants.Hwin, (IntPtr)APPCOMMAND_VOLUME_UP);
+        }
+        public static void SetAudioLevel(int percent)
+        {
+            // sets master pc volume to about 10%
+            SendMessageW(Constants.Hwin, WM_APPCOMMAND, Constants.Hwin, (IntPtr)APPCOMMAND_VOLUME_MUTE);
+
+            for (int i = 0; i < 50; ++i)
+                SendMessageW(Constants.Hwin, WM_APPCOMMAND, Constants.Hwin, (IntPtr)APPCOMMAND_VOLUME_DOWN);
+
+            for (int i = 0; i < percent / 2; ++i)
+                SendMessageW(Constants.Hwin, WM_APPCOMMAND, Constants.Hwin, (IntPtr)APPCOMMAND_VOLUME_UP);
+        }
+
+        public static string NewFilename()
+        {
+            return "file" + DateTime.Now.ToString("yyyyMMddHHmmss");
         }
     }
 }

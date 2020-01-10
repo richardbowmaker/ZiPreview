@@ -42,6 +42,7 @@
             this.fileSelectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.fileDeleteMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.fileClearSelectedMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.fileImportMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.fileExitMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.viewMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.viewMoreImagesMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -62,8 +63,8 @@
             this.toolsVolumePropertiesMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsRunTestsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsLaunchBrowserMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolsProcessVideoMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsTestHarnessMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolsVideoPropertiesMenu = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitVertical)).BeginInit();
             this.splitVertical.Panel1.SuspendLayout();
             this.splitVertical.Panel2.SuspendLayout();
@@ -195,6 +196,7 @@
             this.fileSelectMenu,
             this.fileDeleteMenu,
             this.fileClearSelectedMenu,
+            this.fileImportMenu,
             this.fileExitMenu});
             this.fileMenu.Name = "fileMenu";
             this.fileMenu.Size = new System.Drawing.Size(46, 24);
@@ -220,6 +222,13 @@
             this.fileClearSelectedMenu.Size = new System.Drawing.Size(185, 26);
             this.fileClearSelectedMenu.Text = "Clear selected";
             this.fileClearSelectedMenu.Click += new System.EventHandler(this.FileClearSelectedMenu_Click);
+            // 
+            // fileImportMenu
+            // 
+            this.fileImportMenu.Name = "fileImportMenu";
+            this.fileImportMenu.Size = new System.Drawing.Size(185, 26);
+            this.fileImportMenu.Text = "Import ...";
+            this.fileImportMenu.Click += new System.EventHandler(this.FileImportMenu_Click);
             // 
             // fileExitMenu
             // 
@@ -326,8 +335,8 @@
             this.toolsVolumePropertiesMenu,
             this.toolsRunTestsMenu,
             this.toolsLaunchBrowserMenu,
-            this.toolsTestHarnessMenu,
-            this.toolsVideoPropertiesMenu});
+            this.toolsProcessVideoMenu,
+            this.toolsTestHarnessMenu});
             this.toolsMenu.Name = "toolsMenu";
             this.toolsMenu.Size = new System.Drawing.Size(58, 24);
             this.toolsMenu.Text = "Tools";
@@ -382,19 +391,19 @@
             this.toolsLaunchBrowserMenu.Text = "Launch browser";
             this.toolsLaunchBrowserMenu.Click += new System.EventHandler(this.ToolsLaunchBrowserMenu_Click);
             // 
+            // toolsProcessVideoMenu
+            // 
+            this.toolsProcessVideoMenu.Name = "toolsProcessVideoMenu";
+            this.toolsProcessVideoMenu.Size = new System.Drawing.Size(227, 26);
+            this.toolsProcessVideoMenu.Text = "Process Video";
+            this.toolsProcessVideoMenu.Click += new System.EventHandler(this.ToolsProcessVideoMenu_Click);
+            // 
             // toolsTestHarnessMenu
             // 
             this.toolsTestHarnessMenu.Name = "toolsTestHarnessMenu";
             this.toolsTestHarnessMenu.Size = new System.Drawing.Size(227, 26);
             this.toolsTestHarnessMenu.Text = "Test Harness";
             this.toolsTestHarnessMenu.Click += new System.EventHandler(this.ToolsTestHarnessMenu_Click);
-            // 
-            // toolsVideoPropertiesMenu
-            // 
-            this.toolsVideoPropertiesMenu.Name = "toolsVideoPropertiesMenu";
-            this.toolsVideoPropertiesMenu.Size = new System.Drawing.Size(227, 26);
-            this.toolsVideoPropertiesMenu.Text = "Set Video Properties";
-            this.toolsVideoPropertiesMenu.Click += new System.EventHandler(this.ToolsVideoPropertiesMenu_Click);
             // 
             // ZipPreview
             // 
@@ -465,7 +474,8 @@
         private System.Windows.Forms.ToolStripMenuItem viewFilenameToClipboardMenu;
         private System.Windows.Forms.ToolStripMenuItem toolsLaunchBrowserMenu;
         private System.Windows.Forms.ToolStripMenuItem viewPreviewMenu;
-        private System.Windows.Forms.ToolStripMenuItem toolsVideoPropertiesMenu;
+        private System.Windows.Forms.ToolStripMenuItem fileImportMenu;
+        private System.Windows.Forms.ToolStripMenuItem toolsProcessVideoMenu;
     }
 }
 
