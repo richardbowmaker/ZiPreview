@@ -27,7 +27,7 @@ namespace ZiPreview
 
         public static string UnmountFile { get { return WorkingFolder + @"\unmount.bat"; } }
 
-        public static string Browser {  get { return WorkingFolder + @"\Tor Browser\Tor - Shortcut.lnk";} }
+        public static string Browser {  get { return WorkingFolder + @"\Tor Browser\Start Tor Browser.lnk"; } }
  //       public static string Browser {  get { return @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"; } }
         
         public static string VeracryptExe { get { return @"C:\Program Files\VeraCrypt\VeraCrypt.exe"; } }

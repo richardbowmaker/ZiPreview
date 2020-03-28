@@ -214,8 +214,8 @@ namespace ZiPreview
             if (!Utilities.MakeDirectory(Constants.FilesTargetPath))
                 return false;
 
-            ifn = vol.Drive + Constants.FilesTargetPath + "\\file" + fn + ".jpg";
-            lfn = vol.Drive + Constants.FilesTargetPath + "\\file" + fn + ".lnk";
+            ifn = vol.Drive + Constants.FilesTargetPath + "\\" + fn + ".jpg";
+            lfn = vol.Drive + Constants.FilesTargetPath + "\\" + fn + ".lnk";
 
             // save link
             if (VeracryptManager.IsMountedVolume(lfn) 
@@ -407,14 +407,18 @@ namespace ZiPreview
                 case SortFieldT.Times: s1 = f1.TimesI.ToString("D5"); s2 = f2.TimesI.ToString("D5"); break;
                 case SortFieldT.Type: s1 = f1.TypeS; s2 = f2.TypeS; break;
                 case SortFieldT.LastDate:
+                    // 0123456789012345678
+                    // hh:mm:ss dd/mm/yyyy
                     s1 = f1.LastDate;
-                    if (s1.Length == 10) s1 =
-                            s1.Substring(6, 4) + s1.Substring(3, 2) + s1.Substring(0, 2);
-                    else s1 = "00000000";
+                    if (s1.Length == 19) s1 =
+                            s1.Substring(15, 4) + s1.Substring(12, 2) + s1.Substring(9, 2) +
+                            s1.Substring(0, 2) + s1.Substring(3, 2) + s1.Substring(6, 2);
+                    else s1 = "00000000000000";
                     s2 = f2.LastDate;
-                    if (s2.Length == 10) s2 = 
-                            s2.Substring(6, 4) + s2.Substring(3, 2) + s2.Substring(0, 2);
-                    else s2 = "00000000";
+                    if (s2.Length == 19) s2 =
+                            s2.Substring(15, 4) + s2.Substring(12, 2) + s2.Substring(9, 2) +
+                            s2.Substring(0, 2) + s2.Substring(3, 2) + s2.Substring(6, 2);
+                    else s2 = "00000000000000";
                     break;
             }
 

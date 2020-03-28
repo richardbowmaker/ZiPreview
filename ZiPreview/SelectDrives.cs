@@ -11,6 +11,9 @@ namespace ZiPreview
         private static string _filter = "";
         private static string _folder = @"";
         private static string _password = "";
+        ////private static string _filter = "*.hc";
+        //////private static string _folder = @"D:\_Ricks\c#\ZiPreview\EncryptedTest";
+        //////private static string _password = "dummypassword";
 
         public static bool Run()
         {
@@ -51,6 +54,7 @@ namespace ZiPreview
                 txtFolder.Text = dlg.SelectedPath;
             }
             UpdateGUI();
+            txtFilter.Focus();
         }
 
         private void UpdateGUI()

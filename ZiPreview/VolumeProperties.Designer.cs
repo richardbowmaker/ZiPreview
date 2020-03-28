@@ -44,6 +44,7 @@
             this.datePicker = new System.Windows.Forms.DateTimePicker();
             this.butSet = new System.Windows.Forms.Button();
             this.timePicker = new System.Windows.Forms.DateTimePicker();
+            this.butReset = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // txtFolder1
@@ -188,11 +189,22 @@
             this.timePicker.Size = new System.Drawing.Size(200, 22);
             this.timePicker.TabIndex = 16;
             // 
+            // butReset
+            // 
+            this.butReset.Location = new System.Drawing.Point(335, 101);
+            this.butReset.Name = "butReset";
+            this.butReset.Size = new System.Drawing.Size(90, 39);
+            this.butReset.TabIndex = 17;
+            this.butReset.Text = "Reset";
+            this.butReset.UseVisualStyleBackColor = true;
+            this.butReset.Click += new System.EventHandler(this.butReset_Click);
+            // 
             // VolumeProperties
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1036, 450);
+            this.Controls.Add(this.butReset);
             this.Controls.Add(this.timePicker);
             this.Controls.Add(this.butSet);
             this.Controls.Add(this.datePicker);
@@ -238,5 +250,6 @@
         private System.Windows.Forms.DateTimePicker datePicker;
         private System.Windows.Forms.Button butSet;
         private System.Windows.Forms.DateTimePicker timePicker;
+        private System.Windows.Forms.Button butReset;
     }
 }

@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 
+// old - \Files\All\file20110102030031;times;2;lasttime;28/12/2019;maxvol;-2.5;duration;9:28
+// new - a01;averagevol;2.20;duration;03:25:45.678;lasttime;15:52:59 28/03/2020;maxvol;1.10;selected;X;times;2
+// \Files\All\f1;maxvol;-0.0  -18.5;duration;00:02:53.000;times;1;lasttime;12:00:00 28/12/2019;volume;-0.0  -18.5
+
+
 namespace ZiPreview
 {
     public class FileSet
@@ -13,7 +18,17 @@ namespace ZiPreview
         public string Volume { get; set; } // filename of the veracrypt file
         public string LastDate 
         { 
-            get { return GetProperty("lasttime"); } 
+            get 
+            { 
+                string d = GetProperty("lasttime"); 
+                if (d.Length == 10)
+                {
+                    // upgrade to date time stamp
+                    d = "12:00:00 " +  d;
+                    SetProperty("lasttime", d);
+                }
+                return d;
+            } 
             set { SetProperty("lasttime", value); }
         }
         public string Times 
@@ -28,12 +43,43 @@ namespace ZiPreview
         }
         public string VolumeDb
         {
-            get { return GetProperty("volume"); }
+            // maxvol;-0.0  -18.5
+            get 
+            { 
+                string d = GetProperty("volume");
+
+                int n1 = d.IndexOf(" ");
+                int n2 = d.LastIndexOf(" ");
+                if (n1!= -1)
+                {
+                    string mv = d.Substring(0, n1);
+                    string av = d.Substring(n2 + 1);
+                    SetProperty("maxvol", mv);
+                    SetProperty("averagevol", av);
+                }
+                return d;
+            }
             set { SetProperty("volume", value); }
         }
         public string Duration
         {
-            get { return GetProperty("duration"); }
+            // 03:25:45.678
+            // 9:28
+            get
+            {
+                string d = GetProperty("duration");
+                if (d.Length == 4)
+                {
+                    d = "00:0" + d + ".000";
+                    SetProperty("duration", d);
+                }
+                if (d.Length == 5)
+                {
+                    d = "00:" + d + ".000";
+                    SetProperty("duration", d);
+                }
+                return d;
+            }
             set { SetProperty("duration", value); }
         }
 
@@ -201,17 +247,17 @@ namespace ZiPreview
         // any of the image/link/video
         public bool MatchesAnyFilename(string file)
         {
-            string fne = Utilities.FilenameNoDriveAndExtension(file);
-            if (fne.EndsWith("-1")) fne = fne.Substring(0, fne.Length - 2);
+            string fs = Utilities.FileStem(file);
+            if (fs.EndsWith("-1")) fs = fs.Substring(0, fs.Length - 2);
 
             if (HasImage)
             {
-                string f = Utilities.FilenameNoDriveAndExtension(ImageFilename);
+                string f = Utilities.FileStem(ImageFilename);
                 if (f.EndsWith("-1")) f = f.Substring(0, f.Length - 2);
-                return (String.Compare(fne, f, true) == 0);
+                return (String.Compare(fs, f, true) == 0);
             }
-            if (HasVideo) return (String.Compare(fne, Utilities.FilenameNoDriveAndExtension(VideoFilename), true) == 0);
-            if (HasLink) return (String.Compare(fne, Utilities.FilenameNoDriveAndExtension(LinkFilename), true) == 0);
+            if (HasVideo) return (String.Compare(fs, Utilities.FileStem(VideoFilename), true) == 0);
+            if (HasLink) return (String.Compare(fs, Utilities.FileStem(LinkFilename), true) == 0);
 
             return false;
         }
@@ -262,7 +308,7 @@ namespace ZiPreview
                 if (n != -1)
                 {
                     Properties.RemoveAt(n);
-                    VeracryptManager.SetVolumeDirty(Filename);
+                    //VeracryptManager.SetVolumeDirty(Filename);
                 }
                 return "";
             }
@@ -270,7 +316,7 @@ namespace ZiPreview
             {
                 Property p = CreateProperty(key);
                 p.Value = value;
-                VeracryptManager.SetVolumeDirty(Filename);
+                //VeracryptManager.SetVolumeDirty(Filename);
                 return value;
             }
         }
@@ -325,7 +371,7 @@ namespace ZiPreview
 
         public string SetDateStamp(string key)
         {
-            return SetProperty(key, DateTime.Now.ToString("dd/MM/yyyy"));
+            return SetProperty(key, DateTime.Now.ToString("hh:mm:ss dd/MM/yyyy"));
         }
 
         public string GetDateStamp(string key)
@@ -336,7 +382,7 @@ namespace ZiPreview
         public void WriteProperties(StreamWriter sw)
         {
             if (Properties.Count == 0) return;
-            string fn = Utilities.FilenameNoDriveAndExtension(Filename);
+            string fn = Utilities.FileStem(Filename);
             // remove trailing -1 if it is image filename
             if (fn.EndsWith("-1")) fn = fn.Substring(0, fn.Length - 2);
             sw.Write(fn);

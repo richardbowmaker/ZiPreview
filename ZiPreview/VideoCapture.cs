@@ -472,7 +472,7 @@ namespace ZiPreview
 
         private void KillBrowser()
         {
-            if (VideoCapturePrompt.LaunchBrowser)
+            if (VideoCapturePrompt.LaunchBrowser && VideoCapturePrompt.CloseBrowser)
                 _browser.Kill();
             else
                 Clipboard.Clear();

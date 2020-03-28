@@ -16,6 +16,7 @@ namespace ZiPreview
         public static bool Mute = true;
         public static bool Unmute = true;
         public static bool LaunchBrowser = true;
+        public static bool CloseBrowser = true;
         private static bool _doNotShow = false;
         private static string _url = "";
 
@@ -51,6 +52,7 @@ namespace ZiPreview
             chkMuteDuring.Checked = Mute;
             chkUnmuteAfter.Checked = Unmute;
             chkLaunchBrowser.Checked = LaunchBrowser;
+            chkCloseBrowser.Checked = CloseBrowser;
         }
 
         private void ButOK_Click(object sender, EventArgs e)
@@ -70,6 +72,7 @@ namespace ZiPreview
             Mute = chkMuteDuring.Checked;
             Unmute = chkUnmuteAfter.Checked;
             LaunchBrowser = chkLaunchBrowser.Checked;
+            CloseBrowser = chkCloseBrowser.Checked;
         }
 
         private void ChkDoNotShow_CheckedChanged(object sender, EventArgs e)

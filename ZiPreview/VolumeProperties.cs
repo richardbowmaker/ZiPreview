@@ -268,5 +268,40 @@ namespace ZiPreview
         {
             UpdateGUI();
         }
+
+        private void butReset_Click(object sender, EventArgs e)
+        {
+            foreach (object o in lstVolumes.Items)
+            {
+                KeyValuePair<string, string> kvp =
+                    (KeyValuePair<string, string>)(o);
+
+                string fn1 = Path.GetFileName(kvp.Key);
+
+                // xxx20190904
+                int yy = Convert.ToInt32(fn1.Substring(3, 4));
+                int MM = Convert.ToInt32(fn1.Substring(7, 2));
+                int dd = Convert.ToInt32(fn1.Substring(9, 2));
+
+                Random r = new Random();
+                int hh = r.Next(0, 23);
+                int mm = r.Next(0, 59);
+                int ss = r.Next(0, 59);
+
+                DateTime dt = new DateTime(yy, MM, dd, hh, mm, ss);
+
+                File.SetCreationTime(kvp.Key, dt);
+                File.SetLastWriteTime(kvp.Key, dt);
+                File.SetLastAccessTime(kvp.Key, dt);
+
+                File.SetCreationTime(kvp.Value, dt);
+                File.SetLastWriteTime(kvp.Value, dt);
+                File.SetLastAccessTime(kvp.Value, dt);
+
+                Logger.Info("Setting volume time stamps to: " + dt.ToString("HH:mm:ss dd:MM:yyyy"));
+                Logger.Info(kvp.Key);
+                Logger.Info(kvp.Value);
+            }
+        }
     }
 }

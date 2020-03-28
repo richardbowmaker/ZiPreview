@@ -749,16 +749,8 @@ namespace ZiPreview
             _videoCapture.StartCapture(file);
         }
 
-        static string pfn = "";
         public void PlayFile(FileSet file)
         {
-            if (pfn.CompareTo(file.Filename) == 0)
-            {
-                Logger.Error("Repeated play command, ignored " + pfn);
-                return;
-            }
-            pfn = file.Filename;
-
             if (file.HasVideo)
             {
                 _images.StopPlay();

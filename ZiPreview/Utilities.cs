@@ -265,6 +265,15 @@ namespace ZiPreview
             return fne;
         }
 
+        public static string FileStem(string file)
+        {
+            int n = file.LastIndexOf('\\');
+            if (n != -1) file = file.Substring(n + 1);
+            n = file.LastIndexOf('.');
+            if (n != -1) file = file.Substring(0, n);
+            return file;
+        }
+
         // Win32 imports
         private const int APPCOMMAND_VOLUME_MUTE = 0x80000;
         private const int APPCOMMAND_VOLUME_UP = 0xA0000;
