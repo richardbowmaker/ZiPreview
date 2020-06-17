@@ -84,6 +84,12 @@
       <DependentUpon>CopyFiles.cs</DependentUpon>
     </Compile>
     <Compile Include="CPicture.cs" />
+    <Compile Include="EasyMenu.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EasyMenu.Designer.cs">
+      <DependentUpon>EasyMenu.cs</DependentUpon>
+    </Compile>
     <Compile Include="FileSetManager.cs" />
     <Compile Include="FileSet.cs" />
     <Compile Include="VideoAnalyser.cs">
@@ -143,6 +149,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CopyFiles.resx">
       <DependentUpon>CopyFiles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EasyMenu.resx">
+      <DependentUpon>EasyMenu.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="VideoAnalyser.resx">
       <DependentUpon>VideoAnalyser.cs</DependentUpon>

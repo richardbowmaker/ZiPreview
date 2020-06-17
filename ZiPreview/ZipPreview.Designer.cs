@@ -81,8 +81,8 @@
             // splitVertical
             // 
             this.splitVertical.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitVertical.Location = new System.Drawing.Point(0, 28);
-            this.splitVertical.Margin = new System.Windows.Forms.Padding(4);
+            this.splitVertical.Location = new System.Drawing.Point(0, 33);
+            this.splitVertical.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.splitVertical.Name = "splitVertical";
             // 
             // splitVertical.Panel1
@@ -92,16 +92,16 @@
             // splitVertical.Panel2
             // 
             this.splitVertical.Panel2.Controls.Add(this.statusStrip);
-            this.splitVertical.Size = new System.Drawing.Size(1584, 783);
-            this.splitVertical.SplitterDistance = 528;
-            this.splitVertical.SplitterWidth = 5;
+            this.splitVertical.Size = new System.Drawing.Size(1782, 981);
+            this.splitVertical.SplitterDistance = 594;
+            this.splitVertical.SplitterWidth = 6;
             this.splitVertical.TabIndex = 0;
             // 
             // splitHorizGridTrace
             // 
             this.splitHorizGridTrace.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitHorizGridTrace.Location = new System.Drawing.Point(0, 0);
-            this.splitHorizGridTrace.Margin = new System.Windows.Forms.Padding(4);
+            this.splitHorizGridTrace.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.splitHorizGridTrace.Name = "splitHorizGridTrace";
             this.splitHorizGridTrace.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -112,9 +112,9 @@
             // splitHorizGridTrace.Panel2
             // 
             this.splitHorizGridTrace.Panel2.Controls.Add(this.listTrace);
-            this.splitHorizGridTrace.Size = new System.Drawing.Size(528, 783);
-            this.splitHorizGridTrace.SplitterDistance = 589;
-            this.splitHorizGridTrace.SplitterWidth = 5;
+            this.splitHorizGridTrace.Size = new System.Drawing.Size(594, 981);
+            this.splitHorizGridTrace.SplitterDistance = 737;
+            this.splitHorizGridTrace.SplitterWidth = 6;
             this.splitHorizGridTrace.TabIndex = 0;
             // 
             // gridFiles
@@ -124,11 +124,11 @@
             this.gridFiles.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.gridFiles.Dock = System.Windows.Forms.DockStyle.Fill;
             this.gridFiles.Location = new System.Drawing.Point(0, 0);
-            this.gridFiles.Margin = new System.Windows.Forms.Padding(4);
+            this.gridFiles.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.gridFiles.Name = "gridFiles";
             this.gridFiles.ReadOnly = true;
             this.gridFiles.RowHeadersWidth = 51;
-            this.gridFiles.Size = new System.Drawing.Size(528, 589);
+            this.gridFiles.Size = new System.Drawing.Size(594, 737);
             this.gridFiles.TabIndex = 0;
             this.gridFiles.CellToolTipTextNeeded += new System.Windows.Forms.DataGridViewCellToolTipTextNeededEventHandler(this.GridFiles_CellToolTipTextNeeded);
             this.gridFiles.CellValueNeeded += new System.Windows.Forms.DataGridViewCellValueEventHandler(this.GridFiles_CellValueNeeded);
@@ -140,11 +140,11 @@
             this.listTrace.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listTrace.FormattingEnabled = true;
             this.listTrace.HorizontalScrollbar = true;
-            this.listTrace.ItemHeight = 16;
+            this.listTrace.ItemHeight = 20;
             this.listTrace.Location = new System.Drawing.Point(0, 0);
-            this.listTrace.Margin = new System.Windows.Forms.Padding(4);
+            this.listTrace.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.listTrace.Name = "listTrace";
-            this.listTrace.Size = new System.Drawing.Size(528, 189);
+            this.listTrace.Size = new System.Drawing.Size(594, 238);
             this.listTrace.TabIndex = 0;
             // 
             // statusStrip
@@ -153,22 +153,22 @@
             this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statusProgress,
             this.statusLabel});
-            this.statusStrip.Location = new System.Drawing.Point(0, 753);
+            this.statusStrip.Location = new System.Drawing.Point(0, 943);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Padding = new System.Windows.Forms.Padding(1, 0, 19, 0);
-            this.statusStrip.Size = new System.Drawing.Size(1051, 30);
+            this.statusStrip.Padding = new System.Windows.Forms.Padding(1, 0, 21, 0);
+            this.statusStrip.Size = new System.Drawing.Size(1182, 38);
             this.statusStrip.TabIndex = 0;
             this.statusStrip.Text = "statusStrip1";
             // 
             // statusProgress
             // 
             this.statusProgress.Name = "statusProgress";
-            this.statusProgress.Size = new System.Drawing.Size(533, 22);
+            this.statusProgress.Size = new System.Drawing.Size(600, 30);
             // 
             // statusLabel
             // 
             this.statusLabel.Name = "statusLabel";
-            this.statusLabel.Size = new System.Drawing.Size(83, 24);
+            this.statusLabel.Size = new System.Drawing.Size(100, 31);
             this.statusLabel.Text = "statusLabel";
             // 
             // timer_
@@ -179,6 +179,7 @@
             // 
             // menuStrip1
             // 
+            this.menuStrip1.GripMargin = new System.Windows.Forms.Padding(2, 2, 0, 2);
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileMenu,
@@ -186,7 +187,8 @@
             this.toolsMenu});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1584, 28);
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(7, 2, 0, 2);
+            this.menuStrip1.Size = new System.Drawing.Size(1782, 33);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -199,41 +201,41 @@
             this.fileImportMenu,
             this.fileExitMenu});
             this.fileMenu.Name = "fileMenu";
-            this.fileMenu.Size = new System.Drawing.Size(46, 24);
+            this.fileMenu.Size = new System.Drawing.Size(54, 29);
             this.fileMenu.Text = "&File";
             // 
             // fileSelectMenu
             // 
             this.fileSelectMenu.Name = "fileSelectMenu";
-            this.fileSelectMenu.Size = new System.Drawing.Size(185, 26);
+            this.fileSelectMenu.Size = new System.Drawing.Size(222, 34);
             this.fileSelectMenu.Text = "Select ...";
             this.fileSelectMenu.Click += new System.EventHandler(this.FileSelectMenu_Click);
             // 
             // fileDeleteMenu
             // 
             this.fileDeleteMenu.Name = "fileDeleteMenu";
-            this.fileDeleteMenu.Size = new System.Drawing.Size(185, 26);
+            this.fileDeleteMenu.Size = new System.Drawing.Size(222, 34);
             this.fileDeleteMenu.Text = "Delete ...";
             this.fileDeleteMenu.Click += new System.EventHandler(this.FileDeleteMenu_Click);
             // 
             // fileClearSelectedMenu
             // 
             this.fileClearSelectedMenu.Name = "fileClearSelectedMenu";
-            this.fileClearSelectedMenu.Size = new System.Drawing.Size(185, 26);
+            this.fileClearSelectedMenu.Size = new System.Drawing.Size(222, 34);
             this.fileClearSelectedMenu.Text = "Clear selected";
             this.fileClearSelectedMenu.Click += new System.EventHandler(this.FileClearSelectedMenu_Click);
             // 
             // fileImportMenu
             // 
             this.fileImportMenu.Name = "fileImportMenu";
-            this.fileImportMenu.Size = new System.Drawing.Size(185, 26);
+            this.fileImportMenu.Size = new System.Drawing.Size(222, 34);
             this.fileImportMenu.Text = "Import ...";
             this.fileImportMenu.Click += new System.EventHandler(this.FileImportMenu_Click);
             // 
             // fileExitMenu
             // 
             this.fileExitMenu.Name = "fileExitMenu";
-            this.fileExitMenu.Size = new System.Drawing.Size(185, 26);
+            this.fileExitMenu.Size = new System.Drawing.Size(222, 34);
             this.fileExitMenu.Text = "E&xit";
             this.fileExitMenu.Click += new System.EventHandler(this.FileExitMenu_Click);
             // 
@@ -251,77 +253,77 @@
             this.viewFilenameToClipboardMenu,
             this.viewPreviewMenu});
             this.viewMenu.Name = "viewMenu";
-            this.viewMenu.Size = new System.Drawing.Size(55, 24);
+            this.viewMenu.Size = new System.Drawing.Size(65, 29);
             this.viewMenu.Text = "View";
             this.viewMenu.DropDownOpening += new System.EventHandler(this.ViewMenu_DropDownOpening);
             // 
             // viewMoreImagesMenu
             // 
             this.viewMoreImagesMenu.Name = "viewMoreImagesMenu";
-            this.viewMoreImagesMenu.Size = new System.Drawing.Size(276, 26);
+            this.viewMoreImagesMenu.Size = new System.Drawing.Size(334, 34);
             this.viewMoreImagesMenu.Text = "More images (F5)";
             this.viewMoreImagesMenu.Click += new System.EventHandler(this.ViewMoreImagesMenu_Click);
             // 
             // viewLessImagesMenu
             // 
             this.viewLessImagesMenu.Name = "viewLessImagesMenu";
-            this.viewLessImagesMenu.Size = new System.Drawing.Size(276, 26);
+            this.viewLessImagesMenu.Size = new System.Drawing.Size(334, 34);
             this.viewLessImagesMenu.Text = "Less Images (F6)";
             this.viewLessImagesMenu.Click += new System.EventHandler(this.ViewLessImagesMenu_Click);
             // 
             // viewViewMenu
             // 
             this.viewViewMenu.Name = "viewViewMenu";
-            this.viewViewMenu.Size = new System.Drawing.Size(276, 26);
+            this.viewViewMenu.Size = new System.Drawing.Size(334, 34);
             this.viewViewMenu.Text = "View (Enter)";
             this.viewViewMenu.Click += new System.EventHandler(this.ViewViewMenu_Click);
             // 
             // viewNextSelectedMenu
             // 
             this.viewNextSelectedMenu.Name = "viewNextSelectedMenu";
-            this.viewNextSelectedMenu.Size = new System.Drawing.Size(276, 26);
+            this.viewNextSelectedMenu.Size = new System.Drawing.Size(334, 34);
             this.viewNextSelectedMenu.Text = "View next selected (F1)";
             this.viewNextSelectedMenu.Click += new System.EventHandler(this.ViewNextSelectedMenu_Click);
             // 
             // viewPreviousSelectedMenu
             // 
             this.viewPreviousSelectedMenu.Name = "viewPreviousSelectedMenu";
-            this.viewPreviousSelectedMenu.Size = new System.Drawing.Size(276, 26);
+            this.viewPreviousSelectedMenu.Size = new System.Drawing.Size(334, 34);
             this.viewPreviousSelectedMenu.Text = "View previous selected (F2)";
             this.viewPreviousSelectedMenu.Click += new System.EventHandler(this.ViewPreviousSelectedMenu_Click);
             // 
             // viewLinkMenu
             // 
             this.viewLinkMenu.Name = "viewLinkMenu";
-            this.viewLinkMenu.Size = new System.Drawing.Size(276, 26);
+            this.viewLinkMenu.Size = new System.Drawing.Size(334, 34);
             this.viewLinkMenu.Text = "Goto link (F4)";
             this.viewLinkMenu.Click += new System.EventHandler(this.ViewLinkMenu_Click);
             // 
             // viewRandomPageMenu
             // 
             this.viewRandomPageMenu.Name = "viewRandomPageMenu";
-            this.viewRandomPageMenu.Size = new System.Drawing.Size(276, 26);
+            this.viewRandomPageMenu.Size = new System.Drawing.Size(334, 34);
             this.viewRandomPageMenu.Text = "Random page (F3)";
             this.viewRandomPageMenu.Click += new System.EventHandler(this.ViewRandomPageMenu_Click);
             // 
             // viewLinkToClipboardMenu
             // 
             this.viewLinkToClipboardMenu.Name = "viewLinkToClipboardMenu";
-            this.viewLinkToClipboardMenu.Size = new System.Drawing.Size(276, 26);
+            this.viewLinkToClipboardMenu.Size = new System.Drawing.Size(334, 34);
             this.viewLinkToClipboardMenu.Text = "Copy link to clipboard (F12)";
             this.viewLinkToClipboardMenu.Click += new System.EventHandler(this.ViewLinkToClipboardMenu_Click);
             // 
             // viewFilenameToClipboardMenu
             // 
             this.viewFilenameToClipboardMenu.Name = "viewFilenameToClipboardMenu";
-            this.viewFilenameToClipboardMenu.Size = new System.Drawing.Size(276, 26);
+            this.viewFilenameToClipboardMenu.Size = new System.Drawing.Size(334, 34);
             this.viewFilenameToClipboardMenu.Text = "Copy filename to clipboard";
             this.viewFilenameToClipboardMenu.Click += new System.EventHandler(this.ViewFilenameToClipboardMenu_Click);
             // 
             // viewPreviewMenu
             // 
             this.viewPreviewMenu.Name = "viewPreviewMenu";
-            this.viewPreviewMenu.Size = new System.Drawing.Size(276, 26);
+            this.viewPreviewMenu.Size = new System.Drawing.Size(334, 34);
             this.viewPreviewMenu.Text = "Preview On/Off";
             this.viewPreviewMenu.Click += new System.EventHandler(this.ViewPreviewMenu_Click);
             // 
@@ -338,87 +340,88 @@
             this.toolsProcessVideoMenu,
             this.toolsTestHarnessMenu});
             this.toolsMenu.Name = "toolsMenu";
-            this.toolsMenu.Size = new System.Drawing.Size(58, 24);
+            this.toolsMenu.Size = new System.Drawing.Size(69, 29);
             this.toolsMenu.Text = "Tools";
             this.toolsMenu.DropDownOpening += new System.EventHandler(this.ToolsMenu_DropDownOpening);
             // 
             // toolsCaptureMenu
             // 
             this.toolsCaptureMenu.Name = "toolsCaptureMenu";
-            this.toolsCaptureMenu.Size = new System.Drawing.Size(227, 26);
+            this.toolsCaptureMenu.Size = new System.Drawing.Size(276, 34);
             this.toolsCaptureMenu.Text = "Capture video ... (F7)";
             this.toolsCaptureMenu.Click += new System.EventHandler(this.ToolsCaptureMenu_Click);
             // 
             // toolsCopyFilesMenu
             // 
             this.toolsCopyFilesMenu.Name = "toolsCopyFilesMenu";
-            this.toolsCopyFilesMenu.Size = new System.Drawing.Size(227, 26);
+            this.toolsCopyFilesMenu.Size = new System.Drawing.Size(276, 34);
             this.toolsCopyFilesMenu.Text = "Copy Files ... / Abort";
             this.toolsCopyFilesMenu.Click += new System.EventHandler(this.ToolsCopyFilesMenu_Click);
             // 
             // toolsSaveLogMenu
             // 
             this.toolsSaveLogMenu.Name = "toolsSaveLogMenu";
-            this.toolsSaveLogMenu.Size = new System.Drawing.Size(227, 26);
+            this.toolsSaveLogMenu.Size = new System.Drawing.Size(276, 34);
             this.toolsSaveLogMenu.Text = "Save log to file ...";
             this.toolsSaveLogMenu.Click += new System.EventHandler(this.ToolsSaveLogMenu_Click);
             // 
             // toolsClearLogMenu
             // 
             this.toolsClearLogMenu.Name = "toolsClearLogMenu";
-            this.toolsClearLogMenu.Size = new System.Drawing.Size(227, 26);
+            this.toolsClearLogMenu.Size = new System.Drawing.Size(276, 34);
             this.toolsClearLogMenu.Text = "Clear log";
             this.toolsClearLogMenu.Click += new System.EventHandler(this.ToolsClearLogMenu_Click);
             // 
             // toolsVolumePropertiesMenu
             // 
             this.toolsVolumePropertiesMenu.Name = "toolsVolumePropertiesMenu";
-            this.toolsVolumePropertiesMenu.Size = new System.Drawing.Size(227, 26);
+            this.toolsVolumePropertiesMenu.Size = new System.Drawing.Size(276, 34);
             this.toolsVolumePropertiesMenu.Text = "Volume Properties";
             this.toolsVolumePropertiesMenu.Click += new System.EventHandler(this.ToolsVolumePropertiesMenu_Click);
             // 
             // toolsRunTestsMenu
             // 
             this.toolsRunTestsMenu.Name = "toolsRunTestsMenu";
-            this.toolsRunTestsMenu.Size = new System.Drawing.Size(227, 26);
+            this.toolsRunTestsMenu.Size = new System.Drawing.Size(276, 34);
             this.toolsRunTestsMenu.Text = "Run Tests";
             this.toolsRunTestsMenu.Click += new System.EventHandler(this.ToolsRunTestsMenu_Click);
             // 
             // toolsLaunchBrowserMenu
             // 
             this.toolsLaunchBrowserMenu.Name = "toolsLaunchBrowserMenu";
-            this.toolsLaunchBrowserMenu.Size = new System.Drawing.Size(227, 26);
+            this.toolsLaunchBrowserMenu.Size = new System.Drawing.Size(276, 34);
             this.toolsLaunchBrowserMenu.Text = "Launch browser";
             this.toolsLaunchBrowserMenu.Click += new System.EventHandler(this.ToolsLaunchBrowserMenu_Click);
             // 
             // toolsProcessVideoMenu
             // 
             this.toolsProcessVideoMenu.Name = "toolsProcessVideoMenu";
-            this.toolsProcessVideoMenu.Size = new System.Drawing.Size(227, 26);
+            this.toolsProcessVideoMenu.Size = new System.Drawing.Size(276, 34);
             this.toolsProcessVideoMenu.Text = "Process Video";
             this.toolsProcessVideoMenu.Click += new System.EventHandler(this.ToolsProcessVideoMenu_Click);
             // 
             // toolsTestHarnessMenu
             // 
             this.toolsTestHarnessMenu.Name = "toolsTestHarnessMenu";
-            this.toolsTestHarnessMenu.Size = new System.Drawing.Size(227, 26);
+            this.toolsTestHarnessMenu.Size = new System.Drawing.Size(276, 34);
             this.toolsTestHarnessMenu.Text = "Test Harness";
             this.toolsTestHarnessMenu.Click += new System.EventHandler(this.ToolsTestHarnessMenu_Click);
             // 
             // ZipPreview
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1584, 811);
+            this.ClientSize = new System.Drawing.Size(1782, 1014);
             this.Controls.Add(this.splitVertical);
             this.Controls.Add(this.menuStrip1);
-            this.Margin = new System.Windows.Forms.Padding(4);
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "ZipPreview";
             this.Text = "ZiPreview";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmZiPreview_FormClosing);
             this.Load += new System.EventHandler(this.ZiPreview_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ZipPreview_KeyDown);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.ZipPreview_KeyUp);
             this.splitVertical.Panel1.ResumeLayout(false);
             this.splitVertical.Panel2.ResumeLayout(false);
             this.splitVertical.Panel2.PerformLayout();

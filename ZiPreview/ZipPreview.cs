@@ -20,7 +20,7 @@ namespace ZiPreview
         void PopulateGrid();
     }
     
-    public partial class ZipPreview : Form, IGuiUpdate, IImagesViewerData
+    public partial class ZipPreview : Form, IGuiUpdate, IImagesViewerData, IEasyMenu
     {
         private ImagesViewer _images;
         private CPicture _image;
@@ -105,6 +105,8 @@ namespace ZiPreview
             InitialiseGrid();
 
             _initialised = true;
+
+            EasyMenu.SetCallback(this);
         }
 
         private void Timer__Tick(object sender, EventArgs e)
@@ -495,9 +497,80 @@ namespace ZiPreview
         #endregion
 
         #region Key Mapping
+
+        // easy menu key handling
+        private Keys? keyDown_;
+        private long keyDownTime_;
+
+        public int GetNoOfOptions()
+        {
+            return 4;
+        }
+        public string GetOptionText(int n)
+        {
+            switch (n)
+            {
+                case 0: return "Play video";
+                case 1: return "Copy link to clipboard";
+                case 2: return "Launch browser";
+                case 3: return "Dummy";
+                default: return "";
+            }
+        }
+
+        public bool GetOptionEnabled(int n)
+        {
+            var rows = gridFiles.SelectedRows;
+            if (rows.Count == 1)
+            {
+                FileSet file = (FileSet)rows[0].Tag;
+                switch (n)
+                {
+                    case 0: return file.HasVideo;
+                    case 1: return file.HasVideo;
+                    case 2: return file.HasVideo;
+                    default: return true;
+                }
+            }
+            else
+                return false;
+        }
+        public void OptionSelected(int n)
+        {
+            var rows = gridFiles.SelectedRows;
+            if (rows.Count == 1)
+            {
+                FileSet file = (FileSet)rows[0].Tag;
+
+                switch (n)
+                {
+                    case 0: if (file != null) PlayFile(file); break;
+                    case 1: if (file != null) CopyLinkToClipboard(file); break;
+                    case 2: if (file != null) Utilities.LaunchBrowser(file); break;
+                }
+            }
+        }
+
         private void ZipPreview_KeyDown(object sender, KeyEventArgs e)
         {
-            if (HandleKey(e.KeyData)) e.Handled = true;
+            if (!keyDown_.HasValue)
+            {
+                keyDown_ = e.KeyData;
+                keyDownTime_ = DateTime.Now.Ticks;
+            }
+        }
+
+        private void ZipPreview_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (!keyDown_.HasValue) return;
+
+            long dt = DateTime.Now.Ticks - keyDownTime_;
+            //Logger.Info(DateTime.Now.Ticks.ToString() + " " + keyDownTime_.ToString() + " " + dt.ToString());
+            if (keyDown_ == Keys.Space && dt > 5000000)
+                EasyMenu.Run();
+            else
+                if (HandleKey(e.KeyData)) e.Handled = true;
+            keyDown_ = null;
         }
 
         public bool HandleKey(Keys KeyData)
@@ -1001,8 +1074,9 @@ namespace ZiPreview
         {
         }
 
+
         #endregion
 
-  
+       
     }
 }
