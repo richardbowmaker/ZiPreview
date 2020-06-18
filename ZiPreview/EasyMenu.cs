@@ -79,15 +79,6 @@ namespace ZiPreview
             callback_ = callback;
         }
 
-        private void EasyMenu_KeyDown(object sender, KeyEventArgs e)
-        {
-        }
-
-        private void EasyMenu_KeyUp(object sender, KeyEventArgs e)
-        {
-
-        }
-
         private void LstOptions_KeyDown(object sender, KeyEventArgs e)
         {
             if (!keyDown_)
@@ -99,42 +90,46 @@ namespace ZiPreview
 
         private void LstOptions_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyData == Keys.Space)
-            {
-                long dt = DateTime.Now.Ticks - keyDownTime_;
-
-                if (dt < 1500000)
-                {
-                    if (spaceDownTime_ == 0)
-                    {
-                        spaceDownTime_ = DateTime.Now.Ticks;
-                    }
-                    else
-                    {
-                        // double space bar tap
-                        spaceDownTime_ = 0;
-                        lastOption_ = lstOptions.SelectedIndex;
-                        callback_.OptionSelected(lstOptions.SelectedIndex);
-                        Close();
-                    }
-                }
-                else if (dt > 5000000)
-                {
-                    // quit menu if space bar held
-                    Close();
-                    spaceDownTime_ = 0;
-                }
-                else
-                {
-                    lstOptions.SelectedIndex =
-                        (lstOptions.SelectedIndex + 1) % lstOptions.Items.Count;
-                    spaceDownTime_ = 0;
-                }
-            }
-            else
-                // any key but space bar will reset double space bar tap
-                spaceDownTime_ = 0;
             keyDown_ = false;
+
+            switch (e.KeyData)
+            {
+                case Keys.Space:
+                    {
+                        long dt = DateTime.Now.Ticks - keyDownTime_;
+
+                        if (dt < 1500000)
+                        {
+                            if (spaceDownTime_ == 0)
+                            {
+                                spaceDownTime_ = DateTime.Now.Ticks;
+                            }
+                            else
+                            {
+                                // double space bar tap
+                                lastOption_ = lstOptions.SelectedIndex;
+                                callback_.OptionSelected(lstOptions.SelectedIndex);
+                                Close();
+                            }
+                        }
+                        else if (dt > 5000000)
+                        {
+                            // quit menu if space bar held
+                            Close();
+                        }
+                        else
+                        {
+                            lstOptions.SelectedIndex =
+                                (lstOptions.SelectedIndex + 1) % lstOptions.Items.Count;
+                            spaceDownTime_ = 0;
+                        }
+                    }
+                    break;
+                default:
+                    // any key but space bar will reset double space bar tap
+                    spaceDownTime_ = 0;
+                    break;
+            }
         }
 
         private static void lstOptions_DrawItem(object sender, DrawItemEventArgs e)

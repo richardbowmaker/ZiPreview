@@ -40,11 +40,11 @@ namespace ZiPreview
             else lblLink.Text = "";
 
             chkImage.Enabled = _file.HasImage;
-            chkImage.Checked = _file.HasImage;
+            chkImage.Checked = false;
             chkVideo.Enabled = _file.HasVideo;
-            chkVideo.Checked = _file.HasVideo;
+            chkVideo.Checked = false;
             chkLink.Enabled = _file.HasLink;
-            chkLink.Checked = _file.HasLink;
+            chkLink.Checked = false;
 
             if (_file.HasVideo)
             {

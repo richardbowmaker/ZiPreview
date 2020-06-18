@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.lstOptions = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
@@ -53,8 +52,6 @@
             this.Name = "EasyMenu";
             this.Text = "EasyMenu";
             this.Load += new System.EventHandler(this.EasyMenu_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.EasyMenu_KeyDown);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EasyMenu_KeyUp);
             this.ResumeLayout(false);
 
         }

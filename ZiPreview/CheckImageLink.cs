@@ -48,7 +48,8 @@ namespace ZiPreview
             lblUrl.Text = _url;
             _picture = new CPicture(panel);
             _picture.LoadBitmap(_bitmap);
-            BringToFront();
+
+            ZipPreview.GUI.SetToTopWindow();
         }
 
         private void ButOK_Click(object sender, EventArgs e)

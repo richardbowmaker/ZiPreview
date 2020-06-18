@@ -223,13 +223,22 @@ namespace ZiPreview
                 VeracryptManager.SetVolumeDirty(ImageFilename);
 
                 // files copied ok, update the class attributes
-                // and delete theoriginal files
-                Utilities.DeleteFile(ImageFilename);
-                ImageFilename = idest;
-                Utilities.DeleteFile(LinkFilename);
-                LinkFilename = ldest;
-                Utilities.DeleteFile(VideoFilename);
-                VideoFilename = vdest;
+                // and delete the original files
+                if (HasImage)
+                {
+                    Utilities.DeleteFile(ImageFilename);
+                    ImageFilename = idest;
+                }
+                if (HasLink)
+                {
+                    Utilities.DeleteFile(LinkFilename);
+                    LinkFilename = ldest;
+                }
+                if (HasVideo)
+                {
+                    Utilities.DeleteFile(VideoFilename);
+                    VideoFilename = vdest;
+                }
             }
             else
             {

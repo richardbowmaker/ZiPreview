@@ -55,8 +55,5 @@ namespace ZiPreview
         public static string BongWav { get { return WorkingFolder + @"\Executable\bong.wav"; } }
         public static string EndedWav { get { return WorkingFolder + @"\Executable\ended.wav"; } }
         public static string ErrorWav { get { return WorkingFolder + @"\Executable\error.wav"; } }
-
-        // main window hwin
-        public static IntPtr Hwin;
     }
 }

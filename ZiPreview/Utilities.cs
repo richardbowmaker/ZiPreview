@@ -2,12 +2,15 @@
 using System.IO;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
+
 
 namespace ZiPreview
 {
+
     class Utilities
     {
-
+ 
         // runs a command line and waits for it to finish
         static public bool RunCommandSync(
             string cmd,
@@ -286,29 +289,83 @@ namespace ZiPreview
         public static void MuteAudio()
         {
             UnmuteAudio();
-            SendMessageW(Constants.Hwin, WM_APPCOMMAND, Constants.Hwin, (IntPtr)APPCOMMAND_VOLUME_MUTE);
+            SendMessageW(ZipPreview.GUI.GetHwnd(), WM_APPCOMMAND, ZipPreview.GUI.GetHwnd(), (IntPtr)APPCOMMAND_VOLUME_MUTE);
         }
 
         public static void UnmuteAudio()
         {
-            SendMessageW(Constants.Hwin, WM_APPCOMMAND, Constants.Hwin, (IntPtr)APPCOMMAND_VOLUME_DOWN);
-            SendMessageW(Constants.Hwin, WM_APPCOMMAND, Constants.Hwin, (IntPtr)APPCOMMAND_VOLUME_UP);
+            SendMessageW(ZipPreview.GUI.GetHwnd(), WM_APPCOMMAND, ZipPreview.GUI.GetHwnd(), (IntPtr)APPCOMMAND_VOLUME_DOWN);
+            SendMessageW(ZipPreview.GUI.GetHwnd(), WM_APPCOMMAND, ZipPreview.GUI.GetHwnd(), (IntPtr)APPCOMMAND_VOLUME_UP);
         }
         public static void SetAudioLevel(int percent)
         {
             // sets master pc volume to about 10%
-            SendMessageW(Constants.Hwin, WM_APPCOMMAND, Constants.Hwin, (IntPtr)APPCOMMAND_VOLUME_MUTE);
+            SendMessageW(ZipPreview.GUI.GetHwnd(), WM_APPCOMMAND, ZipPreview.GUI.GetHwnd(), (IntPtr)APPCOMMAND_VOLUME_MUTE);
 
             for (int i = 0; i < 50; ++i)
-                SendMessageW(Constants.Hwin, WM_APPCOMMAND, Constants.Hwin, (IntPtr)APPCOMMAND_VOLUME_DOWN);
+                SendMessageW(ZipPreview.GUI.GetHwnd(), WM_APPCOMMAND, ZipPreview.GUI.GetHwnd(), (IntPtr)APPCOMMAND_VOLUME_DOWN);
 
             for (int i = 0; i < percent / 2; ++i)
-                SendMessageW(Constants.Hwin, WM_APPCOMMAND, Constants.Hwin, (IntPtr)APPCOMMAND_VOLUME_UP);
+                SendMessageW(ZipPreview.GUI.GetHwnd(), WM_APPCOMMAND, ZipPreview.GUI.GetHwnd(), (IntPtr)APPCOMMAND_VOLUME_UP);
         }
 
         public static string NewFilename()
         {
             return "file" + DateTime.Now.ToString("yyyyMMddHHmmss");
+        }
+
+        public static List<string> GetOpenApps()
+        {
+            List<string> apps = new List<string>();
+
+            Process[] processlist = Process.GetProcesses();
+
+            foreach (Process process in processlist)
+            {
+                if (!String.IsNullOrEmpty(process.MainWindowTitle))
+                {
+                    //Console.WriteLine("Process: {0} ID: {1} Window title: {2}", process.ProcessName, process.Id, process.MainWindowTitle);
+                    Logger.Info(process.ProcessName + " " + process.Id + " " + process.MainWindowTitle);
+                   
+                }
+            }
+
+            return apps;
+        }
+
+        [System.Runtime.InteropServices.DllImport("User32.dll")]
+        public static extern bool ShowWindow(IntPtr handle, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        public static void BringWindowToFront(string title)
+        {
+            Process p = FindWindow(title);
+            if (p != null)
+            {
+                ShowWindow(p.MainWindowHandle, 9);
+                SetForegroundWindow(p.MainWindowHandle);
+            }
+        }
+
+        public static Process FindWindow(string title)
+        {
+            Process[] processlist = Process.GetProcesses();
+            bool found = false;
+
+            foreach (Process process in processlist)
+            {
+                if (!String.IsNullOrEmpty(process.MainWindowTitle))
+                {
+                    Logger.Info(process.ProcessName + " " + process.Id + " " + process.MainWindowTitle);
+
+                    if (process.MainWindowTitle.Contains(title))
+                        return process;
+                }
+            }
+            if (!found) Logger.Error("Window with title " + title + " not found");
+            return null;
         }
     }
 }

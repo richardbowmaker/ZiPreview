@@ -79,5 +79,18 @@ namespace ZiPreview
         {
             _doNotShow = chkDoNotShow.Checked;
         }
+
+        private void ChkLaunchBrowser_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkLaunchBrowser.Checked)
+            {
+                chkCloseBrowser.Enabled = true;
+            }
+            else
+            {
+                chkCloseBrowser.Enabled = false;
+                chkCloseBrowser.Checked = false;
+            }
+        }
     }
 }

@@ -108,9 +108,9 @@ namespace ZiPreview
         {
             if (enable)
             {
-                _startHotKey = new HotKeyRegister(Constants.Hwin, _kStartHotkeyId, KeyModifiers.Control, Keys.F8);
+                _startHotKey = new HotKeyRegister(ZipPreview.GUI.GetHwnd(), _kStartHotkeyId, KeyModifiers.Control, Keys.F8);
                 _startHotKey.HotKeyPressed += HotKeyPressed;
-                _stopHotKey = new HotKeyRegister(Constants.Hwin, _kStopHotkeyId, KeyModifiers.Control, Keys.F9);
+                _stopHotKey = new HotKeyRegister(ZipPreview.GUI.GetHwnd(), _kStopHotkeyId, KeyModifiers.Control, Keys.F9);
                 _stopHotKey.HotKeyPressed += HotKeyPressed;
             }
             else
@@ -205,7 +205,7 @@ namespace ZiPreview
             _timer.Enabled = false;
             if (_state == StateT.Recording)
             {
-                _obs.ToggleRecording();
+                _obs.StopRecording();
                 KillBrowser();
             }
             _state = StateT.Stopped;
@@ -238,13 +238,13 @@ namespace ZiPreview
                         }
                         else if (secs == 6.0f)
                         {
-                            if (VideoCapturePrompt.Mute) 
+                            if (VideoCapturePrompt.Mute)
                                 Utilities.MuteAudio();
-                            else 
+                            else
                                 Utilities.UnmuteAudio();
                             _captureLastChanged = secs;
                             _state = StateT.Recording;
-                            _obs.ToggleRecording();
+                            _obs.StartRecording();
                             Logger.Info("Recording started: " + secs.ToString());
                         }
                     }
@@ -277,7 +277,7 @@ namespace ZiPreview
                             if (secs - _captureLastChanged > 5.0f)
                             {
                                 _state = StateT.VideoStopped;
-                                _obs.ToggleRecording();
+                                _obs.StopRecording();
                                 _videoStoppedAt = secs;
                                 Logger.Info("Video stopped playing: " + secs.ToString());
 
@@ -293,7 +293,6 @@ namespace ZiPreview
                         }
                     }
                     break;
-
                 case StateT.VideoStopped:
                     {
                         // give obs 2 secs to wind up before moving video file
@@ -402,13 +401,20 @@ namespace ZiPreview
                         switch (_state)
                         {
                             case StateT.Recording:
-                                _obs.ToggleRecording();
+                                // recording aborted, user can select wether to save recording or not
+                                _obs.StopRecording();
                                 KillBrowser();
-                                string fn = GetNewestFileInDirectory(_obsCaptureDir, "*.mp4");
-                                if (fn.Length > 0)
+
+                                // save file
+                                if (MoveCaptureFile())
                                 {
-                                    System.Threading.Thread.Sleep(1000);
-                                    Utilities.DeleteFile(fn);
+                                    _state = StateT.Stopped;
+                                    ZipPreview.GUI.RefreshGridRowTS(_file);
+                                    Logger.Info("Video captured: " + _file.VideoFilename);
+                                }
+                                else
+                                {
+                                    _state = StateT.CaptureError;
                                 }
                                 break;
                             case StateT.Countdown:
@@ -419,16 +425,17 @@ namespace ZiPreview
                                 catch (Exception)
                                 {
                                 }
+                                _state = StateT.Stopped;
                                 break;
                             case StateT.RecordingComplete:
                             case StateT.VideoStopped:
                             case StateT.CaptureError:
                             case StateT.WaitForStartKey:
+                                _state = StateT.Stopped;
                                 break;
                         }
                         EnableHotKeys(false);
-                        _state = StateT.Stopped;
-                        if (!VideoCapturePrompt.Unmute) 
+                        if (!VideoCapturePrompt.Unmute)
                             Utilities.MuteAudio();
                         _timer.Enabled = false;
                         _obs.Disconnect();

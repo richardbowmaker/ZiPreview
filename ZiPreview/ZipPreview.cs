@@ -18,6 +18,8 @@ namespace ZiPreview
         void SetStatusLabelTS(string text);
         void MessageBoxTS(string text, MessageBoxButtons buttons, MessageBoxIcon icon);
         void PopulateGrid();
+        void SetToTopWindow();
+        IntPtr GetHwnd();
     }
     
     public partial class ZipPreview : Form, IGuiUpdate, IImagesViewerData, IEasyMenu
@@ -42,7 +44,6 @@ namespace ZiPreview
 
             Logger.TheListBox = listTrace;
             Logger.Level = Logger.LoggerLevel.Info;
-            Constants.Hwin = Handle;
 
             _rnd = new Random();
 
@@ -273,6 +274,24 @@ namespace ZiPreview
             PopulateGrid_();
         }
 
+        public void SetToTopWindow()
+        {
+            if (WindowState == FormWindowState.Minimized)
+                WindowState = FormWindowState.Maximized;
+            else
+            {
+                TopMost = true;
+                Focus();
+                BringToFront();
+                TopMost = false;
+            }
+        }
+
+        public IntPtr GetHwnd()
+        {
+            return Handle;
+        }
+
         private void GridFiles_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (gridFiles.Rows.Count == 0) return;
@@ -499,12 +518,12 @@ namespace ZiPreview
         #region Key Mapping
 
         // easy menu key handling
-        private Keys? keyDown_;
+        private bool keyDown_;
         private long keyDownTime_;
 
         public int GetNoOfOptions()
         {
-            return 4;
+            return 5;
         }
         public string GetOptionText(int n)
         {
@@ -513,7 +532,8 @@ namespace ZiPreview
                 case 0: return "Play video";
                 case 1: return "Copy link to clipboard";
                 case 2: return "Launch browser";
-                case 3: return "Dummy";
+                case 3: return "Random preview";
+                case 4: return "Link to browser";
                 default: return "";
             }
         }
@@ -527,8 +547,9 @@ namespace ZiPreview
                 switch (n)
                 {
                     case 0: return file.HasVideo;
-                    case 1: return file.HasVideo;
-                    case 2: return file.HasVideo;
+                    case 1: return file.HasLink;
+                    case 2: return file.HasLink;
+                    case 4: return file.HasLink;
                     default: return true;
                 }
             }
@@ -547,30 +568,32 @@ namespace ZiPreview
                     case 0: if (file != null) PlayFile(file); break;
                     case 1: if (file != null) CopyLinkToClipboard(file); break;
                     case 2: if (file != null) Utilities.LaunchBrowser(file); break;
+                    case 3: RandomPage(); break;
+                    case 4: if (file != null) GotoBrowserLink(file); break;
                 }
             }
         }
 
         private void ZipPreview_KeyDown(object sender, KeyEventArgs e)
         {
-            if (!keyDown_.HasValue)
+            if (!keyDown_)
             {
-                keyDown_ = e.KeyData;
+                keyDown_ = true;
                 keyDownTime_ = DateTime.Now.Ticks;
             }
+
+            if (e.KeyData != Keys.Space)
+                if (HandleKey(e.KeyData)) e.Handled = true;
         }
 
         private void ZipPreview_KeyUp(object sender, KeyEventArgs e)
         {
-            if (!keyDown_.HasValue) return;
+            keyDown_ = false;
 
             long dt = DateTime.Now.Ticks - keyDownTime_;
-            //Logger.Info(DateTime.Now.Ticks.ToString() + " " + keyDownTime_.ToString() + " " + dt.ToString());
-            if (keyDown_ == Keys.Space && dt > 5000000)
+            if (e.KeyData == Keys.Space && dt > 5000000)
                 EasyMenu.Run();
-            else
-                if (HandleKey(e.KeyData)) e.Handled = true;
-            keyDown_ = null;
+ 
         }
 
         public bool HandleKey(Keys KeyData)
@@ -905,6 +928,16 @@ namespace ZiPreview
                     MessageBoxButtons.OK, MessageBoxIcon.Hand);
         }
 
+        // places the link in the clipboard and sets focus to the browser window
+        private void GotoBrowserLink(FileSet file)
+        {
+            if (file.HasLink)
+            {
+                Clipboard.SetText(file.Link, TextDataFormat.Text);
+                Utilities.BringWindowToFront("Tor Browser");
+            }
+        }
+
         #endregion
 
         #region Menu Handlers
@@ -1072,11 +1105,12 @@ namespace ZiPreview
 
         private void ToolsTestHarnessMenu_Click(object sender, EventArgs e)
         {
+            //Utilities.GetOpenApps();
+            Utilities.BringWindowToFront("gitkraken");
+            WindowState = FormWindowState.Minimized;
+            
         }
 
-
-        #endregion
-
-       
+        #endregion    
     }
 }
