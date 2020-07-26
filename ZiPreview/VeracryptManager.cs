@@ -96,16 +96,6 @@ namespace ZiPreview
             get { return _volumes.FindIndex(v => v.IsMounted) != -1; }
         }
 
-        public static List<DriveVolume> GetDrives()
-        {
-            List<DriveVolume> drives = new List<DriveVolume>();
-            foreach (VeracryptVolume vol in _volumes)
-            {
-                if (vol.IsMounted)
-                    drives.Add(new DriveVolume(vol.Drive, vol.Filename + " [Veracrypt]"));
-            }
-            return drives;
-        }
 
         public static bool IsMountedVolume(string file)
         {

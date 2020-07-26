@@ -8,12 +8,12 @@ namespace ZiPreview
     public partial class SelectDrives : Form
     {
         private static bool _ok = false;
-        //private static string _filter = "";
-        //private static string _folder = @"";
-        //private static string _password = "";
-        private static string _filter = "*.hc";
-        private static string _folder = @"D:\_Ricks\c#\ZiPreview\EncryptedTest";
-        private static string _password = "dummypassword";
+        private static string _filter = "";
+        private static string _folder = @"";
+        private static string _password = "";
+        //private static string _filter = "*.hc";
+        //private static string _folder = @"D:\_Ricks\c#\ZiPreview\EncryptedTest";
+        //private static string _password = "dummypassword";
 
         public static bool Run()
         {
@@ -36,6 +36,7 @@ namespace ZiPreview
             txtFilter.Text = _filter;
             txtPassword.Text = _password;
             _ok = true;
+            nudSelect.Minimum = 0;
 
             // populate the check box list with the current
             // list of options held by the Veracrypt manager
@@ -172,6 +173,9 @@ namespace ZiPreview
             }
             Cursor.Current = Cursors.Default;
 
+            nudSelect.Maximum = vols.Count;
+            nudSelect.Value = vols.Count;
+
             UpdateGUI();
             txtPassword.Focus();
         }
@@ -197,6 +201,12 @@ namespace ZiPreview
         private void txtPassword_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == 13) Ok();
+        }
+
+        private void nudSelect_ValueChanged(object sender, EventArgs e)
+        {
+            for (int i = 0; i < chkFiles.Items.Count; i++)
+                chkFiles.SetItemChecked(i, i >= chkFiles.Items.Count - nudSelect.Value);
         }
     }
 }

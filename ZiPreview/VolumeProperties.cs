@@ -77,6 +77,11 @@ namespace ZiPreview
 
         private void butFind_Click(object sender, EventArgs e)
         {
+            InitialiseListBox();
+        }
+
+        private void InitialiseListBox()
+        {
             Cursor.Current = Cursors.WaitCursor;
 
             lstVolumes.Items.Clear();
@@ -92,7 +97,7 @@ namespace ZiPreview
             foreach (string file1 in files1)
             {
                 // check the same exists in files 2
-                int n = Array.FindIndex(files2, 
+                int n = Array.FindIndex(files2,
                     file2 => Path.GetFileName(file1).CompareTo(Path.GetFileName(file2)) == 0);
 
                 if (n != -1)
@@ -105,7 +110,6 @@ namespace ZiPreview
             UpdateGUI();
 
             Cursor.Current = Cursors.Default;
-
         }
 
         private void lstVolumes_SelectedIndexChanged(object sender, EventArgs e)
@@ -302,6 +306,25 @@ namespace ZiPreview
                 Logger.Info(kvp.Key);
                 Logger.Info(kvp.Value);
             }
+        }
+
+        private void butCopyDates_Click(object sender, EventArgs e)
+        {
+            foreach (var item in lstVolumes.Items)
+            {
+                string file1 = ((KeyValuePair<string, string>)item).Key;
+                string file2 = ((KeyValuePair<string, string>)item).Value;
+
+                DateTime ct = File.GetCreationTime(file1);
+                DateTime wt = File.GetLastWriteTime(file1);
+                DateTime at = File.GetLastAccessTime(file1);
+
+                File.SetCreationTime(file2, ct);
+                File.SetLastWriteTime(file2, wt);
+                File.SetLastAccessTime(file2, at);
+            }
+
+            DisplayDates("", "");
         }
     }
 }

@@ -277,11 +277,11 @@ namespace ZiPreview
             }
         }
 
-        public static bool PopulateFiles(List<DriveVolume> drives)
+        public static bool PopulateFiles(List<VeracryptVolume> drives)
         {
             SortedList<string, FileVolume> fileList = new SortedList<string, FileVolume>();
 
-            foreach (DriveVolume drive in drives)
+            foreach (VeracryptVolume drive in drives)
             {
                 string[] files = { };
 
@@ -301,7 +301,7 @@ namespace ZiPreview
                 foreach (string file in files)
                 {
                     string s = Path.GetFileName(file) + fileList.Count.ToString("0000000");
-                    fileList.Add(s, new FileVolume(file, drive.Volume));
+                    fileList.Add(s, new FileVolume(file, drive.Filename));
                 }
             }
 
@@ -317,15 +317,16 @@ namespace ZiPreview
             return _files.Count > 0;
         }
 
-        public static void ReadProperties(List<DriveVolume> drives)
+        public static void ReadProperties(List<VeracryptVolume> volumes)
         { 
             // read the properties
-            foreach (DriveVolume drive in drives)
+            foreach (VeracryptVolume volume in volumes)
             {
                 // read the properties file
-                string fn = drive.Drive + Constants.PropertiesFile;
+                string fn = volume.Drive + Constants.PropertiesFile;
                 Utilities.CreateFileIfDoesntExist(fn);
                 string[] lines = File.ReadAllLines(fn);
+                string ts = "";
 
                 // for each property
                 foreach (string line in lines)
@@ -334,18 +335,51 @@ namespace ZiPreview
                     string[] fields = line.Split(';');
                     if (fields.Length > 2 && fields.Length % 2 == 1)
                     {
-                        // find the file set the property belongs to
-                        foreach (FileSet fs in _files)
+                        // parse the volume timestamp
+                        if (fields[0].Length == 0 && fields[1] == "volumetimestamp")
                         {
-                            // save the property
-                            if (fs.MatchesAnyFilename(fields[0]))
-                                for (int i = 1; i < fields.Length; i += 2)
-                                    fs.LoadProperty(fields[i], fields[i+1]);
+                            ts = fields[2];
+                        }
+                        else
+                        {
+                            // find the file set the property belongs to
+                            foreach (FileSet fs in _files)
+                            {
+                                // save the property
+                                if (fs.MatchesAnyFilename(fields[0]))
+                                    for (int i = 1; i < fields.Length; i += 2)
+                                        fs.LoadProperty(fields[i], fields[i + 1]);
+                            }
                         }
                     }
                 }
+
+                //setup volume timestamp
+                if (ts.Length > 0)
+                {
+                    volume.TimeStamp = Utilities.StringToDateTime(ts);
+                }
+                else
+                {
+                    string f = Path.GetFileName(volume.Filename);
+                    if (f.StartsWith("img"))
+                    {
+                        int y = Convert.ToInt32(f.Substring(3, 4));
+                        int m = Convert.ToInt32(f.Substring(7, 2));
+                        int d = Convert.ToInt32(f.Substring(9, 2));
+
+                        Random r = new Random();
+
+                        int h = r.Next(8, 22);
+                        int M = r.Next(0, 59);
+                        int s = r.Next(0, 59);
+
+                        volume.TimeStamp = new DateTime(y, m, d, h, M, s);
+                        volume.IsDirty = true;
+                    }
+                }
             }
-        }
+            }
 
         public static void WriteProperties()
         {
@@ -357,6 +391,16 @@ namespace ZiPreview
                     if (VeracryptManager.IsMountedVolume(fn))
                     {
                         StreamWriter sw = new StreamWriter(fn);
+
+                        // write out volume time stamp
+                        if (vol.IsDirty)
+                        {
+                            vol.TimeStamp.AddMinutes(1.0);
+                            vol.IsDirty = false;
+                            Logger.Info("Volume dirty, file dates incremented: " + Utilities.DateTimeToString(vol.TimeStamp));
+                        }
+                        sw.WriteLine(";volumetimestamp;" + Utilities.DateTimeToString(vol.TimeStamp));
+
                         foreach (FileSet fs in _files)
                         {
                             if (fs.DriveMatches(vol.Drive))
@@ -440,15 +484,6 @@ namespace ZiPreview
             { Filename = filename; Volume = volume; }
 
         public string Filename;
-        public string Volume;
-    }
-
-    public class DriveVolume
-    {
-        public DriveVolume(string drive, string volume)
-            { Drive = drive; Volume = volume; }
-
-        public string Drive;
         public string Volume;
     }
 }

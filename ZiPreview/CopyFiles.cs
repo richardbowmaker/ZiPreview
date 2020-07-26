@@ -28,8 +28,8 @@ namespace ZiPreview
             _folderSelectDlg = new FolderBrowserDialog();
             MaximumSize = Size;
             MinimumSize = Size;
-            List<DriveVolume> drives = VeracryptManager.GetDrives();
-            drives.ForEach(v => checkedListBoxDestFolders.Items.Add(v.Drive + "  " + v.Volume, false));
+            List<VeracryptVolume> drives = VeracryptManager.Volumes;
+            drives.ForEach(v => checkedListBoxDestFolders.Items.Add(v.Drive + "  " + v.Filename, false));
         }
 
         private void ButAddSourceFolder_Click(object sender, EventArgs e)

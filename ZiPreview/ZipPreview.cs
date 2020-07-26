@@ -402,7 +402,7 @@ namespace ZiPreview
             Cursor.Current = Cursors.WaitCursor;
 
             // populate th grid
-            FileSetManager.PopulateFiles(VeracryptManager.GetDrives());
+            FileSetManager.PopulateFiles(VeracryptManager.Volumes);
             gridFiles.Rows.Clear();
             LoadGrid();
             _images.Draw(0);

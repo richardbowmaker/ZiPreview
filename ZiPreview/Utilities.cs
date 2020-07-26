@@ -314,6 +314,40 @@ namespace ZiPreview
             return "file" + DateTime.Now.ToString("yyyyMMddHHmmss");
         }
 
+        public static DateTime StringToDateTime(string sdt)
+        {
+            // 0123456789012345678
+            // HH:mm:ss dd-MM-yyyy
+
+            if (sdt.Length == 19)
+            {
+                int HH = Convert.ToInt32(sdt.Substring(0, 2));
+                int mm = Convert.ToInt32(sdt.Substring(3, 2));
+                int ss = Convert.ToInt32(sdt.Substring(6, 2));
+
+                int dd = Convert.ToInt32(sdt.Substring(9, 2));
+                int MM = Convert.ToInt32(sdt.Substring(12, 2));
+                int yy = Convert.ToInt32(sdt.Substring(15, 4));
+
+                return new DateTime(yy, MM, dd, HH, mm, ss);
+            }
+            else
+            {
+                Logger.Error("Invalid date time string: " + sdt);
+                return new DateTime();
+            }
+        }
+
+        public static string DateTimeToString(DateTime dt)
+        {
+            return dt.ToString("HH:mm:ss dd-MM-yyyy");
+        }
+
+        public static string Now()
+        {
+            return DateTimeToString(DateTime.Now);
+        }
+
         [DllImport("user32.dll")]
         public static extern bool SetForegroundWindow(IntPtr hWnd);
 

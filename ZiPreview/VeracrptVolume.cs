@@ -5,8 +5,8 @@ namespace ZiPreview
 {
     public class VeracryptVolume
     {
-        public string Filename;
-        public string Drive;
+        public string Filename;     // the veracrypt filename
+        public string Drive;        // the drive it is mounted to, e.g. H:\
         public bool IsMounted;
         public bool IsSelected;
         public bool IsDirty;
@@ -103,19 +103,10 @@ namespace ZiPreview
                     Logger.Info("Unmounted Veracrypt volume: " + Drive + ", " + Filename);
                     IsMounted = false;
                     Drive = "";
-
-                    // if increment timestamps by one minute to force
-                    // file synch to backup the volume
-                    DateTime dt = File.GetCreationTime(Filename);
-                    if (IsDirty)
-                    {
-                        dt = dt.AddMinutes(1);
-                        IsDirty = false;
-                        Logger.Info("Volume dirty, file dates incremented: " + ToString());
-                    }
-                    File.SetCreationTime(Filename, dt);
-                    File.SetLastWriteTime(Filename, dt);
-                    File.SetLastAccessTime(Filename, dt);
+  
+                    File.SetCreationTime(Filename, TimeStamp);
+                    File.SetLastWriteTime(Filename, TimeStamp);
+                    File.SetLastAccessTime(Filename, TimeStamp);
                 }
                 else
                 {

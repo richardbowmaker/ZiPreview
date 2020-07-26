@@ -108,5 +108,12 @@ namespace ZiPreview
                 _player = null;
             }
         }
+
+        private void chkAll_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkImage.Enabled) chkImage.Checked = chkAll.Checked;
+            if (chkLink.Enabled) chkLink.Checked = chkAll.Checked;
+            if (chkVideo.Enabled) chkVideo.Checked = chkAll.Checked;
+        }
     }
 }

@@ -45,21 +45,24 @@
             this.butSet = new System.Windows.Forms.Button();
             this.timePicker = new System.Windows.Forms.DateTimePicker();
             this.butReset = new System.Windows.Forms.Button();
+            this.butCopyDates = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // txtFolder1
             // 
-            this.txtFolder1.Location = new System.Drawing.Point(12, 12);
+            this.txtFolder1.Location = new System.Drawing.Point(14, 15);
+            this.txtFolder1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtFolder1.Name = "txtFolder1";
             this.txtFolder1.ReadOnly = true;
-            this.txtFolder1.Size = new System.Drawing.Size(311, 22);
+            this.txtFolder1.Size = new System.Drawing.Size(349, 26);
             this.txtFolder1.TabIndex = 0;
             // 
             // butFolder1
             // 
-            this.butFolder1.Location = new System.Drawing.Point(347, 11);
+            this.butFolder1.Location = new System.Drawing.Point(390, 14);
+            this.butFolder1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.butFolder1.Name = "butFolder1";
-            this.butFolder1.Size = new System.Drawing.Size(38, 23);
+            this.butFolder1.Size = new System.Drawing.Size(43, 29);
             this.butFolder1.TabIndex = 1;
             this.butFolder1.Text = "...";
             this.butFolder1.UseVisualStyleBackColor = true;
@@ -68,18 +71,20 @@
             // lstVolumes
             // 
             this.lstVolumes.FormattingEnabled = true;
-            this.lstVolumes.ItemHeight = 16;
-            this.lstVolumes.Location = new System.Drawing.Point(12, 146);
+            this.lstVolumes.ItemHeight = 20;
+            this.lstVolumes.Location = new System.Drawing.Point(14, 182);
+            this.lstVolumes.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.lstVolumes.Name = "lstVolumes";
-            this.lstVolumes.Size = new System.Drawing.Size(788, 292);
+            this.lstVolumes.Size = new System.Drawing.Size(886, 364);
             this.lstVolumes.TabIndex = 2;
             this.lstVolumes.SelectedIndexChanged += new System.EventHandler(this.lstVolumes_SelectedIndexChanged);
             // 
             // butFolder2
             // 
-            this.butFolder2.Location = new System.Drawing.Point(347, 53);
+            this.butFolder2.Location = new System.Drawing.Point(390, 66);
+            this.butFolder2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.butFolder2.Name = "butFolder2";
-            this.butFolder2.Size = new System.Drawing.Size(38, 23);
+            this.butFolder2.Size = new System.Drawing.Size(43, 29);
             this.butFolder2.TabIndex = 4;
             this.butFolder2.Text = "...";
             this.butFolder2.UseVisualStyleBackColor = true;
@@ -87,25 +92,28 @@
             // 
             // txtFolder2
             // 
-            this.txtFolder2.Location = new System.Drawing.Point(12, 54);
+            this.txtFolder2.Location = new System.Drawing.Point(14, 68);
+            this.txtFolder2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtFolder2.Name = "txtFolder2";
             this.txtFolder2.ReadOnly = true;
-            this.txtFolder2.Size = new System.Drawing.Size(311, 22);
+            this.txtFolder2.Size = new System.Drawing.Size(349, 26);
             this.txtFolder2.TabIndex = 3;
             // 
             // txtFilter
             // 
-            this.txtFilter.Location = new System.Drawing.Point(12, 102);
+            this.txtFilter.Location = new System.Drawing.Point(14, 128);
+            this.txtFilter.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtFilter.Name = "txtFilter";
-            this.txtFilter.Size = new System.Drawing.Size(192, 22);
+            this.txtFilter.Size = new System.Drawing.Size(216, 26);
             this.txtFilter.TabIndex = 5;
             this.txtFilter.TextChanged += new System.EventHandler(this.txtFilter_TextChanged);
             // 
             // butFind
             // 
-            this.butFind.Location = new System.Drawing.Point(236, 103);
+            this.butFind.Location = new System.Drawing.Point(266, 129);
+            this.butFind.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.butFind.Name = "butFind";
-            this.butFind.Size = new System.Drawing.Size(78, 37);
+            this.butFind.Size = new System.Drawing.Size(88, 46);
             this.butFind.TabIndex = 6;
             this.butFind.Text = "Find";
             this.butFind.UseVisualStyleBackColor = true;
@@ -113,70 +121,78 @@
             // 
             // txtCreated1
             // 
-            this.txtCreated1.Location = new System.Drawing.Point(828, 12);
+            this.txtCreated1.Location = new System.Drawing.Point(932, 15);
+            this.txtCreated1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtCreated1.Name = "txtCreated1";
             this.txtCreated1.ReadOnly = true;
-            this.txtCreated1.Size = new System.Drawing.Size(199, 22);
+            this.txtCreated1.Size = new System.Drawing.Size(223, 26);
             this.txtCreated1.TabIndex = 8;
             this.txtCreated1.Click += new System.EventHandler(this.txtCreated1_Click);
             // 
             // txtModified1
             // 
-            this.txtModified1.Location = new System.Drawing.Point(828, 57);
+            this.txtModified1.Location = new System.Drawing.Point(932, 71);
+            this.txtModified1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtModified1.Name = "txtModified1";
             this.txtModified1.ReadOnly = true;
-            this.txtModified1.Size = new System.Drawing.Size(196, 22);
+            this.txtModified1.Size = new System.Drawing.Size(220, 26);
             this.txtModified1.TabIndex = 9;
             this.txtModified1.Click += new System.EventHandler(this.txtModified1_Click);
             // 
             // txtAccessed1
             // 
-            this.txtAccessed1.Location = new System.Drawing.Point(828, 97);
+            this.txtAccessed1.Location = new System.Drawing.Point(932, 121);
+            this.txtAccessed1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtAccessed1.Name = "txtAccessed1";
             this.txtAccessed1.ReadOnly = true;
-            this.txtAccessed1.Size = new System.Drawing.Size(196, 22);
+            this.txtAccessed1.Size = new System.Drawing.Size(220, 26);
             this.txtAccessed1.TabIndex = 10;
             this.txtAccessed1.Click += new System.EventHandler(this.txtAccessed1_Click);
             // 
             // txtAccessed2
             // 
-            this.txtAccessed2.Location = new System.Drawing.Point(828, 234);
+            this.txtAccessed2.Location = new System.Drawing.Point(932, 292);
+            this.txtAccessed2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtAccessed2.Name = "txtAccessed2";
             this.txtAccessed2.ReadOnly = true;
-            this.txtAccessed2.Size = new System.Drawing.Size(196, 22);
+            this.txtAccessed2.Size = new System.Drawing.Size(220, 26);
             this.txtAccessed2.TabIndex = 13;
             this.txtAccessed2.Click += new System.EventHandler(this.txtAccessed2_Click);
             // 
             // txtModified2
             // 
-            this.txtModified2.Location = new System.Drawing.Point(828, 194);
+            this.txtModified2.Location = new System.Drawing.Point(932, 242);
+            this.txtModified2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtModified2.Name = "txtModified2";
             this.txtModified2.ReadOnly = true;
-            this.txtModified2.Size = new System.Drawing.Size(196, 22);
+            this.txtModified2.Size = new System.Drawing.Size(220, 26);
             this.txtModified2.TabIndex = 12;
             this.txtModified2.Click += new System.EventHandler(this.txtModified2_Click);
             // 
             // txtCreated2
             // 
-            this.txtCreated2.Location = new System.Drawing.Point(828, 155);
+            this.txtCreated2.Location = new System.Drawing.Point(932, 194);
+            this.txtCreated2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtCreated2.Name = "txtCreated2";
             this.txtCreated2.ReadOnly = true;
-            this.txtCreated2.Size = new System.Drawing.Size(196, 22);
+            this.txtCreated2.Size = new System.Drawing.Size(220, 26);
             this.txtCreated2.TabIndex = 11;
             this.txtCreated2.Click += new System.EventHandler(this.txtCreated2_Click);
             // 
             // datePicker
             // 
-            this.datePicker.Location = new System.Drawing.Point(821, 305);
+            this.datePicker.Location = new System.Drawing.Point(924, 381);
+            this.datePicker.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.datePicker.Name = "datePicker";
-            this.datePicker.Size = new System.Drawing.Size(203, 22);
+            this.datePicker.Size = new System.Drawing.Size(228, 26);
             this.datePicker.TabIndex = 14;
             // 
             // butSet
             // 
-            this.butSet.Location = new System.Drawing.Point(971, 396);
+            this.butSet.Location = new System.Drawing.Point(1092, 495);
+            this.butSet.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.butSet.Name = "butSet";
-            this.butSet.Size = new System.Drawing.Size(53, 35);
+            this.butSet.Size = new System.Drawing.Size(60, 44);
             this.butSet.TabIndex = 15;
             this.butSet.Text = "Set";
             this.butSet.UseVisualStyleBackColor = true;
@@ -184,26 +200,39 @@
             // 
             // timePicker
             // 
-            this.timePicker.Location = new System.Drawing.Point(821, 352);
+            this.timePicker.Location = new System.Drawing.Point(924, 440);
+            this.timePicker.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.timePicker.Name = "timePicker";
-            this.timePicker.Size = new System.Drawing.Size(200, 22);
+            this.timePicker.Size = new System.Drawing.Size(224, 26);
             this.timePicker.TabIndex = 16;
             // 
             // butReset
             // 
-            this.butReset.Location = new System.Drawing.Point(335, 101);
+            this.butReset.Location = new System.Drawing.Point(377, 126);
+            this.butReset.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.butReset.Name = "butReset";
-            this.butReset.Size = new System.Drawing.Size(90, 39);
+            this.butReset.Size = new System.Drawing.Size(101, 49);
             this.butReset.TabIndex = 17;
             this.butReset.Text = "Reset";
             this.butReset.UseVisualStyleBackColor = true;
             this.butReset.Click += new System.EventHandler(this.butReset_Click);
             // 
+            // butCopyDates
+            // 
+            this.butCopyDates.Location = new System.Drawing.Point(556, 129);
+            this.butCopyDates.Name = "butCopyDates";
+            this.butCopyDates.Size = new System.Drawing.Size(143, 45);
+            this.butCopyDates.TabIndex = 18;
+            this.butCopyDates.Text = "Copy Dates";
+            this.butCopyDates.UseVisualStyleBackColor = true;
+            this.butCopyDates.Click += new System.EventHandler(this.butCopyDates_Click);
+            // 
             // VolumeProperties
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1036, 450);
+            this.ClientSize = new System.Drawing.Size(1166, 562);
+            this.Controls.Add(this.butCopyDates);
             this.Controls.Add(this.butReset);
             this.Controls.Add(this.timePicker);
             this.Controls.Add(this.butSet);
@@ -221,6 +250,7 @@
             this.Controls.Add(this.lstVolumes);
             this.Controls.Add(this.butFolder1);
             this.Controls.Add(this.txtFolder1);
+            this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "VolumeProperties";
@@ -251,5 +281,6 @@
         private System.Windows.Forms.Button butSet;
         private System.Windows.Forms.DateTimePicker timePicker;
         private System.Windows.Forms.Button butReset;
+        private System.Windows.Forms.Button butCopyDates;
     }
 }
