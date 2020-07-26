@@ -410,7 +410,6 @@ namespace ZiPreview
             int n = fn.IndexOf(":");
             if (n > 0)
             {
-
                 return drive.ToLower().CompareTo(fn.Substring(0, n + 2).ToLower()) == 0;
             }
             else return false;

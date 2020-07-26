@@ -934,7 +934,8 @@ namespace ZiPreview
             if (file.HasLink)
             {
                 Clipboard.SetText(file.Link, TextDataFormat.Text);
-                Utilities.BringWindowToFront("Tor Browser");
+                IntPtr w = Utilities.FindWindow("Tor Browser");
+                if (w != (IntPtr)0) Utilities.SetActiveWindow(w);
             }
         }
 
@@ -1105,10 +1106,8 @@ namespace ZiPreview
 
         private void ToolsTestHarnessMenu_Click(object sender, EventArgs e)
         {
-            //Utilities.GetOpenApps();
-            Utilities.BringWindowToFront("gitkraken");
-            WindowState = FormWindowState.Minimized;
-            
+            Tryout t = new Tryout();
+            t.Run();            
         }
 
         #endregion    

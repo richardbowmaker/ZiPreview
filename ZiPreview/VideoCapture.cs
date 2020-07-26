@@ -417,6 +417,19 @@ namespace ZiPreview
                                     _state = StateT.CaptureError;
                                 }
                                 break;
+                            case StateT.VideoStopped:
+                                // save file
+                                if (MoveCaptureFile())
+                                {
+                                    _state = StateT.Stopped;
+                                    ZipPreview.GUI.RefreshGridRowTS(_file);
+                                    Logger.Info("Video captured: " + _file.VideoFilename);
+                                }
+                                else
+                                {
+                                    _state = StateT.CaptureError;
+                                }
+                                break;
                             case StateT.Countdown:
                                 try
                                 {
@@ -428,7 +441,6 @@ namespace ZiPreview
                                 _state = StateT.Stopped;
                                 break;
                             case StateT.RecordingComplete:
-                            case StateT.VideoStopped:
                             case StateT.CaptureError:
                             case StateT.WaitForStartKey:
                                 _state = StateT.Stopped;

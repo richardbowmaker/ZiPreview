@@ -3,7 +3,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
-
+using System.Text;
 
 namespace ZiPreview
 {
@@ -314,58 +314,91 @@ namespace ZiPreview
             return "file" + DateTime.Now.ToString("yyyyMMddHHmmss");
         }
 
-        public static List<string> GetOpenApps()
-        {
-            List<string> apps = new List<string>();
+        [DllImport("user32.dll")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
 
-            Process[] processlist = Process.GetProcesses();
-
-            foreach (Process process in processlist)
-            {
-                if (!String.IsNullOrEmpty(process.MainWindowTitle))
-                {
-                    //Console.WriteLine("Process: {0} ID: {1} Window title: {2}", process.ProcessName, process.Id, process.MainWindowTitle);
-                    Logger.Info(process.ProcessName + " " + process.Id + " " + process.MainWindowTitle);
-                   
-                }
-            }
-
-            return apps;
-        }
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetActiveWindow();
 
         [System.Runtime.InteropServices.DllImport("User32.dll")]
         public static extern bool ShowWindow(IntPtr handle, int nCmdShow);
 
+        public static void SetActiveWindow(IntPtr hwnd)
+        {
+            ShowWindow(hwnd, 9);
+            SetForegroundWindow(hwnd);
+        }
+ 
+        public static IntPtr FindWindow(string text)
+        {
+            List<IntPtr> ws = GetWindows();
+
+            foreach (IntPtr w in ws)
+            {
+                if (GetWindowText_(w).Contains(text)) return w;
+            }
+            return (IntPtr)0;
+        }
+
+        [DllImport("user32")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool EnumWindows(EnumWindowProc callback, IntPtr i);
+        public static List<IntPtr> GetWindows()
+        {
+            List<IntPtr> result = new List<IntPtr>();
+            GCHandle listHandle = GCHandle.Alloc(result);
+            try
+            {
+                EnumWindowProc childProc = new EnumWindowProc(EnumWindow);
+                EnumWindows(childProc, GCHandle.ToIntPtr(listHandle));
+            }
+            finally
+            {
+                if (listHandle.IsAllocated)
+                    listHandle.Free();
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Callback method to be used when enumerating windows.
+        /// </summary>
+        /// <param name="handle">Handle of the next window</param>
+        /// <param name="pointer">Pointer to a GCHandle that holds a reference to the list to fill</param>
+        /// <returns>True to continue the enumeration, false to bail</returns>
+        private static bool EnumWindow(IntPtr handle, IntPtr pointer)
+        {
+            GCHandle gch = GCHandle.FromIntPtr(pointer);
+            List<IntPtr> list = gch.Target as List<IntPtr>;
+            if (list == null)
+            {
+                throw new InvalidCastException("GCHandle Target could not be cast as List<IntPtr>");
+            }
+            list.Add(handle);
+            //  You can modify this to check to see if you want to cancel the operation, then return a null here
+            return true;
+        }
+
+        /// <summary>
+        /// Delegate for the EnumChildWindows method
+        /// </summary>
+        /// <param name="hWnd">Window handle</param>
+        /// <param name="parameter">Caller-defined variable; we use it for a pointer to our list</param>
+        /// <returns>True to continue enumerating, false to bail.</returns>
+        public delegate bool EnumWindowProc(IntPtr hWnd, IntPtr parameter);
+
         [DllImport("user32.dll")]
-        static extern bool SetForegroundWindow(IntPtr hWnd);
-
-        public static void BringWindowToFront(string title)
+        private static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
+        public static string GetWindowText_(IntPtr p)
         {
-            Process p = FindWindow(title);
-            if (p != null)
-            {
-                ShowWindow(p.MainWindowHandle, 9);
-                SetForegroundWindow(p.MainWindowHandle);
-            }
+            int chars = 1000;
+            StringBuilder buff = new StringBuilder(chars);
+
+            if (GetWindowText(p, buff, chars) > 0)
+                return buff.ToString();
+            else
+                return "";
         }
 
-        public static Process FindWindow(string title)
-        {
-            Process[] processlist = Process.GetProcesses();
-            bool found = false;
-
-            foreach (Process process in processlist)
-            {
-                if (!String.IsNullOrEmpty(process.MainWindowTitle))
-                {
-                    Logger.Info(process.ProcessName + " " + process.Id + " " + process.MainWindowTitle);
-
-                    if (process.MainWindowTitle.Contains(title))
-                        return process;
-                }
-            }
-            if (!found) Logger.Error("Window with title " + title + " not found");
-            return null;
-        }
     }
 }

@@ -451,8 +451,6 @@ namespace ZiPreview
         public string Drive;
         public string Volume;
     }
-
-    
 }
 
 

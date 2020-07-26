@@ -10,6 +10,7 @@ namespace ZiPreview
         public bool IsMounted;
         public bool IsSelected;
         public bool IsDirty;
+        public DateTime TimeStamp;
 
         public VeracryptVolume(string file, bool isSelected)
         {

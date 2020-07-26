@@ -27,10 +27,12 @@ namespace ZiPreview
 
         public static bool Verify(string url, Bitmap bitmap)
         {
+            IntPtr hwnd = Utilities.GetActiveWindow();
             _url = url;
             _bitmap = bitmap;
             CheckImageLink form = new CheckImageLink();
             form.ShowDialog();
+            Utilities.SetActiveWindow(hwnd);
             return OK;
         }
 

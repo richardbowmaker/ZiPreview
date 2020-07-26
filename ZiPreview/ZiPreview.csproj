@@ -92,6 +92,7 @@
     </Compile>
     <Compile Include="FileSetManager.cs" />
     <Compile Include="FileSet.cs" />
+    <Compile Include="Tryout.cs" />
     <Compile Include="VideoAnalyser.cs">
       <SubType>Form</SubType>
     </Compile>
