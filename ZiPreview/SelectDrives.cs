@@ -34,7 +34,7 @@ namespace ZiPreview
             Text = Constants.Title + " Select Drives";
             txtFolder.Text = _folder;
             txtFilter.Text = _filter;
-            txtPassword.Text = _password;
+            txtEnter.Text = _password;
             _ok = true;
             nudSelect.Minimum = 0;
 
@@ -62,7 +62,7 @@ namespace ZiPreview
         {
             butOk.Enabled =
                 chkFiles.Items.Count > 0 &&
-                txtPassword.Text.Length > 0;
+                txtEnter.Text.Length > 0;
 
             butFind.Enabled =
                 txtFolder.Text.Length > 3 &&
@@ -95,7 +95,7 @@ namespace ZiPreview
 
             _folder = txtFolder.Text;
             _filter = txtFilter.Text;
-            _password = txtPassword.Text;
+            _password = txtEnter.Text;
 
             List<VeracryptVolume> vols = new List<VeracryptVolume>();
             for (int i = 0; i < chkFiles.Items.Count; ++i)
@@ -177,7 +177,7 @@ namespace ZiPreview
             nudSelect.Value = vols.Count;
 
             UpdateGUI();
-            txtPassword.Focus();
+            txtEnter.Focus();
         }
 
         private void butSelectAll_Click(object sender, EventArgs e)
@@ -202,11 +202,11 @@ namespace ZiPreview
         {
             if (e.KeyChar == 13) Ok();
         }
-
         private void nudSelect_ValueChanged(object sender, EventArgs e)
         {
             for (int i = 0; i < chkFiles.Items.Count; i++)
                 chkFiles.SetItemChecked(i, i >= chkFiles.Items.Count - nudSelect.Value);
+            txtEnter.Focus();
         }
     }
 }

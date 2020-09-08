@@ -22,6 +22,9 @@ namespace ZiPreview
             frm.ShowDialog();
         }
 
+        private CPicture _picture;
+        private string _newImage;
+
         public VideoAnalyser()
         {
             InitializeComponent();
@@ -36,8 +39,8 @@ namespace ZiPreview
             _timer.Interval = 1000;
             _timer.Tick += TimerTick;
 
-            //@ temp
-            //_file.VolumeDb = "";
+            _picture = new CPicture(panelImage);
+            _newImage = "";
 
             UpdateGui();
 
@@ -73,8 +76,8 @@ namespace ZiPreview
             butOK.Enabled =
                 chkAdjustVolume.Checked ||
                 chkCompress.Checked ||
-                chkNewImage.Checked ||
-                chkRemoveAudio.Checked;
+                chkRemoveAudio.Checked ||
+                _newImage.Length > 0;
         }
 
         private void TimerTick(object sender, EventArgs e)
@@ -110,10 +113,16 @@ namespace ZiPreview
 
         private void butOK_Click(object sender, EventArgs e)
         {
+            if (_newImage.Length > 0)
+            {
+                Utilities.MoveFile(_newImage, _file.ImageFilename);
+                ZipPreview.GUI.RefreshImageTS(_file);
+                Logger.Info("Changed image for: " + _file.ImageFilename);
+            }
+
             // kick of processing thread
             Thread thread = new Thread(() => DoProcessVideo(
                 chkCompress.Checked,
-                chkNewImage.Checked,
                 chkRemoveAudio.Checked,
                 chkAdjustVolume.Checked,
                 (float)volUpDown.Value,
@@ -143,6 +152,8 @@ namespace ZiPreview
 
         private void butCancel_Click(object sender, EventArgs e)
         {
+            // clear up new image file
+            if (_newImage.Length > 0) Utilities.DeleteFile(_newImage);
             Close();
         }
         /// <summary>
@@ -152,7 +163,6 @@ namespace ZiPreview
 
         private static void DoProcessVideo(
             bool compress,
-            bool newImage,
             bool removeAudio,
             bool adjustVol,
             float volInc,
@@ -212,14 +222,6 @@ namespace ZiPreview
             if (compress)
             {
 
-            }
-
-            if (newImage)
-            {
-                Logger.Info("Generating new image for " + file.VideoFilename);
-
-                FileSetManager.NewImage(file, true);
-                ZipPreview.GUI.RefreshImageTS(file);
             }
         }
 
@@ -293,5 +295,53 @@ namespace ZiPreview
             Utilities.DeleteFile(fbat);
         }
 
+        private void butNewImage_Click(object sender, EventArgs e)
+        {
+            Logger.Info("Generating new image for " + _file.VideoFilename);
+
+            _newImage = _file.Filename;
+
+            if (_newImage.Length == 0 || _file.VideoFilename.Length == 0)
+            {
+                Logger.Error("No video for file set");
+                return;
+            }
+
+            _newImage = Path.GetDirectoryName(_newImage) + "\\" +
+                Path.GetFileNameWithoutExtension(_newImage) + "_.jpg";
+
+            // get duration of media
+            var wmp = new WMPLib.WindowsMediaPlayer();
+            var media = wmp.newMedia(_file.VideoFilename);
+            int duration = (int)media.duration;
+
+            // calculate position in file, halfway or random
+            int d = 0;
+            Random r = new Random();
+            d = r.Next(0, duration);
+
+            // get preview image from middle
+            string dss = (d / 60).ToString() + ":" + (d % 60).ToString();
+            string dsf = (d / 60).ToString() + ":" + ((d + 1) % 60).ToString();
+
+            string args = "-y -ss " + dss + " -to " + dsf + " -i " +
+                _file.VideoFilename + " -frames 1 " + _newImage;
+
+            // ffmpeg -y -ss 0:10 -to 0:11 -i <filename> -frames 1 <filename no ext>-%d.jpg
+            Utilities.RunCommandSync(
+                Constants.FfmpegExe,
+                Constants.WorkingFolder,
+                args);
+
+            if (File.Exists(_newImage))
+                _picture.LoadFile(_newImage);
+            else
+            {
+                Logger.Error("*** Failed to create image for: " + _file.VideoFilename);
+                Utilities.DeleteFile(_newImage);
+                _newImage = "";
+            }
+            UpdateGui();
+        }
     }
 }

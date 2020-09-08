@@ -34,7 +34,7 @@
             this.chkFiles = new System.Windows.Forms.CheckedListBox();
             this.butOk = new System.Windows.Forms.Button();
             this.butCancel = new System.Windows.Forms.Button();
-            this.txtPassword = new System.Windows.Forms.TextBox();
+            this.txtEnter = new System.Windows.Forms.TextBox();
             this.butFind = new System.Windows.Forms.Button();
             this.butSelectAll = new System.Windows.Forms.Button();
             this.butDeselectAll = new System.Windows.Forms.Button();
@@ -106,14 +106,14 @@
             // 
             // txtPassword
             // 
-            this.txtPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtPassword.Location = new System.Drawing.Point(35, 628);
-            this.txtPassword.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.txtPassword.Name = "txtPassword";
-            this.txtPassword.Size = new System.Drawing.Size(381, 35);
-            this.txtPassword.TabIndex = 7;
-            this.txtPassword.TextChanged += new System.EventHandler(this.txtPassword_TextChanged);
-            this.txtPassword.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtPassword_KeyPress);
+            this.txtEnter.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtEnter.Location = new System.Drawing.Point(35, 628);
+            this.txtEnter.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.txtEnter.Name = "txtPassword";
+            this.txtEnter.Size = new System.Drawing.Size(381, 35);
+            this.txtEnter.TabIndex = 7;
+            this.txtEnter.TextChanged += new System.EventHandler(this.txtPassword_TextChanged);
+            this.txtEnter.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtPassword_KeyPress);
             // 
             // butFind
             // 
@@ -170,7 +170,7 @@
             this.Controls.Add(this.butDeselectAll);
             this.Controls.Add(this.butSelectAll);
             this.Controls.Add(this.butFind);
-            this.Controls.Add(this.txtPassword);
+            this.Controls.Add(this.txtEnter);
             this.Controls.Add(this.butCancel);
             this.Controls.Add(this.butOk);
             this.Controls.Add(this.chkFiles);
@@ -198,7 +198,7 @@
         private System.Windows.Forms.CheckedListBox chkFiles;
         private System.Windows.Forms.Button butOk;
         private System.Windows.Forms.Button butCancel;
-        private System.Windows.Forms.TextBox txtPassword;
+        private System.Windows.Forms.TextBox txtEnter;
         private System.Windows.Forms.Button butFind;
         private System.Windows.Forms.Button butSelectAll;
         private System.Windows.Forms.Button butDeselectAll;

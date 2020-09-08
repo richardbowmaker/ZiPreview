@@ -25,13 +25,12 @@ namespace ZiPreview
         {
             if (IsMounted)
             {
+                string s = Filename + ", " + Drive;
                 long? fs = Utilities.GetDriveFreeSpace(Drive);
-                if (fs.HasValue)
-                    return Filename + ", " + Drive + ", " +
-                        Utilities.BytesToString(fs.Value) +
-                        (IsDirty ? "*" : "");
-                else
-                    return Filename + ", " + Drive;
+                if (fs.HasValue) s += ", " + Utilities.BytesToString(fs.Value);
+                s += (IsDirty ? " *" : "");
+                s += ", " + TimeStamp.ToString("dd-MM-yyyy HH:mm:ss");
+                return s;
             }
             else return Filename;
         }

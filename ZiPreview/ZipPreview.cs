@@ -1069,7 +1069,6 @@ namespace ZiPreview
                 CopyFiles.Show_();
         }
 
-
         private void ToolsSaveLogMenu_Click(object sender, EventArgs e)
         {
             Logger.WriteToFile();
@@ -1110,6 +1109,23 @@ namespace ZiPreview
             t.Run();            
         }
 
-        #endregion    
+        #endregion
+
+        #region Context Menu Handlers
+
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void loadBrowserToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DeleteSelected();
+        }
+
+        #endregion
     }
 }
