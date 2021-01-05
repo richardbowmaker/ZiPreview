@@ -47,9 +47,9 @@
             this.txtFolder.Location = new System.Drawing.Point(35, 34);
             this.txtFolder.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtFolder.Name = "txtFolder";
-            this.txtFolder.ReadOnly = true;
             this.txtFolder.Size = new System.Drawing.Size(771, 26);
             this.txtFolder.TabIndex = 0;
+            this.txtFolder.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFolder_KeyPress);
             // 
             // butFolder
             // 
@@ -104,12 +104,12 @@
             this.butCancel.UseVisualStyleBackColor = true;
             this.butCancel.Click += new System.EventHandler(this.butCancel_Click);
             // 
-            // txtPassword
+            // txtEnter
             // 
             this.txtEnter.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtEnter.Location = new System.Drawing.Point(35, 628);
             this.txtEnter.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.txtEnter.Name = "txtPassword";
+            this.txtEnter.Name = "txtEnter";
             this.txtEnter.Size = new System.Drawing.Size(381, 35);
             this.txtEnter.TabIndex = 7;
             this.txtEnter.TextChanged += new System.EventHandler(this.txtPassword_TextChanged);

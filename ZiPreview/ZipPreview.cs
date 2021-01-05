@@ -15,6 +15,8 @@ namespace ZiPreview
         void RefreshImageTS(FileSet file);
         void RemoveGridRowTS(FileSet file);
         void UpdateProgressTS(int value, int max);
+        void IncrementProgressTS();
+        void ClearProgressTS();
         void SetStatusLabelTS(string text);
         void MessageBoxTS(string text, MessageBoxButtons buttons, MessageBoxIcon icon);
         void PopulateGrid();
@@ -228,6 +230,10 @@ namespace ZiPreview
             }
         }
 
+        // progress bar
+        int _progressMax = -1;
+        int _progressValue = -1;
+
         public void UpdateProgressTS(int value, int max)
         {
             if (InvokeRequired)
@@ -237,9 +243,47 @@ namespace ZiPreview
             }
             else
             {
+                if (value == _progressValue && max == _progressMax)
+                    return;
+
+                _progressValue = value;
+                _progressMax = max;
+                
                 statusProgress.Minimum = 0;
                 statusProgress.Maximum = max;
-                statusProgress.Value = value;
+
+                if (value <= max)
+                    statusProgress.Value = value;
+                else
+                {
+                    statusProgress.Value = max;
+                    Logger.Error("Progress bar exceeded max value");
+                }
+                statusStrip.Refresh();
+            }
+        }
+        public void IncrementProgressTS()
+        {
+            UpdateProgressTS(_progressValue + 1, _progressMax);
+        }
+
+        public void ClearProgressTS()
+        {
+            if (InvokeRequired)
+            {
+                VoidVoid action = new VoidVoid(ClearProgressTS);
+                Invoke(action);
+            }
+            else
+            {
+                _progressMax = -1;
+                _progressValue = -1;
+
+                statusProgress.Minimum = 0;
+                statusProgress.Maximum = 0;
+                statusProgress.Value = 0;
+
+                statusStrip.Refresh();
             }
         }
 
@@ -423,12 +467,15 @@ namespace ZiPreview
             _images.Initialise();
             List<FileSet> files = FileSetManager.GetFiles();
 
+            UpdateProgressTS(0, files.Count);
             foreach (FileSet file in files)
             {
                 AddFileToGridTS(file);
+                IncrementProgressTS();
             }
 
             gridFiles.Refresh();
+            ClearProgressTS();
         }
 
         private void GridFiles_SelectionChanged(object sender, EventArgs e)
@@ -865,6 +912,10 @@ namespace ZiPreview
             }
             else if (file.HasLink)
             {
+                file.IncCount("times");
+                file.SetDateStamp("lasttime");
+                RefreshGridRowTS(file);
+
                 Utilities.LaunchBrowser(file);
             }
             else if (file.HasImage)
@@ -875,6 +926,8 @@ namespace ZiPreview
                 // hide the images preview and show the image full size
                 _image.LoadFile(file.ImageFilename);
 
+                file.IncCount("times");
+                file.SetDateStamp("lasttime");
                 RefreshGridRowTS(file);
             }
         }
@@ -1105,8 +1158,7 @@ namespace ZiPreview
 
         private void ToolsTestHarnessMenu_Click(object sender, EventArgs e)
         {
-            Tryout t = new Tryout();
-            t.Run();            
+            MultiPartProgressBar.Test();          
         }
 
         #endregion

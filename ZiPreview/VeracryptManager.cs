@@ -53,6 +53,13 @@ namespace ZiPreview
 
         public static bool MountSelectedVolumes()
         {
+            // count number of mountable volumes
+            int noVols = 0;
+            foreach (VeracryptVolume vol in _volumes)
+                if (vol.IsSelected && !vol.IsMounted) noVols++;
+
+            ZipPreview.GUI.UpdateProgressTS(0, noVols);
+
             foreach (VeracryptVolume vol in _volumes)
             {
                 if (vol.IsSelected && !vol.IsMounted)
@@ -64,8 +71,11 @@ namespace ZiPreview
                         return false;
                     }
                     if (!vol.MountVolume(drive)) return false;
+
+                    ZipPreview.GUI.IncrementProgressTS();
                 }
             }
+            ZipPreview.GUI.ClearProgressTS();
             return true;
         }
 

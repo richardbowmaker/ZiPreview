@@ -43,9 +43,15 @@ namespace ZiPreview
             VeracryptManager.Volumes.ForEach(v => chkFiles.Items.Add(v, v.IsMounted));
 
             UpdateGUI();
+            txtFolder.Focus();
         }
 
         private void butFolder_Click(object sender, EventArgs e)
+        {
+            SelectFolder();
+        }
+
+        private void SelectFolder()
         {
             FolderBrowserDialog dlg = new FolderBrowserDialog();
             if (_folder.Length > 0) dlg.SelectedPath = _folder;
@@ -207,6 +213,19 @@ namespace ZiPreview
             for (int i = 0; i < chkFiles.Items.Count; i++)
                 chkFiles.SetItemChecked(i, i >= chkFiles.Items.Count - nudSelect.Value);
             txtEnter.Focus();
+        }
+
+        private void txtFolder_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 13)
+            {
+                if (txtFolder.Text.Length == 0)
+                    SelectFolder();
+                else if (Directory.Exists(txtFolder.Text))
+                    txtFilter.Focus();
+                else
+                    MessageBox.Show("Folder does not exist", Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }
