@@ -20,30 +20,29 @@ namespace ZiPreview
         // ####################@@@@@@@@@@@@@@@****** multi part progress bar (3 parts)
         //
 
-        private int _totalWidth;             // width in pixels of progress bar
+        private int _totalWidth;        // width in pixels of progress bar
         private List<Part> _parts;
-        private int _totalSize;             // total of all part sizes
+        private int _totalSize;         // total of all part sizes
 
-        private int _part;             // current part
-        private int _partMinPos;       // position of progress bar that corresponds to the minimum value of the current part
-        private int _partWidth;        // part size in pixels
+        private int _part;              // current part
+        public int _min;                // minimum value of part
+        public int _max;
+        private int _partWidth;         // part size in pixels
         private int _pos;               // current position of progress bar
         private int _value;             // current value of the current part
 
-        struct Part
+        class Part
         {
-            public Part(int min, int max, string description, int size)
+            public Part(string description, int size)
             {
-                Min = min;
-                Max = max;
-                Description = description;
                 Size = size;
+                Description = description;
+                MinPos = 0;
             }
 
-            public int Min;                // minimum value of part
-            public int Max;
-            public string Description;     // description of part shown next to progress bar
             public int Size;
+            public string Description;      // description of part shown next to progress bar
+            public int MinPos;              // position in rogress bar of min value
         }
 
         public MultiPartProgressBar(int width)
@@ -55,34 +54,35 @@ namespace ZiPreview
 
         private void UpdateProgress()
         {
-            string s = String.Format("Bar width {0}, total sizes {1}, part {2}, part min pos {3}, part width {4}, value {5}, pos {6}", 
-                _totalWidth, _totalSize, _part, _partMinPos, _partWidth, _value, _pos);
-            Logger.Info(s);
+            //string s = String.Format("Bar width {0}, total sizes {1}, part {2}, part min pos {3}, part width {4}, value {5}, pos {6}",
+            //    _totalWidth, _totalSize, _part, _parts[_part].MinPos, _partWidth, _value, _pos);
+            //Logger.Info(s);
 
             ZipPreview.GUI.UpdateProgressTS(_pos, _parts[_part].Description);
         }
 
-        public int AddStage(int min, int max, string description, int size)
+        public int AddPart(string description, int size)
         {
-            _parts.Add(new Part(min, max, description, size));
+            _parts.Add(new Part(description, size));
             _totalSize += size;
             return _parts.Count();
         }
 
-        public int NextStage()
+        public int NextStage(int min, int max)
         {
-            if (_part >= _parts.Count()) End();
+            if (_part >= _parts.Count()) Clear();
             else
             {
+                _min = min;
+                _max = max;
                 _part++;
                 _partWidth = (_totalWidth * _parts[_part].Size) / _totalSize;
 
                 // calculate position of min value of part within the whole progress bar
                 int s = 0;
                 for (int i = 0; i < _part; i++) s += _parts[i].Size;
-                _partMinPos = (_totalWidth * s) / _totalSize;
-                _pos = _partMinPos;
-                _value = _parts[_part].Min;
+                _pos = _parts[_part].MinPos;
+                _value = _min;
 
                 //@ update progress bar
                 UpdateProgress();
@@ -90,20 +90,30 @@ namespace ZiPreview
             return _part;
         }
 
-        public int Start()
+        public void Start(int min, int max)
         {
             _part = -1;
             _pos = 0;
             _value = 0;
-            return NextStage();
+
+            // calculate starting position of each part
+            int s = 0;
+            for (int i = 0; i < _parts.Count(); i++)
+            {
+                _parts[i].MinPos = (_totalWidth * s) / _totalSize;
+                s += _parts[i].Size;
+            }
+
+            NextStage(min, max);
         }
 
-        public void End()
+        public void Clear()
         {
             _parts = new List<Part>();
             _part = -1;
             _pos = 0;
             _value = 0;
+            _totalSize = 0;
 
             // zero progress bar
             ZipPreview.GUI.UpdateProgressTS(0, "");
@@ -118,8 +128,8 @@ namespace ZiPreview
             Part part = _parts[_part];
 
             // calculate new position
-            int pos = _partMinPos + 
-                ((value - part.Min) * _partWidth / (part.Max - part.Min));
+            int pos = _parts[_part].MinPos +
+                ((value - _min) * _partWidth / (_max - _min));
 
             // return if no update required
             if (pos == _pos) return;
@@ -131,7 +141,7 @@ namespace ZiPreview
 
         public int IncValue()
         {
-            if (_value < _parts[_part].Max)
+            if (_value < _max)
                 SetValue(_value + 1);
             return _value;
         }
@@ -141,61 +151,98 @@ namespace ZiPreview
             MultiPartProgressBar pbh = ZipPreview.GUI.GetProgressBar();
 
             Logger.Info("ProgressBarHelper tests");
-            Logger.Info("*** Test 1 ***");
+            pbh.Clear();
 
-//            pbh = new MultiPartProgressBar(10);
-            pbh.AddStage(1, 10, "", 1);
-            pbh.Start();
-            for (int i = 0; i < 10; i++)
+            Logger.Info("*** Test 1 ***");
+            pbh.AddPart("Test 1", 1);
+            pbh.Start(1, 10);
+            for (int i = 1; i <= 10; i++)
             {
-                pbh.SetValue(i + 1);
+                pbh.SetValue(i);
                 Thread.Sleep(250);
             }
+            pbh.Clear();
 
-            //Logger.Info("*** Test 2 ***");
-            //pbh = new MultiPartProgressBar(50);
-            //pbh.AddStage(1, 10, "", 1);
-            //pbh.Start();
-            //for (int i = 0; i < 10; i++) pbh.SetValue(i + 1);
+            Logger.Info("*** Test 2 ***");
+            pbh.AddPart("Test 2", 1);
+            pbh.Start(1, 10);
+            for (int i = 1; i <= 10; i++)
+            {
+                pbh.SetValue(i);
+                Thread.Sleep(250);
+            }
+            pbh.Clear();
 
-            //Logger.Info("*** Test 3 ***");
-            //pbh = new MultiPartProgressBar(100);
-            //pbh.AddStage(10, 25, "", 10);
-            //pbh.Start();
-            //for (int i = 10; i <= 25; i++) pbh.SetValue(i);
+            Logger.Info("*** Test 3 ***");
+            pbh.AddPart("Test 3", 10);
+            pbh.Start(10, 25);
+            for (int i = 10; i <= 25; i++)
+            {
+                pbh.SetValue(i);
+                Thread.Sleep(200);
+            }
+            pbh.Clear();
 
-            //Logger.Info("*** Test 4 ***");
-            //pbh = new MultiPartProgressBar(10);
-            //pbh.AddStage(1, 100, "", 10);
-            //pbh.Start();
-            //for (int i = 1; i <= 100; i++) pbh.SetValue(i);
+            Logger.Info("*** Test 4 ***");
+            pbh.AddPart("Test 4", 10);
+            pbh.Start(1, 100);
+            for (int i = 1; i <= 100; i++)
+            {
+                pbh.SetValue(i);
+                Thread.Sleep(25);
+            }
+            pbh.Clear();
 
-            //Logger.Info("*** Test 5 ***");
-            //pbh = new MultiPartProgressBar(100);
-            //pbh.AddStage(1, 10, "", 1);
-            //pbh.AddStage(1, 10, "", 1);
-            //pbh.Start();
-            //for (int i = 1; i <= 10; i++) pbh.SetValue(i);
-            //pbh.NextStage();
-            //for (int i = 1; i <= 10; i++) pbh.SetValue(i);
+            Logger.Info("*** Test 5 ***");
+            pbh.AddPart("Test 5 Part 1", 1);
+            pbh.AddPart("Test 5 Part 2", 1);
+            pbh.Start(1, 10);
+            for (int i = 1; i <= 10; i++)
+            {
+                pbh.SetValue(i);
+                Thread.Sleep(250);
+            }
+            pbh.NextStage(1, 10);
+            for (int i = 1; i <= 10; i++)
+            {
+                pbh.SetValue(i);
+                Thread.Sleep(250);
+            }
+            pbh.Clear();
 
-            //Logger.Info("*** Test 6 ***");
-            //pbh = new MultiPartProgressBar(100);
-            //pbh.AddStage(1, 10, "", 1);
-            //pbh.AddStage(1, 10, "", 2);
-            //pbh.Start();
-            //for (int i = 1; i <= 10; i++) pbh.SetValue(i);
-            //pbh.NextStage();
-            //for (int i = 1; i <= 10; i++) pbh.SetValue(i);
+            Logger.Info("*** Test 6 ***");
+            pbh.AddPart("Test 6 Part 1", 1);
+            pbh.AddPart("Test 6 Part 2", 2);
+            pbh.Start(1, 10);
+            for (int i = 1; i <= 10; i++)
+            {
+                pbh.SetValue(i);
+                Thread.Sleep(250);
+            }
+            pbh.NextStage(1, 10);
+            for (int i = 1; i <= 10; i++)
+            {
+                pbh.SetValue(i);
+                Thread.Sleep(250);
+            }
+            pbh.Clear();
 
-            //Logger.Info("*** Test 7 ***");
-            //pbh = new MultiPartProgressBar(100);
-            //pbh.AddStage(1, 10, "", 1);
-            //pbh.AddStage(100, 150, "", 3);
-            //pbh.Start();
-            //for (int i = 1; i <= 10; i++) pbh.SetValue(i);
-            //pbh.NextStage();
-            //for (int i = 100; i <= 150; i++) pbh.SetValue(i);
+            Logger.Info("*** Test 7 ***");
+            pbh.AddPart("Test 7 Part 1", 1);
+            pbh.AddPart("Test 7 Part 2", 3);
+            pbh.Start(1, 10);
+            for (int i = 1; i <= 10; i++)
+            {
+                pbh.SetValue(i);
+                Thread.Sleep(250);
+            }
+            pbh.NextStage(100, 150);
+            for (int i = 100; i <= 150; i++)
+            {
+                pbh.SetValue(i);
+                Thread.Sleep(25);
+            }
+            pbh.Clear();
         }
     }
 }

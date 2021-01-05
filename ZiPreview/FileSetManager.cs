@@ -284,7 +284,7 @@ namespace ZiPreview
             // progress bar will have a 100% for each drive
             int prMax = drives.Count * 100;
             int prCnt = 0;
-//            ZipPreview.GUI.UpdateProgressTS(0, prMax);
+            ZipPreview.GUI.GetProgressBar().NextStage(0, prMax);
 
             foreach (VeracryptVolume drive in drives)
             {
@@ -312,10 +312,10 @@ namespace ZiPreview
                     // update progress bar
                     fcnt++;
                     int prCnt1 = (int)((float)(fcnt * 100) / (float)(files.Length));
- //                   ZipPreview.GUI.UpdateProgressTS(prCnt + prCnt1, prMax);
+                    ZipPreview.GUI.GetProgressBar().SetValue(prCnt + prCnt1);
                 }
                 prCnt += 100;
- //               ZipPreview.GUI.UpdateProgressTS(prCnt, prMax);
+                ZipPreview.GUI.GetProgressBar().SetValue(prCnt);
             }
 
             _files.Clear();
@@ -326,8 +326,11 @@ namespace ZiPreview
             ReadProperties(drives);
             _ascending = true;
             _field = SortFieldT.None;
+
+            ZipPreview.GUI.GetProgressBar().NextStage(0, 2);
+            ZipPreview.GUI.GetProgressBar().IncValue();
             SortFiles(SortFieldT.Filename);
- //           ZipPreview.GUI.SetProgressTS(0);
+            ZipPreview.GUI.GetProgressBar().IncValue();
             return _files.Count > 0;
         }
 

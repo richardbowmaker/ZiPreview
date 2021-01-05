@@ -119,6 +119,12 @@ namespace ZiPreview
             // write out the properties and clear them
             FileSetManager.WriteProperties();
 
+            ZipPreview.GUI.GetProgressBar().Clear();
+            ZipPreview.GUI.GetProgressBar().AddPart("Mounting volumes", 1);
+            ZipPreview.GUI.GetProgressBar().AddPart("Reading Files", 1);
+            ZipPreview.GUI.GetProgressBar().AddPart("Sorting Files", 1);
+            ZipPreview.GUI.GetProgressBar().AddPart("Loading Files", 1);
+
             // mount volumes and redisplay
             if (VeracryptManager.SetVolumes(vols))
             {
@@ -129,6 +135,7 @@ namespace ZiPreview
             else
                 _ok = false;
 
+            ZipPreview.GUI.GetProgressBar().Clear();
             Cursor.Current = Cursors.Default;
             Close();
         }

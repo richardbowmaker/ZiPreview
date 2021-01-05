@@ -58,10 +58,7 @@ namespace ZiPreview
             foreach (VeracryptVolume vol in _volumes)
                 if (vol.IsSelected && !vol.IsMounted) noVols++;
 
-            //           ZipPreview.GUI.UpdateProgressTS(0, noVols);
-
-            ZipPreview.GUI.GetProgressBar().AddStage(0, noVols, "", 1);
-            ZipPreview.GUI.GetProgressBar().Start();
+            ZipPreview.GUI.GetProgressBar().Start(0, noVols);
 
             foreach (VeracryptVolume vol in _volumes)
             {
@@ -75,12 +72,9 @@ namespace ZiPreview
                     }
                     if (!vol.MountVolume(drive)) return false;
 
-                    //@                   ZipPreview.GUI.IncrementProgressTS();
                     ZipPreview.GUI.GetProgressBar().IncValue();
                 }
             }
-            //           ZipPreview.GUI.ClearProgressTS();
-            ZipPreview.GUI.GetProgressBar().End();
             return true;
         }
 

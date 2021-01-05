@@ -193,8 +193,8 @@ namespace ZiPreview
         {
             Interlocked.Exchange(ref _state, (long)StateT.Running);
 
-            ZipPreview.GUI.GetProgressBar().AddStage(0, _filesCopied + _filesExisting, "Copying files", 1);
-            ZipPreview.GUI.GetProgressBar().Start();
+            ZipPreview.GUI.GetProgressBar().AddPart("Copying files", 1);
+            ZipPreview.GUI.GetProgressBar().Start(0, _filesCopied + _filesExisting);
 
             List<string> srcFiles = new List<string>();
 

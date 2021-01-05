@@ -432,15 +432,13 @@ namespace ZiPreview
             _images.Initialise();
             List<FileSet> files = FileSetManager.GetFiles();
 
- //           UpdateProgressTS(0, files.Count);
+            ZipPreview.GUI.GetProgressBar().NextStage(0, files.Count);
             foreach (FileSet file in files)
             {
                 AddFileToGridTS(file);
- //               IncrementProgressTS();
+                ZipPreview.GUI.GetProgressBar().IncValue();
             }
-
             gridFiles.Refresh();
-//            ClearProgressTS();
         }
 
         private void GridFiles_SelectionChanged(object sender, EventArgs e)
