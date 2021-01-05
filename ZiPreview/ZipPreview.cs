@@ -14,14 +14,13 @@ namespace ZiPreview
         void RefreshGridRowTS(FileSet file);
         void RefreshImageTS(FileSet file);
         void RemoveGridRowTS(FileSet file);
-        void UpdateProgressTS(int value, int max);
-        void IncrementProgressTS();
-        void ClearProgressTS();
+        void UpdateProgressTS(int value, string text);
         void SetStatusLabelTS(string text);
         void MessageBoxTS(string text, MessageBoxButtons buttons, MessageBoxIcon icon);
         void PopulateGrid();
         void SetToTopWindow();
         IntPtr GetHwnd();
+        MultiPartProgressBar GetProgressBar();
     }
     
     public partial class ZipPreview : Form, IGuiUpdate, IImagesViewerData, IEasyMenu
@@ -34,6 +33,7 @@ namespace ZiPreview
         private VideoCapture _videoCapture;
         private bool _initialised = false;
         private Random _rnd;
+        private MultiPartProgressBar _progressBar;
 
         public ZipPreview()
         {
@@ -67,8 +67,9 @@ namespace ZiPreview
             Text = Constants.Title;
             _noOfImages = 3;
             statusProgress.Minimum = 0;
-            statusProgress.Maximum = 0;
+            statusProgress.Maximum = statusProgress.Width;
             statusProgress.Value = 0;
+            _progressBar = new MultiPartProgressBar(statusProgress.Width);
             statusLabel.Text = "";
 
             splitHorizGridTrace.SplitterDistance = 500;
@@ -169,6 +170,7 @@ namespace ZiPreview
         private delegate void VoidDataGridViewRow(DataGridViewRow row);
         private delegate void VoidVoid();
         private delegate void VoidIntInt(int int1, int int2);
+        private delegate void VoidIntString(int int1, string s);
         private delegate void VoidStringMessageBoxButtonsAndIcon(string text, MessageBoxButtons buttons, MessageBoxIcon icon);
 
         public void RefreshGridRowTS(FileSet file)
@@ -230,59 +232,17 @@ namespace ZiPreview
             }
         }
 
-        // progress bar
-        int _progressMax = -1;
-        int _progressValue = -1;
-
-        public void UpdateProgressTS(int value, int max)
+        public void UpdateProgressTS(int value, string text)
         {
             if (InvokeRequired)
             {
-                VoidIntInt action = new VoidIntInt(UpdateProgressTS);
-                Invoke(action, new object[] { value, max });
+                VoidIntString action = new VoidIntString(UpdateProgressTS);
+                Invoke(action, new object[] { value, text });
             }
             else
             {
-                if (value == _progressValue && max == _progressMax)
-                    return;
-
-                _progressValue = value;
-                _progressMax = max;
-                
-                statusProgress.Minimum = 0;
-                statusProgress.Maximum = max;
-
-                if (value <= max)
-                    statusProgress.Value = value;
-                else
-                {
-                    statusProgress.Value = max;
-                    Logger.Error("Progress bar exceeded max value");
-                }
-                statusStrip.Refresh();
-            }
-        }
-        public void IncrementProgressTS()
-        {
-            UpdateProgressTS(_progressValue + 1, _progressMax);
-        }
-
-        public void ClearProgressTS()
-        {
-            if (InvokeRequired)
-            {
-                VoidVoid action = new VoidVoid(ClearProgressTS);
-                Invoke(action);
-            }
-            else
-            {
-                _progressMax = -1;
-                _progressValue = -1;
-
-                statusProgress.Minimum = 0;
-                statusProgress.Maximum = 0;
-                statusProgress.Value = 0;
-
+                statusProgress.Value = value;
+                statusLabel.Text = text;
                 statusStrip.Refresh();
             }
         }
@@ -334,6 +294,11 @@ namespace ZiPreview
         public IntPtr GetHwnd()
         {
             return Handle;
+        }
+
+        public MultiPartProgressBar GetProgressBar()
+        {
+            return _progressBar;
         }
 
         private void GridFiles_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -467,15 +432,15 @@ namespace ZiPreview
             _images.Initialise();
             List<FileSet> files = FileSetManager.GetFiles();
 
-            UpdateProgressTS(0, files.Count);
+ //           UpdateProgressTS(0, files.Count);
             foreach (FileSet file in files)
             {
                 AddFileToGridTS(file);
-                IncrementProgressTS();
+ //               IncrementProgressTS();
             }
 
             gridFiles.Refresh();
-            ClearProgressTS();
+//            ClearProgressTS();
         }
 
         private void GridFiles_SelectionChanged(object sender, EventArgs e)

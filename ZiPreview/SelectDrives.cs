@@ -226,6 +226,8 @@ namespace ZiPreview
                 else
                     MessageBox.Show("Folder does not exist", Constants.Title, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            else if (e.KeyChar == 9)
+                txtFilter.Focus();
         }
     }
 }

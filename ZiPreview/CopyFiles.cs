@@ -157,8 +157,7 @@ namespace ZiPreview
             _srcFolders = null;
             _thread = null;
 
-            ZipPreview.GUI.UpdateProgressTS(0, 0);
-            ZipPreview.GUI.SetStatusLabelTS("");
+            ZipPreview.GUI.UpdateProgressTS(0, "");
         }
 
         public static bool Stop()
@@ -190,17 +189,12 @@ namespace ZiPreview
             return false;
         }
 
-        private static void UpdateProgress()
-        {
-            ZipPreview.GUI.UpdateProgressTS(_filesCopied + _filesExisting, _totalFiles);
-            ZipPreview.GUI.SetStatusLabelTS(
-                String.Format("{0:#,##0} of {1:#,##0} files processed, {2:#,##0} bytes", 
-                    _filesCopied + _filesExisting, _totalFiles, _bytesCopied));
-        }
-
         private static void RunCopyFiles()
         {
             Interlocked.Exchange(ref _state, (long)StateT.Running);
+
+            ZipPreview.GUI.GetProgressBar().AddStage(0, _filesCopied + _filesExisting, "Copying files", 1);
+            ZipPreview.GUI.GetProgressBar().Start();
 
             List<string> srcFiles = new List<string>();
 
@@ -222,7 +216,7 @@ namespace ZiPreview
                 return;
             }
 
-            UpdateProgress();
+            ZipPreview.GUI.GetProgressBar().SetValue(_totalFiles);
 
             // organise files into groups that hasve the same
             // file path except for the extension
@@ -259,7 +253,7 @@ namespace ZiPreview
                     //    return;
                     //}
                 }
-                UpdateProgress();
+                ZipPreview.GUI.GetProgressBar().SetValue(_totalFiles);
                 if (CheckStop()) return;
             }
 

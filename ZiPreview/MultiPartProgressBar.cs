@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+using System.Threading;
 
 namespace ZiPreview
 {
-    class MultiPartProgressBar
+    public class MultiPartProgressBar
     {
         // multi part progress bar
         // subdivided into parts each part with a size that represents the proportion of the
@@ -21,10 +19,6 @@ namespace ZiPreview
         //                     <-           ->       current part width in pixels          = _partWidth
         // ####################@@@@@@@@@@@@@@@****** multi part progress bar (3 parts)
         //
-
-        private StatusBar _statusBar;
-        private ProgressBar _progressBar;
-        private 
 
         private int _totalWidth;             // width in pixels of progress bar
         private List<Part> _parts;
@@ -64,6 +58,8 @@ namespace ZiPreview
             string s = String.Format("Bar width {0}, total sizes {1}, part {2}, part min pos {3}, part width {4}, value {5}, pos {6}", 
                 _totalWidth, _totalSize, _part, _partMinPos, _partWidth, _value, _pos);
             Logger.Info(s);
+
+            ZipPreview.GUI.UpdateProgressTS(_pos, _parts[_part].Description);
         }
 
         public int AddStage(int min, int max, string description, int size)
@@ -97,16 +93,20 @@ namespace ZiPreview
         public int Start()
         {
             _part = -1;
+            _pos = 0;
+            _value = 0;
             return NextStage();
         }
 
         public void End()
         {
+            _parts = new List<Part>();
             _part = -1;
             _pos = 0;
+            _value = 0;
 
             // zero progress bar
-            UpdateProgress();
+            ZipPreview.GUI.UpdateProgressTS(0, "");
         }
 
         public void SetValue(int value)
@@ -138,60 +138,64 @@ namespace ZiPreview
 
         public static void Test()
         {
-            MultiPartProgressBar pbh;
+            MultiPartProgressBar pbh = ZipPreview.GUI.GetProgressBar();
 
             Logger.Info("ProgressBarHelper tests");
             Logger.Info("*** Test 1 ***");
 
-            pbh = new MultiPartProgressBar(10);
+//            pbh = new MultiPartProgressBar(10);
             pbh.AddStage(1, 10, "", 1);
             pbh.Start();
-            for (int i = 0; i < 10; i++) pbh.SetValue(i + 1);
+            for (int i = 0; i < 10; i++)
+            {
+                pbh.SetValue(i + 1);
+                Thread.Sleep(250);
+            }
 
-            Logger.Info("*** Test 2 ***");
-            pbh = new MultiPartProgressBar(50);
-            pbh.AddStage(1, 10, "", 1);
-            pbh.Start();
-            for (int i = 0; i < 10; i++) pbh.SetValue(i + 1);
+            //Logger.Info("*** Test 2 ***");
+            //pbh = new MultiPartProgressBar(50);
+            //pbh.AddStage(1, 10, "", 1);
+            //pbh.Start();
+            //for (int i = 0; i < 10; i++) pbh.SetValue(i + 1);
 
-            Logger.Info("*** Test 3 ***");
-            pbh = new MultiPartProgressBar(100);
-            pbh.AddStage(10, 25, "", 10);
-            pbh.Start();
-            for (int i = 10; i <= 25; i++) pbh.SetValue(i);
+            //Logger.Info("*** Test 3 ***");
+            //pbh = new MultiPartProgressBar(100);
+            //pbh.AddStage(10, 25, "", 10);
+            //pbh.Start();
+            //for (int i = 10; i <= 25; i++) pbh.SetValue(i);
 
-            Logger.Info("*** Test 4 ***");
-            pbh = new MultiPartProgressBar(10);
-            pbh.AddStage(1, 100, "", 10);
-            pbh.Start();
-            for (int i = 1; i <= 100; i++) pbh.SetValue(i);
+            //Logger.Info("*** Test 4 ***");
+            //pbh = new MultiPartProgressBar(10);
+            //pbh.AddStage(1, 100, "", 10);
+            //pbh.Start();
+            //for (int i = 1; i <= 100; i++) pbh.SetValue(i);
 
-            Logger.Info("*** Test 5 ***");
-            pbh = new MultiPartProgressBar(100);
-            pbh.AddStage(1, 10, "", 1);
-            pbh.AddStage(1, 10, "", 1);
-            pbh.Start();
-            for (int i = 1; i <= 10; i++) pbh.SetValue(i);
-            pbh.NextStage();
-            for (int i = 1; i <= 10; i++) pbh.SetValue(i);
+            //Logger.Info("*** Test 5 ***");
+            //pbh = new MultiPartProgressBar(100);
+            //pbh.AddStage(1, 10, "", 1);
+            //pbh.AddStage(1, 10, "", 1);
+            //pbh.Start();
+            //for (int i = 1; i <= 10; i++) pbh.SetValue(i);
+            //pbh.NextStage();
+            //for (int i = 1; i <= 10; i++) pbh.SetValue(i);
 
-            Logger.Info("*** Test 6 ***");
-            pbh = new MultiPartProgressBar(100);
-            pbh.AddStage(1, 10, "", 1);
-            pbh.AddStage(1, 10, "", 2);
-            pbh.Start();
-            for (int i = 1; i <= 10; i++) pbh.SetValue(i);
-            pbh.NextStage();
-            for (int i = 1; i <= 10; i++) pbh.SetValue(i);
+            //Logger.Info("*** Test 6 ***");
+            //pbh = new MultiPartProgressBar(100);
+            //pbh.AddStage(1, 10, "", 1);
+            //pbh.AddStage(1, 10, "", 2);
+            //pbh.Start();
+            //for (int i = 1; i <= 10; i++) pbh.SetValue(i);
+            //pbh.NextStage();
+            //for (int i = 1; i <= 10; i++) pbh.SetValue(i);
 
-            Logger.Info("*** Test 7 ***");
-            pbh = new MultiPartProgressBar(100);
-            pbh.AddStage(1, 10, "", 1);
-            pbh.AddStage(100, 150, "", 3);
-            pbh.Start();
-            for (int i = 1; i <= 10; i++) pbh.SetValue(i);
-            pbh.NextStage();
-            for (int i = 100; i <= 150; i++) pbh.SetValue(i);
+            //Logger.Info("*** Test 7 ***");
+            //pbh = new MultiPartProgressBar(100);
+            //pbh.AddStage(1, 10, "", 1);
+            //pbh.AddStage(100, 150, "", 3);
+            //pbh.Start();
+            //for (int i = 1; i <= 10; i++) pbh.SetValue(i);
+            //pbh.NextStage();
+            //for (int i = 100; i <= 150; i++) pbh.SetValue(i);
         }
     }
 }
