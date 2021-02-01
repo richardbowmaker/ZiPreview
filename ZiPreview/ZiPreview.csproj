@@ -90,6 +90,12 @@
     <Compile Include="EasyMenu.Designer.cs">
       <DependentUpon>EasyMenu.cs</DependentUpon>
     </Compile>
+    <Compile Include="FileImport.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FileImport.Designer.cs">
+      <DependentUpon>FileImport.cs</DependentUpon>
+    </Compile>
     <Compile Include="FileSetManager.cs" />
     <Compile Include="FileSet.cs" />
     <Compile Include="MultiPartProgressBar.cs" />
@@ -154,6 +160,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="EasyMenu.resx">
       <DependentUpon>EasyMenu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FileImport.resx">
+      <DependentUpon>FileImport.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="VideoAnalyser.resx">
       <DependentUpon>VideoAnalyser.cs</DependentUpon>

@@ -929,10 +929,11 @@ namespace ZiPreview
 
         private void ImportFile()
         {
-            OpenFileDialog dlg = new OpenFileDialog();
-            dlg.Filter = "All files (*.*)|*.*";
-            if (dlg.ShowDialog() == DialogResult.OK)
-                FileSetManager.New(dlg.FileName);
+            FileImport.Run();
+            //OpenFileDialog dlg = new OpenFileDialog();
+            //dlg.Filter = "All files (*.*)|*.*";
+            //if (dlg.ShowDialog() == DialogResult.OK)
+            //    FileSetManager.New(dlg.FileName);
         }
 
         private void ProcessVideo(FileSet file)
