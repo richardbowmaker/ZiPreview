@@ -616,7 +616,6 @@ namespace ZiPreview
                 {
                     switch (KeyData)
                     {
-                        case Keys.Add: ToggleSelect(file); return true;
                         case Keys.Enter: PlayFile(file); return true;
                         case Keys.Up: Up(file); return true;
                         case Keys.Down: Down(file); return true;
@@ -624,12 +623,19 @@ namespace ZiPreview
                         case Keys.PageUp: PageUp(file); return true;
                         case Keys.Escape: SelectImagesViewer(); return true;
 
+                        case Keys.Insert:
+                        case Keys.Add:
+                            ToggleSelect(); return true;
+
                         case Keys.Right:
                         case Keys.Space:
                             NextFile(file); return true;
 
                         case Keys.Left:
                             PreviousFile(file); return true;
+
+                        case Keys.End:
+                            GotoEnd(); return true;
 
                         case Keys.Z:
                         case Keys.V:
@@ -812,11 +818,16 @@ namespace ZiPreview
             gridFiles.Rows[n].Selected = true;
         }
 
-        private void ToggleSelect(FileSet file)
+        private void ToggleSelect()
         {
-            file.ToggleSelected();
-            file.Row.Cells["colSelected"].Value = file.SelectedS;
-            RefreshGridRowTS(file);
+            DataGridViewSelectedRowCollection rs = gridFiles.SelectedRows;
+            if (rs.Count == 1)
+            {
+                FileSet file = (FileSet)rs[0].Tag;
+                file.ToggleSelected();
+                file.Row.Cells["colSelected"].Value = file.SelectedS;
+                RefreshGridRowTS(file);
+            }
         }
 
         private void CopyLinkToClipboard(FileSet file)
@@ -930,10 +941,6 @@ namespace ZiPreview
         private void ImportFile()
         {
             FileImport.Run();
-            //OpenFileDialog dlg = new OpenFileDialog();
-            //dlg.Filter = "All files (*.*)|*.*";
-            //if (dlg.ShowDialog() == DialogResult.OK)
-            //    FileSetManager.New(dlg.FileName);
         }
 
         private void ProcessVideo(FileSet file)
@@ -956,10 +963,17 @@ namespace ZiPreview
             }
         }
 
+        private void GotoEnd()
+        {
+            int n = gridFiles.Rows.Count - (GetNoOfRows() * GetNoOfCols());
+            if (n < 0) n = 0;
+            gridFiles.Rows[n].Selected = true;
+        }
+
         #endregion
 
         #region Menu Handlers
-        private void FileSelectMenu_Click(object sender, EventArgs e)
+        private void FileSelectVolumesMenu_Click(object sender, EventArgs e)
         {
             if (!SelectDrives.Run())
             {
@@ -974,6 +988,11 @@ namespace ZiPreview
             DeleteSelected();
         }
 
+        private void FileToggleSelectMenu_Click(object sender, EventArgs e)
+        {
+            ToggleSelect();
+        }
+
         private void FileClearSelectedMenu_Click(object sender, EventArgs e)
         {
             ClearSelected();
@@ -982,6 +1001,13 @@ namespace ZiPreview
         private void FileImportMenu_Click(object sender, EventArgs e)
         {
             ImportFile();
+        }
+
+        private void FileGroupSelectedFilesMenu_Click(object sender, EventArgs e)
+        {
+            FileSetManager.GroupFiles(FileSetManager.GetSelectedFiles());
+            ClearSelected();
+            GotoEnd();
         }
 
         private void FileExitMenu_Click(object sender, EventArgs e)
@@ -1052,6 +1078,11 @@ namespace ZiPreview
         private void ViewPreviewMenu_Click(object sender, EventArgs e)
         {
             TogglePreview();
+        }
+
+        private void ViewGotoEndMenu_Click(object sender, EventArgs e)
+        {
+            GotoEnd();
         }
 
         private void ToolsMenu_DropDownOpening(object sender, EventArgs e)
@@ -1142,6 +1173,10 @@ namespace ZiPreview
             DeleteSelected();
         }
 
+
+
         #endregion
+
+ 
     }
 }

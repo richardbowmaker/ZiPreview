@@ -252,6 +252,36 @@ namespace ZiPreview
             return ok;
         }
 
+        public bool AssignNewFilename()
+        {
+            // quit if no files !!!
+            string src = Filename;
+            if (src.Length == 0) return false;
+
+            // new name, stem
+            string dst = Path.GetDirectoryName(src) + "\\" + Utilities.NewFilename();
+
+            if (HasImage)
+            {
+                Utilities.RenameFile(ImageFilename, dst + Path.GetExtension(ImageFilename));
+                ImageFilename = dst + Path.GetExtension(ImageFilename);
+            }
+
+            if (HasVideo)
+            {
+                Utilities.RenameFile(VideoFilename, dst + Path.GetExtension(VideoFilename));
+                VideoFilename = dst + Path.GetExtension(VideoFilename);
+            }
+
+            if (HasLink)
+            {
+                Utilities.RenameFile(LinkFilename, dst + Path.GetExtension(LinkFilename));
+                LinkFilename = dst + Path.GetExtension(LinkFilename);
+            }
+
+            return true;
+        }
+
         // matches the filename less extension and drive against
         // any of the image/link/video
         public bool MatchesAnyFilename(string file)

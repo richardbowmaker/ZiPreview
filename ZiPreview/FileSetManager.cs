@@ -493,6 +493,28 @@ namespace ZiPreview
                 return (s2 + f1.FilenameNoPathAndExt).CompareTo(s1 + f2.FilenameNoPathAndExt);
             }
         }
+
+        public static List<FileSet> GetSelectedFiles()
+        {
+            List<FileSet> files = new List<FileSet>();
+            foreach (FileSet fs in _files)
+            {
+                if (fs.Selected) files.Add(fs);
+            }
+            return files;
+        }
+
+        public static void GroupFiles(List<FileSet> files)
+        {
+            foreach (FileSet file in files)
+            {
+                if (file.AssignNewFilename())
+                {
+                    ZipPreview.GUI.RemoveGridRowTS(file);
+                    ZipPreview.GUI.AddFileToGridTS(file);
+                }
+            }
+        }
     }
 
     public class FileVolume

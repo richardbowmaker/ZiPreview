@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace ZiPreview
 {
@@ -127,7 +128,7 @@ namespace ZiPreview
 
         static public bool CopyFile(string src, string dest)
         {
-            // no nonsense move file
+            // no nonsense copy file
             DeleteFile(dest);
             try
             {
@@ -141,6 +142,21 @@ namespace ZiPreview
                 return false;
             }
         }
+        static public bool RenameFile(string src, string dest)
+        {
+            try
+            {
+                File.Move(src, dest);
+                Logger.Info("Renamed file " + src + " to " + dest);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error renaming file " + src + " to " + dest + ", " + e.Message);
+                return false;
+            }
+        }
+
         static public bool WaitForFileReady(string file, int timeout)
         {
             int t = 0;
@@ -309,9 +325,20 @@ namespace ZiPreview
                 SendMessageW(ZipPreview.GUI.GetHwnd(), WM_APPCOMMAND, ZipPreview.GUI.GetHwnd(), (IntPtr)APPCOMMAND_VOLUME_UP);
         }
 
+        private static string _lastFilename;
+
         public static string NewFilename()
         {
-            return "file" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            while (true)
+            {
+                string fn = "file" + DateTime.Now.ToString("yyyyMMddHHmmss");
+                if (fn != _lastFilename)
+                {
+                    _lastFilename = fn;
+                    return fn;
+                }
+                Thread.Sleep(100);
+            }
         }
 
         public static DateTime StringToDateTime(string sdt)
